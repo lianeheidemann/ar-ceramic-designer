@@ -4,6 +4,7 @@ import type {
   ProfilePointMm,
 } from '../types/ceramic'
 import { smoothProfileMm } from '../geometry/lathe'
+import { presetMaterial } from '../materials/presets'
 
 const GENERATED_LICENSE = 'Gerado por código (MIT)'
 
@@ -50,7 +51,7 @@ export const catalog: readonly CeramicModel[] = [
       [30, 180],
       [35, 200],
     ],
-    defaultMaterial: { color: '#c8b6a6', roughness: 0.6, metalness: 0 },
+    defaultMaterial: presetMaterial('matte', '#c8b6a6'),
   }),
   latheModel({
     id: 'bowl',
@@ -63,7 +64,7 @@ export const catalog: readonly CeramicModel[] = [
       [65, 35],
       [75, 70],
     ],
-    defaultMaterial: { color: '#e8e2d6', roughness: 0.3, metalness: 0 },
+    defaultMaterial: presetMaterial('glazed', '#e8e2d6'),
   }),
   latheModel({
     id: 'plate',
@@ -76,7 +77,7 @@ export const catalog: readonly CeramicModel[] = [
       [110, 18],
       [120, 25],
     ],
-    defaultMaterial: { color: '#f4f1ea', roughness: 0.2, metalness: 0 },
+    defaultMaterial: presetMaterial('glossy', '#f4f1ea'),
   }),
 ]
 

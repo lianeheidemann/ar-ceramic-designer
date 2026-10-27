@@ -220,6 +220,83 @@ select {
   font-weight: 400;
 }
 
+.controls-section {
+  margin-top: 1.5rem;
+}
+
+.material-controls {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.control-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.control-value {
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.preset-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.preset-option,
+.reset-material {
+  padding: 0.5rem;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.preset-option:hover,
+.reset-material:hover:not(:disabled) {
+  background: var(--viewport-bg);
+}
+
+.preset-option[aria-pressed='true'] {
+  border-color: var(--text);
+  background: var(--viewport-bg);
+  font-weight: 600;
+}
+
+.color-input {
+  width: 64px;
+  padding: 2px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.slider-field {
+  display: grid;
+}
+
+.slider-field input[type='range'] {
+  width: 100%;
+  accent-color: var(--text);
+}
+
+.reset-material:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+
 @media (max-width: 768px) {
   .app {
     grid-template-columns: 1fr;

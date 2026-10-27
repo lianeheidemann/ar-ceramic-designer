@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import WebGL from 'three/addons/capabilities/WebGL.js'
-import type { CeramicModel } from '../types/ceramic'
+import type { CeramicModel, MaterialSettings } from '../types/ceramic'
 import { CeramicViewer } from '../viewers/CeramicViewer'
 
 interface ViewerProps {
   model: CeramicModel
+  material: MaterialSettings
 }
 
 /** Outcome of the latest finished load. */
@@ -13,7 +14,7 @@ interface LoadResult {
   error?: string
 }
 
-export function Viewer({ model }: ViewerProps) {
+export function Viewer({ model, material }: ViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const viewerRef = useRef<CeramicViewer | null>(null)
   const [webglAvailable] = useState(() => WebGL.isWebGL2Available())
@@ -48,6 +49,10 @@ export function Viewer({ model }: ViewerProps) {
       cancelled = true
     }
   }, [model])
+
+  useEffect(() => {
+    viewerRef.current?.setMaterial(material)
+  }, [material])
 
   const loading = result?.modelId !== model.id
   const error = webglAvailable

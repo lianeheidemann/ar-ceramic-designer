@@ -4,6 +4,7 @@ import {
   HemisphereLight,
   Material,
   Mesh,
+  MeshPhysicalMaterial,
   MeshStandardMaterial,
   NeutralToneMapping,
   Object3D,
@@ -17,13 +18,15 @@ import {
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { createModelGeometry } from '../geometry/lathe'
-import type { CeramicModel } from '../types/ceramic'
+import type { CeramicModel, MaterialSettings } from '../types/ceramic'
 import { fitDistance } from './framing'
 
 const FOV_DEG = 35
 /** Camera elevation above the horizon when framing, in radians. */
 const VIEW_ELEVATION = (25 * Math.PI) / 180
 const MAX_PIXEL_RATIO = 2
+/** Glaze layer stays smooth whatever the body roughness. */
+const CLEARCOAT_ROUGHNESS = 0.05
 
 /**
  * Three.js scene for inspecting one ceramic model: renderer, lights,
@@ -38,6 +41,8 @@ export class CeramicViewer {
   private readonly gltfLoader = new GLTFLoader()
   private readonly container: HTMLElement
   private model: Object3D | null = null
+  /** Applied to every loaded model; `null` uses the model's default. */
+  private material: MaterialSettings | null = null
   /** Increments on every load so stale results can be discarded. */
   private loadId = 0
 
@@ -79,9 +84,16 @@ export class CeramicViewer {
       return
     }
     this.clearModel()
+    applyMaterial(object, this.material ?? model.defaultMaterial)
     this.model = object
     this.scene.add(object)
     this.resetView()
+  }
+
+  /** Updates the current model's material and keeps it for later loads. */
+  setMaterial(settings: MaterialSettings): void {
+    this.material = settings
+    if (this.model) applyMaterial(this.model, settings)
   }
 
   /** Frames the current model from the default angle. */
@@ -127,12 +139,12 @@ export class CeramicViewer {
   private async loadObject(model: CeramicModel): Promise<Object3D> {
     if (model.source.kind === 'glb') {
       const gltf = await this.gltfLoader.loadAsync(model.source.url)
+      cloneMaterials(gltf.scene)
       return gltf.scene
     }
-    const { color, roughness, metalness } = model.defaultMaterial
     return new Mesh(
       createModelGeometry(model),
-      new MeshStandardMaterial({ color, roughness, metalness }),
+      new MeshPhysicalMaterial({ clearcoatRoughness: CLEARCOAT_ROUGHNESS }),
     )
   }
 
@@ -152,15 +164,43 @@ export class CeramicViewer {
   }
 }
 
+function meshMaterials(mesh: Mesh): Material[] {
+  return Array.isArray(mesh.material) ? mesh.material : [mesh.material]
+}
+
+/**
+ * Gives every mesh its own material instances: glTF files may share one
+ * material between meshes, and edits must not leak between them.
+ */
+function cloneMaterials(root: Object3D): void {
+  root.traverse((node) => {
+    if (!(node instanceof Mesh)) return
+    const clones = meshMaterials(node).map((material) => material.clone())
+    node.material = Array.isArray(node.material) ? clones : clones[0]
+  })
+}
+
+function applyMaterial(root: Object3D, settings: MaterialSettings): void {
+  root.traverse((node) => {
+    if (!(node instanceof Mesh)) return
+    for (const material of meshMaterials(node)) {
+      if (!(material instanceof MeshStandardMaterial)) continue
+      material.color.set(settings.color)
+      material.roughness = settings.roughness
+      material.metalness = settings.metalness
+      if (material instanceof MeshPhysicalMaterial) {
+        material.clearcoat = settings.clearcoat
+      }
+    }
+  })
+}
+
 /** Frees the GPU resources (geometries, materials, textures) of `root`. */
 function disposeObject(root: Object3D): void {
   root.traverse((node) => {
     if (!(node instanceof Mesh)) return
     node.geometry.dispose()
-    const materials: Material[] = Array.isArray(node.material)
-      ? node.material
-      : [node.material]
-    for (const material of materials) {
+    for (const material of meshMaterials(node)) {
       for (const value of Object.values(material)) {
         if (value instanceof Texture) value.dispose()
       }

@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { MaterialControls } from './components/MaterialControls'
 import { ModelList } from './components/ModelList'
 import { Viewer } from './components/Viewer'
 import { catalog, defaultModelId, getModelById } from './data/catalog'
+import type { MaterialSettings } from './types/ceramic'
 
 function App() {
   const [selectedId, setSelectedId] = useState(defaultModelId)
@@ -12,7 +14,26 @@ function App() {
       ? 'dark'
       : 'light'
   })
+  // Customized materials by model id; the catalog defaults stay untouched.
+  const [materialOverrides, setMaterialOverrides] = useState<
+    Record<string, MaterialSettings>
+  >({})
   const selectedModel = getModelById(selectedId)
+  const material = selectedModel
+    ? (materialOverrides[selectedModel.id] ?? selectedModel.defaultMaterial)
+    : undefined
+
+  function updateMaterial(next: MaterialSettings) {
+    setMaterialOverrides((overrides) => ({ ...overrides, [selectedId]: next }))
+  }
+
+  function resetMaterial() {
+    setMaterialOverrides((overrides) => {
+      const rest = { ...overrides }
+      delete rest[selectedId]
+      return rest
+    })
+  }
 
   function toggleTheme() {
     const nextTheme = theme === 'dark' ? 'light' : 'dark'
@@ -25,7 +46,7 @@ function App() {
       <header className="app-header">
         <img
           className="app-logo"
-          src={`${import.meta.env.BASE_URL}favicon.svg`}
+          src={`${import.meta.env.BASE_URL}icons/icon-96.png`}
           alt=""
           aria-hidden="true"
         />
@@ -69,8 +90,8 @@ function App() {
       </header>
 
       <main className="viewport" aria-label="Visualizador 3D">
-        {selectedModel ? (
-          <Viewer model={selectedModel} />
+        {selectedModel && material ? (
+          <Viewer model={selectedModel} material={material} />
         ) : (
           <p className="viewport-placeholder">Nenhum modelo selecionado</p>
         )}
@@ -83,6 +104,17 @@ function App() {
           selectedId={selectedId}
           onSelect={setSelectedId}
         />
+        {selectedModel && material && (
+          <section className="controls-section">
+            <h2>Material</h2>
+            <MaterialControls
+              material={material}
+              original={selectedModel.defaultMaterial}
+              onChange={updateMaterial}
+              onReset={resetMaterial}
+            />
+          </section>
+        )}
       </aside>
     </div>
   )
