@@ -16,19 +16,8 @@
   line-height: 1.5;
   color: var(--text);
   background: var(--bg);
-  color-scheme: light dark;
+  color-scheme: light;
   -webkit-font-smoothing: antialiased;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1c1a18;
-    --surface: #262320;
-    --text: #f1ece6;
-    --muted: #a99f95;
-    --border: #3a3531;
-    --viewport-bg: #2f2b28;
-  }
 }
 
 *,
@@ -59,21 +48,71 @@ select {
     'header header'
     'viewport controls';
   height: 100dvh;
+  color: var(--text);
+  background: var(--bg);
+  color-scheme: light;
+}
+
+.app[data-theme='dark'] {
+  --bg: #1c1a18;
+  --surface: #262320;
+  --text: #f1ece6;
+  --muted: #a99f95;
+  --border: #3a3531;
+  --viewport-bg: #2f2b28;
+  color-scheme: dark;
 }
 
 .app-header {
   grid-area: header;
   display: flex;
   align-items: center;
+  gap: 0.625rem;
   padding: 0.75rem 1rem;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
+}
+
+.app-logo {
+  display: block;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  object-fit: contain;
 }
 
 .app-header h1 {
   margin: 0;
   font-size: 1.125rem;
   font-weight: 600;
+}
+
+.theme-toggle {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-left: auto;
+  padding: 0;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  background: var(--viewport-bg);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+.theme-toggle svg {
+  width: 21px;
+  height: 21px;
 }
 
 .viewport {
@@ -88,6 +127,45 @@ select {
 
 .viewport-placeholder {
   color: var(--muted);
+}
+
+.viewer {
+  position: absolute;
+  inset: 0;
+}
+
+.viewer canvas {
+  display: block;
+  /* Let OrbitControls handle touch gestures instead of the page. */
+  touch-action: none;
+}
+
+.viewer-status {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 1rem;
+  color: var(--muted);
+  text-align: center;
+  pointer-events: none;
+}
+
+.viewer-error {
+  color: var(--text);
+}
+
+.viewer-reset {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  padding: 0 1rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
 }
 
 .controls {

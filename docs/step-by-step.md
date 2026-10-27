@@ -90,7 +90,7 @@ Define typed metadata for each model: `id`, `name`, `url`, `dimensionsMm`, `scal
 
 **Done when:** every model loads with correct orientation, approximate real-world size and acceptable mobile loading time.
 
-## 4. Implement the 3D viewer
+## ✅ 4. Implement the 3D viewer
 
 1. Create a Three.js scene with a perspective camera, renderer and neutral lighting.
 2. Load GLB files with `GLTFLoader`.

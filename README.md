@@ -1,26 +1,19 @@
+<p align="center">
+  <img src="assets/icon-ar-ceramic-designer.png" alt="AR Ceramic Designer icon" width="110" />
+</p>
+
 <h1 align="center">AR Ceramic Designer</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
-  <img src="https://img.shields.io/badge/Three.js-111111?style=for-the-badge&logo=threedotjs&logoColor=white" alt="Three.js" />
-  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
-  <img src="https://img.shields.io/badge/WebXR-005A9C?style=for-the-badge&logo=webxr&logoColor=white" alt="WebXR" />
-</p>
-
-<p align="center">
-  <a href="https://github.com/lianeheidemann/ar-ceramic-designer/actions/workflows/ci.yml?query=branch%3Adevelop">
-    <img src="https://img.shields.io/github/actions/workflow/status/lianeheidemann/ar-ceramic-designer/ci.yml?branch=develop&style=for-the-badge&logo=githubactions&logoColor=white&label=CI" alt="CI status — develop" />
-  </a>
-  <a href="https://github.com/lianeheidemann/ar-ceramic-designer/actions/workflows/deploy.yml">
-    <img src="https://img.shields.io/github/actions/workflow/status/lianeheidemann/ar-ceramic-designer/deploy.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=Deploy" alt="GitHub Pages workflow status — main" />
-  </a>
-</p>
-
-<p align="center">
-  <a href="https://lianeheidemann.github.io/ar-ceramic-designer/">
-    <img src="https://img.shields.io/badge/GitHub%20Pages-View%20App-222222?style=for-the-badge&logo=github&logoColor=white" alt="View on GitHub Pages" />
-  </a>
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/Three.js-111111?style=flat-square&logo=threedotjs&logoColor=white" alt="Three.js" />
+  <img src="https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite" />
+  <img src="https://img.shields.io/badge/WebXR-005A9C?style=flat-square&logo=webxr&logoColor=white" alt="WebXR" />
+<br>
+  <a href="https://github.com/lianeheidemann/ar-ceramic-designer/actions/workflows/ci.yml?query=branch%3Adevelop"><img src="https://img.shields.io/github/actions/workflow/status/lianeheidemann/ar-ceramic-designer/ci.yml?branch=develop&style=flat-square&logo=githubactions&logoColor=white&label=CI" alt="CI status — develop" /></a>
+  <a href="https://github.com/lianeheidemann/ar-ceramic-designer/actions/workflows/deploy.yml"><img src="https://img.shields.io/github/actions/workflow/status/lianeheidemann/ar-ceramic-designer/deploy.yml?branch=main&style=flat-square&logo=githubactions&logoColor=white&label=Deploy" alt="Deploy status — main" /></a>
+  <a href="https://lianeheidemann.github.io/ar-ceramic-designer/"><img src="https://img.shields.io/badge/GitHub%20Pages-Live%20Demo-238636?style=flat-square&logo=githubpages&logoColor=white&labelColor=22272e" alt="Open GitHub Pages" /></a>
 </p>
 
 Aplicação web para visualizar e personalizar objetos de cerâmica em 3D e posicioná-los em realidade aumentada (WebXR) em dispositivos Android compatíveis.
