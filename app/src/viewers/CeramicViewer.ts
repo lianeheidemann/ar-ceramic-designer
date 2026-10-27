@@ -17,6 +17,7 @@ import {
 } from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import { startArSession } from '../ar/arSession'
 import { createModelGeometry } from '../geometry/lathe'
 import type { CeramicModel, MaterialSettings } from '../types/ceramic'
 import { fitDistance } from './framing'
@@ -50,6 +51,8 @@ export class CeramicViewer {
   private material: MaterialSettings | null = null
   /** Increments on every load so stale results can be discarded. */
   private loadId = 0
+  /** Ends the running AR session, if any. */
+  private endArSession: (() => void) | null = null
 
   constructor(container: HTMLElement) {
     this.container = container
@@ -74,10 +77,7 @@ export class CeramicViewer {
     this.resizeObserver.observe(container)
     this.resize()
 
-    this.renderer.setAnimationLoop(() => {
-      this.controls.update()
-      this.renderer.render(this.scene, this.camera)
-    })
+    this.startRenderLoop()
   }
 
   /** Shows `model`, replacing the current one. Rejects if loading fails. */
@@ -127,6 +127,46 @@ export class CeramicViewer {
     this.controls.update()
   }
 
+  /**
+   * Opens the camera in AR so the user can place the current model on a
+   * real surface. Rejects if the session cannot start.
+   */
+  async startAr(
+    overlay: HTMLElement,
+    events: { onPlaced: () => void; onEnd: () => void },
+  ): Promise<void> {
+    if (!this.model || this.endArSession) return
+    this.controls.enabled = false
+    const restore = () => {
+      this.endArSession = null
+      this.controls.enabled = true
+      this.startRenderLoop()
+      this.resize()
+      this.resetView()
+    }
+    try {
+      this.endArSession = await startArSession({
+        renderer: this.renderer,
+        scene: this.scene,
+        camera: this.camera,
+        model: this.model,
+        overlay,
+        onPlaced: events.onPlaced,
+        onEnd: () => {
+          restore()
+          events.onEnd()
+        },
+      })
+    } catch (error) {
+      restore()
+      throw error
+    }
+  }
+
+  endAr(): void {
+    this.endArSession?.()
+  }
+
   /** Calls `listener` whenever the camera moves. Returns an unsubscribe. */
   onCameraChange(listener: () => void): () => void {
     this.controls.addEventListener('change', listener)
@@ -149,6 +189,7 @@ export class CeramicViewer {
   }
 
   dispose(): void {
+    this.endAr()
     this.loadId++
     this.renderer.setAnimationLoop(null)
     this.resizeObserver.disconnect()
@@ -170,6 +211,13 @@ export class CeramicViewer {
     )
   }
 
+  private startRenderLoop(): void {
+    this.renderer.setAnimationLoop(() => {
+      this.controls.update()
+      this.renderer.render(this.scene, this.camera)
+    })
+  }
+
   /** Flushes leftover damping motion so it cannot move the camera later. */
   private stopMotion(): void {
     this.controls.enableDamping = false
@@ -186,7 +234,8 @@ export class CeramicViewer {
 
   private resize(): void {
     const { clientWidth: width, clientHeight: height } = this.container
-    if (width === 0 || height === 0) return
+    // The XR device controls the size while an AR session is running.
+    if (width === 0 || height === 0 || this.renderer.xr.isPresenting) return
     this.renderer.setSize(width, height)
     this.camera.aspect = width / height
     this.camera.updateProjectionMatrix()
