@@ -1,0 +1,36 @@
+/** Real-world size of an object, in millimeters. */
+export interface DimensionsMm {
+  width: number
+  height: number
+  depth: number
+}
+
+/** Physically based material parameters for a ceramic finish. */
+export interface MaterialSettings {
+  /** Hex color, e.g. `#e8e2d6`. */
+  color: string
+  /** 0 (mirror) to 1 (fully matte). */
+  roughness: number
+  /** 0 (dielectric, typical ceramic) to 1 (metal). */
+  metalness: number
+}
+
+/** A point of a lathe profile: `[radius, height]` in millimeters. */
+export type ProfilePointMm = readonly [radius: number, height: number]
+
+/** Where a model's geometry comes from. */
+export type ModelSource =
+  /** Generated in code by revolving a profile around the vertical axis. */
+  | { kind: 'lathe'; profileMm: readonly ProfilePointMm[] }
+  /** Loaded from a GLB/glTF file, e.g. under `public/models/`. */
+  | { kind: 'glb'; url: string }
+
+export interface CeramicModel {
+  id: string
+  name: string
+  source: ModelSource
+  dimensionsMm: DimensionsMm
+  defaultMaterial: MaterialSettings
+  /** Source and license of the asset. */
+  license: string
+}

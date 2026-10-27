@@ -103,9 +103,43 @@ select {
   font-size: 1rem;
 }
 
-.controls p {
+.model-list {
+  display: grid;
+  gap: 0.5rem;
   margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.model-option {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.model-option:hover {
+  background: var(--viewport-bg);
+}
+
+.model-option[aria-pressed='true'] {
+  border-color: var(--text);
+  background: var(--viewport-bg);
+  font-weight: 600;
+}
+
+.model-size {
   color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 400;
 }
 
 @media (max-width: 768px) {

@@ -34,6 +34,7 @@ npm run dev          # servidor de desenvolvimento
 npm run build        # checagem de tipos + build de produção em dist/
 npm run preview      # servir o build de produção localmente
 npm run lint         # lint (oxlint)
+npm test             # testes unitários (Vitest)
 npm run format       # formatar com Prettier
 ```
 

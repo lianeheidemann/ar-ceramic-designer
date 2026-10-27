@@ -1,4 +1,11 @@
+import { useState } from 'react'
+import { ModelList } from './components/ModelList'
+import { catalog, defaultModelId, getModelById } from './data/catalog'
+
 function App() {
+  const [selectedId, setSelectedId] = useState(defaultModelId)
+  const selectedModel = getModelById(selectedId)
+
   return (
     <div className="app">
       <header className="app-header">
@@ -7,12 +14,18 @@ function App() {
 
       <main className="viewport" aria-label="Visualizador 3D">
         {/* O canvas Three.js será montado aqui na Etapa 4. */}
-        <p className="viewport-placeholder">Visualizador 3D</p>
+        <p className="viewport-placeholder">
+          {selectedModel?.name ?? 'Nenhum modelo selecionado'}
+        </p>
       </main>
 
       <aside className="controls" aria-label="Controles">
-        <h2>Controles</h2>
-        <p>Seleção de modelo e acabamentos virão nas próximas etapas.</p>
+        <h2>Modelos</h2>
+        <ModelList
+          models={catalog}
+          selectedId={selectedId}
+          onSelect={setSelectedId}
+        />
       </aside>
     </div>
   )
