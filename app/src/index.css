@@ -16,19 +16,8 @@
   line-height: 1.5;
   color: var(--text);
   background: var(--bg);
-  color-scheme: light dark;
+  color-scheme: light;
   -webkit-font-smoothing: antialiased;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1c1a18;
-    --surface: #262320;
-    --text: #f1ece6;
-    --muted: #a99f95;
-    --border: #3a3531;
-    --viewport-bg: #2f2b28;
-  }
 }
 
 *,
@@ -59,6 +48,19 @@ select {
     'header header'
     'viewport controls';
   height: 100dvh;
+  color: var(--text);
+  background: var(--bg);
+  color-scheme: light;
+}
+
+.app[data-theme='dark'] {
+  --bg: #1c1a18;
+  --surface: #262320;
+  --text: #f1ece6;
+  --muted: #a99f95;
+  --border: #3a3531;
+  --viewport-bg: #2f2b28;
+  color-scheme: dark;
 }
 
 .app-header {
@@ -83,6 +85,34 @@ select {
   margin: 0;
   font-size: 1.125rem;
   font-weight: 600;
+}
+
+.theme-toggle {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-left: auto;
+  padding: 0;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  background: var(--viewport-bg);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+.theme-toggle svg {
+  width: 21px;
+  height: 21px;
 }
 
 .viewport {
