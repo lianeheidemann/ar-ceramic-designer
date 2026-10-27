@@ -174,7 +174,22 @@ Define typed metadata for each model: `id`, `name`, `url`, `dimensionsMm`, `scal
 3. Deploy to an HTTPS host (for example, GitHub Pages with a correctly configured Vite base path).
 4. Record known limitations and measured performance rather than claiming industrial validation.
 
-## 11. Optional future features (not part of MVP)
+## 11. Package the app with Capacitor (Android and iOS)
+
+1. After the web MVP is stable, install Capacitor core, CLI and platform packages in the existing Vite project.
+2. Initialize Capacitor with an application ID and set `webDir` to Vite's build output (`dist`).
+3. Run the production web build, then add the Android platform and synchronize web assets.
+4. Open the Android project in Android Studio, test the 3D viewer on the Galaxy S23 Ultra, and generate a debug APK.
+5. For iOS, add the iOS platform and test/build with Xcode on macOS when available.
+6. Check performance, touch interactions, model loading, file export and application lifecycle in the native WebView.
+7. **Evaluate native AR integration:** verify whether immersive WebXR works in the embedded WebView; do not assume it does. If unavailable, assess a Capacitor native plugin or a custom bridge using **ARCore (Android)** and **ARKit (iOS)**. Document feasibility, required permissions, implementation effort and fallback to the regular 3D viewer.
+8. Keep the web version independently deployable and share as much TypeScript/Three.js code as possible.
+
+**Done when:** Android package runs the 3D viewer correctly, the iOS build path is documented, and the native AR feasibility assessment is recorded. Native AR implementation is optional and should be scoped separately.
+
+**Reference:** [Capacitor documentation](https://capacitorjs.com/docs).
+
+## 12. Optional future features (not part of MVP)
 
 - Geometric checks: dimensions, watertightness and mesh integrity.
 - Optional geometry analysis using Python/Open3D, if a backend becomes necessary.
@@ -186,6 +201,7 @@ Define typed metadata for each model: `id`, `name`, `url`, `dimensionsMm`, `scal
 **Milestone 1:** Sections 1–4 — functioning 3D viewer.  
 **Milestone 2:** Sections 5–6 — customization and comparison.  
 **Milestone 3:** Section 7 — experimental AR placement.  
-**Milestone 4:** Sections 8–10 — export, testing, documentation and deployment.
+**Milestone 4:** Sections 8–10 — export, testing, documentation and deployment.  
+**Milestone 5:** Section 11 — Capacitor packaging and native AR feasibility assessment.
 
 Keep each milestone independently demonstrable; do not block the working 3D viewer on AR compatibility.
