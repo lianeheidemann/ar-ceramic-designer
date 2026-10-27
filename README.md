@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/icon-ar-ceramic-designer.png" alt="AR Ceramic Designer icon" width="110" />
+</p>
+
 <h1 align="center">AR Ceramic Designer</h1>
 
 <p align="center">
