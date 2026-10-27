@@ -10,6 +10,7 @@ function App() {
   return (
     <div className="app">
       <header className="app-header">
+        <img className="app-logo" src="/favicon.svg" alt="" aria-hidden="true" />
         <h1>AR Ceramic Designer</h1>
       </header>
 
