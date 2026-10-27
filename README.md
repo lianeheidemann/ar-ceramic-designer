@@ -40,12 +40,6 @@ npm run format       # formatar com Prettier
 
 Em desenvolvimento, o app abre em `http://localhost:5173/ar-ceramic-designer/`.
 
-## Publicação (GitHub Pages)
-
-Cada push na `main` publica o app em
-https://lianeheidemann.github.io/ar-ceramic-designer/ pelo workflow
-`.github/workflows/deploy.yml`. Requer Settings → Pages → Source: **GitHub Actions**.
-
 ## Documentação
 
 - [Guia passo a passo](docs/step-by-step.md)
