@@ -8,6 +8,12 @@
   <img src="https://img.shields.io/badge/WebXR-005A9C?style=for-the-badge&logo=webxr&logoColor=white" alt="WebXR" />
 </p>
 
+<p align="center">
+  <a href="https://lianeheidemann.github.io/ar-ceramic-designer/">
+    <img src="https://img.shields.io/badge/GitHub%20Pages-View%20App-222222?style=for-the-badge&logo=github&logoColor=white" alt="View on GitHub Pages" />
+  </a>
+</p>
+
 Aplicação web para visualizar e personalizar objetos de cerâmica em 3D e posicioná-los em realidade aumentada (WebXR) em dispositivos Android compatíveis.
 
 Stack: TypeScript, React, Vite e Three.js.
