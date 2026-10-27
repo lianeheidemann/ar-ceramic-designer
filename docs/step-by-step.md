@@ -1,0 +1,191 @@
+# AR Ceramic Designer — Step-by-Step Implementation Guide
+
+> **Status:** planning only. This guide describes implementation tasks; it does not implement the application.
+>
+> **Goal:** build a responsive web application for viewing and customizing ceramic objects in 3D, then placing them in augmented reality (AR) on supported Android devices.
+>
+> **Primary test device:** Samsung Galaxy S23 Ultra (Android 16). **Initial scope:** frontend only, no backend or AI.
+
+## 0. Decisions and prerequisites
+
+**Stack**
+- TypeScript, React and Vite — application and UI.
+- Three.js — 3D scene, lighting, materials, model loading and camera controls.
+- WebXR — immersive AR, subject to browser/device support.
+- Blender — preparing and optimizing GLB/glTF assets.
+- Vitest (optional) — unit tests for non-rendering logic.
+
+**Prerequisites**
+- Node.js LTS and npm installed.
+- Chrome on desktop and a WebXR-capable browser on Android.
+- HTTPS for remote WebXR testing (localhost is a secure context for local development, but does not make a remote phone connection secure).
+- At least two small, properly licensed sample ceramic GLB models.
+
+**Key design choices**
+- Use **meters internally** in Three.js; document and convert source dimensions supplied in millimeters.
+- Keep asset data and customization settings separate from React components.
+- Keep the 3D viewer usable even when AR is unavailable.
+- Start with client-side sample assets; do not add authentication, databases or remote uploads.
+
+## 1. Initialize the project
+
+1. Create the React + TypeScript project with Vite in the repository root (avoid overwriting existing documentation).
+2. Install Three.js and its TypeScript types, if required by the installed version.
+3. Configure ESLint, formatting, and scripts for development, build and preview.
+4. Create a minimal responsive application shell with a header, viewport and side/bottom control panel.
+5. Verify that `npm run dev` and `npm run build` work.
+
+**Suggested commands** (run only when implementing):
+
+```bash
+npm create vite@latest . -- --template react-ts
+npm install
+npm install three
+npm install -D @types/three
+npm run dev
+npm run build
+```
+
+**Done when:** the blank application runs locally, builds successfully and has no blocking TypeScript errors.
+
+## 2. Organize the codebase
+
+Suggested structure (adjust as implementation evolves):
+
+```text
+public/
+  models/
+  textures/
+src/
+  components/       # Controls, selectors, status messages
+  viewers/          # Three.js scene, renderer, camera, controls
+  ar/               # WebXR session lifecycle and placement
+  materials/        # Ceramic material presets
+  data/             # Catalog and model metadata
+  types/            # Shared TypeScript interfaces
+  utils/            # Units, validation, export helpers
+  App.tsx
+  main.tsx
+docs/
+  development-plan.md
+  references.md
+  step-by-step.md
+```
+
+Define typed metadata for each model: `id`, `name`, `url`, `dimensionsMm`, `scale` (if needed) and default material settings. Document asset licenses.
+
+**Done when:** paths and data structures are clear, with no hardcoded model-specific values spread across UI components.
+
+## 3. Prepare ceramic models
+
+1. Select two or three representative objects (for example, vase, bowl and plate).
+2. Inspect geometry in Blender: origin, orientation, normals, scale and materials.
+3. Apply transformations and export as `.glb`.
+4. Optimize polygon count and textures for mobile; avoid unnecessarily large files.
+5. Record each object's real dimensions in millimeters, then convert consistently to meters for display and AR.
+6. Save models under `public/models/` and record sources/licenses in documentation.
+
+**Done when:** every model loads with correct orientation, approximate real-world size and acceptable mobile loading time.
+
+## 4. Implement the 3D viewer
+
+1. Create a Three.js scene with a perspective camera, renderer and neutral lighting.
+2. Load GLB files with `GLTFLoader`.
+3. Add `OrbitControls` for rotate, zoom and pan in regular 3D mode.
+4. Center and frame the selected model using its bounding box.
+5. Support model switching, loading indicators and readable error messages.
+6. Resize the renderer when the viewport changes; cap pixel ratio if needed for performance.
+7. Dispose of obsolete geometries, textures, controls and event listeners when appropriate.
+
+**Done when:** the user can select, rotate, zoom and inspect each model on desktop and on the S23 Ultra without persistent rendering errors.
+
+## 5. Add ceramic customization
+
+1. Create a small catalog of material presets: matte, glossy and glazed.
+2. Allow color, roughness and (where appropriate) metalness adjustments using physically based materials.
+3. Preserve original material properties so the user can reset changes.
+4. Store the selected model and material configuration in typed application state.
+5. Avoid changing shared material instances across objects unintentionally; clone materials when necessary.
+6. Add a **Reset** action and show the active preset.
+
+**Done when:** changes update the preview immediately, reset correctly and do not corrupt other model variants.
+
+## 6. Add a comparison view
+
+1. Provide a side-by-side view of two configurations of the same ceramic object.
+2. Keep camera framing comparable; optionally synchronize camera movement.
+3. Label variants clearly (A/B) and show their selected settings.
+4. Test the layout on mobile; switch to tabs or a toggle if two simultaneous viewers are too heavy.
+
+**Done when:** users can visually compare at least two finishes or colors without losing the original configuration.
+
+## 7. Implement augmented reality (WebXR)
+
+1. Detect support using `navigator.xr?.isSessionSupported('immersive-ar')` in a secure context.
+2. Show **View in AR** only when supported; otherwise explain the limitation and keep the standard 3D viewer available.
+3. Configure the Three.js renderer for XR and use its XR animation loop.
+4. Request an `immersive-ar` session with appropriate reference spaces and hit-test capability, handling permission denial and unsupported features.
+5. Use hit testing to show a placement indicator on detected surfaces.
+6. Let the user tap to place a correctly scaled ceramic object.
+7. Support ending the session and restoring the regular 3D view; clean up session resources.
+8. Test on the Galaxy S23 Ultra using HTTPS and a compatible browser. Do not assume that ARCore support guarantees WebXR support.
+
+**Done when:** on a compatible device/browser, the object can be placed on a detected surface and the AR session closes cleanly. Unsupported devices show a helpful fallback.
+
+**Reference:** [Three.js WebXR AR Cones](https://threejs.org/examples/?q=webxr#webxr_ar_cones).
+
+## 8. Save and export
+
+1. Define a versioned JSON schema for model ID, material preset, color and dimensions/scale.
+2. Add **Export configuration (.json)** and **Import configuration** actions.
+3. Validate imported JSON and reject unsupported model IDs or malformed values.
+4. Add screenshot export for the standard 3D viewer where browser support allows; do not promise AR camera screenshots.
+5. Ensure exporting does not silently overwrite original GLB assets.
+
+**Done when:** exported configurations can be reimported to reproduce the same model appearance.
+
+## 9. Mobile performance and accessibility
+
+1. Profile load time, frame rate and memory use on the S23 Ultra.
+2. Limit pixel ratio, texture resolution and unnecessary draw calls.
+3. Prefer compressed/optimized GLB assets when supported and worth the added complexity.
+4. Provide touch-friendly controls, clear contrast, keyboard-accessible UI where possible and reduced-motion-friendly transitions.
+5. Handle WebGL context loss and network/model-loading failures gracefully.
+
+**Done when:** regular 3D interaction is usable on mobile and no obvious memory leaks appear after repeated model switching.
+
+## 10. Testing and delivery
+
+**Manual test checklist**
+- [ ] Development server and production build succeed.
+- [ ] Two or more GLB models load correctly.
+- [ ] Camera controls work with mouse and touch.
+- [ ] Material changes and reset work.
+- [ ] Comparison works on desktop and mobile.
+- [ ] Export/import JSON reproduces settings.
+- [ ] AR capability detection and fallback work.
+- [ ] AR placement is tested on a compatible Android browser.
+- [ ] AR session can be exited without breaking the viewer.
+- [ ] Errors and loading states are visible and understandable.
+
+**Delivery**
+1. Document local setup, commands, supported browsers, and asset licenses in the root README.
+2. Add screenshots and, if available, a short demonstration video.
+3. Deploy to an HTTPS host (for example, GitHub Pages with a correctly configured Vite base path).
+4. Record known limitations and measured performance rather than claiming industrial validation.
+
+## 11. Optional future research (not part of MVP)
+
+- Geometric checks: dimensions, watertightness and mesh integrity.
+- Integration with Python/Open3D services for Chamfer/Hausdorff comparison, if a backend becomes necessary.
+- More rigorous evaluation of usability and rendering performance.
+- Investigation of use cases in ceramic design and additive manufacturing, subject to actual project needs.
+
+## Suggested implementation order
+
+**Milestone 1:** Sections 1–4 — functioning 3D viewer.  
+**Milestone 2:** Sections 5–6 — customization and comparison.  
+**Milestone 3:** Section 7 — experimental AR placement.  
+**Milestone 4:** Sections 8–10 — export, testing, documentation and deployment.
+
+Keep each milestone independently demonstrable; do not block the working 3D viewer on AR compatibility.
