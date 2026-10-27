@@ -37,5 +37,5 @@ docs/
 ## Out of scope for MVP
 User accounts, backend, AI generation, industrial manufacturing validation and native ARCore integration.
 
-## Future research direction
-Explore geometric quality checks (watertightness, dimensions and mesh comparison) and links to ceramic additive manufacturing. Treat this as a potential research application, not a validated LaserCer deliverable.
+## Possible future improvements
+Explore geometric checks (watertightness, dimensions and mesh comparison), additional material presets and more export options.
