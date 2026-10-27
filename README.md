@@ -10,10 +10,10 @@
 
 <p align="center">
   <a href="https://github.com/lianeheidemann/ar-ceramic-designer/actions/workflows/ci.yml?query=branch%3Adevelop">
-    <img src="https://img.shields.io/github/actions/workflow/status/lianeheidemann/ar-ceramic-designer/ci.yml?branch=develop&style=for-the-badge&logo=githubactions&logoColor=white&label=CI%20%2F%20develop" alt="CI status — develop" />
+    <img src="https://img.shields.io/github/actions/workflow/status/lianeheidemann/ar-ceramic-designer/ci.yml?branch=develop&style=for-the-badge&logo=githubactions&logoColor=white&label=CI" alt="CI status — develop" />
   </a>
   <a href="https://github.com/lianeheidemann/ar-ceramic-designer/actions/workflows/deploy.yml">
-    <img src="https://img.shields.io/github/actions/workflow/status/lianeheidemann/ar-ceramic-designer/deploy.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=Pages%20%2F%20main" alt="GitHub Pages workflow status — main" />
+    <img src="https://img.shields.io/github/actions/workflow/status/lianeheidemann/ar-ceramic-designer/deploy.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=Deploy" alt="GitHub Pages workflow status — main" />
   </a>
 </p>
 
