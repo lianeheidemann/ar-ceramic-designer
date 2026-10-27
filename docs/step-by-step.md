@@ -174,12 +174,12 @@ Define typed metadata for each model: `id`, `name`, `url`, `dimensionsMm`, `scal
 3. Deploy to an HTTPS host (for example, GitHub Pages with a correctly configured Vite base path).
 4. Record known limitations and measured performance rather than claiming industrial validation.
 
-## 11. Optional future research (not part of MVP)
+## 11. Optional future features (not part of MVP)
 
 - Geometric checks: dimensions, watertightness and mesh integrity.
-- Integration with Python/Open3D services for Chamfer/Hausdorff comparison, if a backend becomes necessary.
-- More rigorous evaluation of usability and rendering performance.
-- Investigation of use cases in ceramic design and additive manufacturing, subject to actual project needs.
+- Optional geometry analysis using Python/Open3D, if a backend becomes necessary.
+- Additional usability and performance testing.
+- Additional presets, model categories and sharing options.
 
 ## Suggested implementation order
 
