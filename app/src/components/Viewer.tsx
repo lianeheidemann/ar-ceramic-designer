@@ -1,11 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 import WebGL from 'three/addons/capabilities/WebGL.js'
 import type { CeramicModel, MaterialSettings } from '../types/ceramic'
+import type { CameraSync } from '../viewers/CameraSync'
 import { CeramicViewer } from '../viewers/CeramicViewer'
 
 interface ViewerProps {
   model: CeramicModel
   material: MaterialSettings
+  /** Shares camera movement with other viewers in the same sync. */
+  cameraSync?: CameraSync
+  /** Accessible name of the viewer, e.g. "Variante A". */
+  label?: string
 }
 
 /** Outcome of the latest finished load. */
@@ -14,7 +19,7 @@ interface LoadResult {
   error?: string
 }
 
-export function Viewer({ model, material }: ViewerProps) {
+export function Viewer({ model, material, cameraSync, label }: ViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const viewerRef = useRef<CeramicViewer | null>(null)
   const [webglAvailable] = useState(() => WebGL.isWebGL2Available())
@@ -25,11 +30,13 @@ export function Viewer({ model, material }: ViewerProps) {
     if (!container || !webglAvailable) return
     const viewer = new CeramicViewer(container)
     viewerRef.current = viewer
+    const removeFromSync = cameraSync?.add(viewer)
     return () => {
+      removeFromSync?.()
       viewer.dispose()
       viewerRef.current = null
     }
-  }, [webglAvailable])
+  }, [webglAvailable, cameraSync])
 
   // Runs after the effect above, so the viewer already exists.
   useEffect(() => {
@@ -60,7 +67,12 @@ export function Viewer({ model, material }: ViewerProps) {
     : 'Seu navegador não suporta WebGL, necessário para o visualizador 3D.'
 
   return (
-    <div className="viewer" ref={containerRef}>
+    <div
+      className="viewer"
+      ref={containerRef}
+      role={label ? 'group' : undefined}
+      aria-label={label}
+    >
       {error ? (
         <p className="viewer-status viewer-error" role="alert">
           {error}

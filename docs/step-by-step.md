@@ -113,7 +113,7 @@ Define typed metadata for each model: `id`, `name`, `url`, `dimensionsMm`, `scal
 
 **Done when:** changes update the preview immediately, reset correctly and do not corrupt other model variants.
 
-## 6. Add a comparison view
+## ✅ 6. Add a comparison view
 
 1. Provide a side-by-side view of two configurations of the same ceramic object.
 2. Keep camera framing comparable; optionally synchronize camera movement.

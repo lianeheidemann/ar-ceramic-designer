@@ -1,9 +1,18 @@
 import { useState } from 'react'
+import { CompareView } from './components/CompareView'
 import { MaterialControls } from './components/MaterialControls'
 import { ModelList } from './components/ModelList'
 import { Viewer } from './components/Viewer'
 import { catalog, defaultModelId, getModelById } from './data/catalog'
+import { useMediaQuery } from './hooks/useMediaQuery'
+import {
+  defaultVariantMaterial,
+  variantIds,
+  type VariantId,
+} from './materials/variants'
 import type { MaterialSettings } from './types/ceramic'
+
+type Overrides = Record<VariantId, Record<string, MaterialSettings>>
 
 function App() {
   const [selectedId, setSelectedId] = useState(defaultModelId)
@@ -14,24 +23,37 @@ function App() {
       ? 'dark'
       : 'light'
   })
-  // Customized materials by model id; the catalog defaults stay untouched.
-  const [materialOverrides, setMaterialOverrides] = useState<
-    Record<string, MaterialSettings>
-  >({})
+  // Customized materials per variant and model id; the catalog defaults
+  // stay untouched. Variant A is the regular (non-comparison) material.
+  const [overrides, setOverrides] = useState<Overrides>({ A: {}, B: {} })
+  const [comparing, setComparing] = useState(false)
+  const [activeVariant, setActiveVariant] = useState<VariantId>('A')
+  const compact = useMediaQuery('(max-width: 768px)')
   const selectedModel = getModelById(selectedId)
-  const material = selectedModel
-    ? (materialOverrides[selectedModel.id] ?? selectedModel.defaultMaterial)
-    : undefined
+  const editedVariant = comparing ? activeVariant : 'A'
+
+  function variantMaterial(variant: VariantId): MaterialSettings | undefined {
+    if (!selectedModel) return undefined
+    return (
+      overrides[variant][selectedModel.id] ??
+      defaultVariantMaterial(selectedModel, variant)
+    )
+  }
+
+  const material = variantMaterial(editedVariant)
 
   function updateMaterial(next: MaterialSettings) {
-    setMaterialOverrides((overrides) => ({ ...overrides, [selectedId]: next }))
+    setOverrides((all) => ({
+      ...all,
+      [editedVariant]: { ...all[editedVariant], [selectedId]: next },
+    }))
   }
 
   function resetMaterial() {
-    setMaterialOverrides((overrides) => {
-      const rest = { ...overrides }
+    setOverrides((all) => {
+      const rest = { ...all[editedVariant] }
       delete rest[selectedId]
-      return rest
+      return { ...all, [editedVariant]: rest }
     })
   }
 
@@ -90,7 +112,18 @@ function App() {
       </header>
 
       <main className="viewport" aria-label="Visualizador 3D">
-        {selectedModel && material ? (
+        {selectedModel && material && comparing ? (
+          <CompareView
+            model={selectedModel}
+            materials={{
+              A: variantMaterial('A') ?? material,
+              B: variantMaterial('B') ?? material,
+            }}
+            active={activeVariant}
+            onActiveChange={setActiveVariant}
+            compact={compact}
+          />
+        ) : selectedModel && material ? (
           <Viewer model={selectedModel} material={material} />
         ) : (
           <p className="viewport-placeholder">Nenhum modelo selecionado</p>
@@ -106,10 +139,39 @@ function App() {
         />
         {selectedModel && material && (
           <section className="controls-section">
-            <h2>Material</h2>
+            <div className="section-header">
+              <h2>Material</h2>
+              <button
+                type="button"
+                className="compare-toggle"
+                aria-pressed={comparing}
+                onClick={() => setComparing(!comparing)}
+              >
+                Comparar A/B
+              </button>
+            </div>
+            {comparing && (
+              <div
+                className="variant-picker"
+                role="group"
+                aria-label="Variante em edição"
+              >
+                {variantIds.map((variant) => (
+                  <button
+                    key={variant}
+                    type="button"
+                    className="preset-option"
+                    aria-pressed={variant === activeVariant}
+                    onClick={() => setActiveVariant(variant)}
+                  >
+                    Editar {variant}
+                  </button>
+                ))}
+              </div>
+            )}
             <MaterialControls
               material={material}
-              original={selectedModel.defaultMaterial}
+              original={defaultVariantMaterial(selectedModel, editedVariant)}
               onChange={updateMaterial}
               onReset={resetMaterial}
             />
