@@ -45,6 +45,10 @@ npm run format       # formatar com Prettier
 ```
 
 
+## Modelos
+
+Os modelos de exemplo (vaso, tigela e prato) são gerados por código a partir de perfis de torno em `app/src/data/catalog.ts`, sob a licença MIT do projeto. O catálogo também aceita arquivos GLB em `app/public/models/`.
+
 ## Documentação
 
 - [Guia passo a passo](docs/step-by-step.md)
