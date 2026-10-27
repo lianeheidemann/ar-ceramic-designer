@@ -3,6 +3,7 @@ import type {
   DimensionsMm,
   ProfilePointMm,
 } from '../types/ceramic'
+import { smoothProfileMm } from '../geometry/lathe'
 
 const GENERATED_LICENSE = 'Gerado por código (MIT)'
 
@@ -23,13 +24,14 @@ export function profileDimensionsMm(
 function latheModel(
   model: Omit<CeramicModel, 'source' | 'dimensionsMm' | 'license'> & {
     profileMm: readonly ProfilePointMm[]
+    wallMm: number
   },
 ): CeramicModel {
-  const { profileMm, ...rest } = model
+  const { profileMm, wallMm, ...rest } = model
   return {
     ...rest,
-    source: { kind: 'lathe', profileMm },
-    dimensionsMm: profileDimensionsMm(profileMm),
+    source: { kind: 'lathe', profileMm, wallMm },
+    dimensionsMm: profileDimensionsMm(smoothProfileMm(profileMm)),
     license: GENERATED_LICENSE,
   }
 }
@@ -38,6 +40,7 @@ export const catalog: readonly CeramicModel[] = [
   latheModel({
     id: 'vase',
     name: 'Vaso',
+    wallMm: 5,
     profileMm: [
       [0, 0],
       [40, 0],
@@ -52,6 +55,7 @@ export const catalog: readonly CeramicModel[] = [
   latheModel({
     id: 'bowl',
     name: 'Tigela',
+    wallMm: 4,
     profileMm: [
       [0, 0],
       [35, 0],
@@ -64,6 +68,7 @@ export const catalog: readonly CeramicModel[] = [
   latheModel({
     id: 'plate',
     name: 'Prato',
+    wallMm: 4,
     profileMm: [
       [0, 0],
       [80, 0],

@@ -21,7 +21,13 @@ export type ProfilePointMm = readonly [radius: number, height: number]
 /** Where a model's geometry comes from. */
 export type ModelSource =
   /** Generated in code by revolving a profile around the vertical axis. */
-  | { kind: 'lathe'; profileMm: readonly ProfilePointMm[] }
+  | {
+      kind: 'lathe'
+      /** Outer surface, from the bottom center on the axis up to the rim. */
+      profileMm: readonly ProfilePointMm[]
+      /** Wall and base thickness. */
+      wallMm: number
+    }
   /** Loaded from a GLB/glTF file, e.g. under `public/models/`. */
   | { kind: 'glb'; url: string }
 
