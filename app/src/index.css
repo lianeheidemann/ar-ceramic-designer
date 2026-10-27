@@ -90,6 +90,45 @@ select {
   color: var(--muted);
 }
 
+.viewer {
+  position: absolute;
+  inset: 0;
+}
+
+.viewer canvas {
+  display: block;
+  /* Let OrbitControls handle touch gestures instead of the page. */
+  touch-action: none;
+}
+
+.viewer-status {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 1rem;
+  color: var(--muted);
+  text-align: center;
+  pointer-events: none;
+}
+
+.viewer-error {
+  color: var(--text);
+}
+
+.viewer-reset {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  padding: 0 1rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
 .controls {
   grid-area: controls;
   padding: 1rem;

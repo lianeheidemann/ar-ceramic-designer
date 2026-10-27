@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ModelList } from './components/ModelList'
+import { Viewer } from './components/Viewer'
 import { catalog, defaultModelId, getModelById } from './data/catalog'
 
 function App() {
@@ -13,10 +14,11 @@ function App() {
       </header>
 
       <main className="viewport" aria-label="Visualizador 3D">
-        {/* O canvas Three.js será montado aqui na Etapa 4. */}
-        <p className="viewport-placeholder">
-          {selectedModel?.name ?? 'Nenhum modelo selecionado'}
-        </p>
+        {selectedModel ? (
+          <Viewer model={selectedModel} />
+        ) : (
+          <p className="viewport-placeholder">Nenhum modelo selecionado</p>
+        )}
       </main>
 
       <aside className="controls" aria-label="Controles">
