@@ -18,7 +18,27 @@
 
 Aplicação web para visualizar e personalizar objetos de cerâmica em 3D e posicioná-los em realidade aumentada (WebXR) em dispositivos Android compatíveis.
 
-Stack: TypeScript, React, Vite e Three.js.
+## Tecnologias
+
+### Aplicação
+
+| Tecnologia | Utilização |
+| :--- | :--- |
+| [TypeScript](https://www.typescriptlang.org/) | Linguagem principal, com tipagem estática. |
+| [React](https://react.dev/) | Interface, componentes e gerenciamento de estado. |
+| [Three.js](https://threejs.org/) | Renderização e interação com os modelos 3D. |
+| [Vite](https://vite.dev/) | Ambiente de desenvolvimento e build. |
+
+### Ferramentas de desenvolvimento
+
+| Ferramenta | Utilização |
+| :--- | :--- |
+| [Vitest](https://vitest.dev/) | Testes automatizados. |
+| [Oxlint](https://oxc.rs/docs/guide/usage/linter.html) | Análise estática do código. |
+| [Prettier](https://prettier.io/) | Formatação de código. |
+| [GitHub Actions](https://github.com/features/actions) | Workflows de integração e deploy. |
+
+> **WebXR:** tecnologia prevista para realidade aumentada; não representa uma funcionalidade já concluída.
 
 ## Requisitos
 
