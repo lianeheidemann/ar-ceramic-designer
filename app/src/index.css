@@ -65,9 +65,18 @@ select {
   grid-area: header;
   display: flex;
   align-items: center;
+  gap: 0.625rem;
   padding: 0.75rem 1rem;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
+}
+
+.app-logo {
+  display: block;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  object-fit: contain;
 }
 
 .app-header h1 {
