@@ -1,12 +1,12 @@
 # AR Ceramic Designer — Step-by-Step Implementation Guide
 
-> **Status:** planning only. This guide describes implementation tasks; it does not implement the application.
+> **Status:** in progress — sections marked ✅ are implemented in `app/`.
 >
 > **Goal:** build a responsive web application for viewing and customizing ceramic objects in 3D, then placing them in augmented reality (AR) on supported Android devices.
 >
 > **Primary test device:** Samsung Galaxy S23 Ultra (Android 16). **Initial scope:** frontend only, no backend or AI.
 
-## 0. Decisions and prerequisites
+## ✅ 0. Decisions and prerequisites
 
 **Stack**
 - TypeScript, React and Vite — application and UI.
@@ -27,7 +27,7 @@
 - Keep the 3D viewer usable even when AR is unavailable.
 - Start with client-side sample assets; do not add authentication, databases or remote uploads.
 
-## 1. Initialize the project
+## ✅ 1. Initialize the project
 
 1. Create the React + TypeScript project with Vite in the repository root (avoid overwriting existing documentation).
 2. Install Three.js and its TypeScript types, if required by the installed version.
@@ -48,7 +48,7 @@ npm run build
 
 **Done when:** the blank application runs locally, builds successfully and has no blocking TypeScript errors.
 
-## 2. Organize the codebase
+## ✅ 2. Organize the codebase
 
 Suggested structure (adjust as implementation evolves):
 
