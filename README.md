@@ -9,6 +9,15 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/lianeheidemann/ar-ceramic-designer/actions/workflows/ci.yml?query=branch%3Adevelop">
+    <img src="https://img.shields.io/github/actions/workflow/status/lianeheidemann/ar-ceramic-designer/ci.yml?branch=develop&style=for-the-badge&logo=githubactions&logoColor=white&label=CI" alt="CI status — develop" />
+  </a>
+  <a href="https://github.com/lianeheidemann/ar-ceramic-designer/actions/workflows/deploy.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/lianeheidemann/ar-ceramic-designer/deploy.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=Deploy" alt="GitHub Pages workflow status — main" />
+  </a>
+</p>
+
+<p align="center">
   <a href="https://lianeheidemann.github.io/ar-ceramic-designer/">
     <img src="https://img.shields.io/badge/GitHub%20Pages-View%20App-222222?style=for-the-badge&logo=github&logoColor=white" alt="View on GitHub Pages" />
   </a>
