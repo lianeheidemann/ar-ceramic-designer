@@ -28,6 +28,11 @@ const MAX_PIXEL_RATIO = 2
 /** Glaze layer stays smooth whatever the body roughness. */
 const CLEARCOAT_ROUGHNESS = 0.05
 
+export interface CameraState {
+  position: Vector3
+  target: Vector3
+}
+
 /**
  * Three.js scene for inspecting one ceramic model: renderer, lights,
  * camera, orbit controls, model loading and cleanup. Independent of React.
@@ -109,11 +114,7 @@ export class CeramicViewer {
       Math.cos(VIEW_ELEVATION),
     )
 
-    // Flush leftover damping motion so it does not move the reset view.
-    this.controls.enableDamping = false
-    this.controls.update()
-    this.controls.enableDamping = true
-
+    this.stopMotion()
     this.controls.target.copy(sphere.center)
     this.camera.position
       .copy(sphere.center)
@@ -123,6 +124,27 @@ export class CeramicViewer {
     this.camera.updateProjectionMatrix()
     this.controls.minDistance = sphere.radius * 1.2
     this.controls.maxDistance = distance * 4
+    this.controls.update()
+  }
+
+  /** Calls `listener` whenever the camera moves. Returns an unsubscribe. */
+  onCameraChange(listener: () => void): () => void {
+    this.controls.addEventListener('change', listener)
+    return () => this.controls.removeEventListener('change', listener)
+  }
+
+  getCameraState(): CameraState {
+    return {
+      position: this.camera.position.clone(),
+      target: this.controls.target.clone(),
+    }
+  }
+
+  setCameraState({ position, target }: CameraState): void {
+    // Drop this viewer's own glide so it follows the other camera exactly.
+    this.stopMotion()
+    this.camera.position.copy(position)
+    this.controls.target.copy(target)
     this.controls.update()
   }
 
@@ -146,6 +168,13 @@ export class CeramicViewer {
       createModelGeometry(model),
       new MeshPhysicalMaterial({ clearcoatRoughness: CLEARCOAT_ROUGHNESS }),
     )
+  }
+
+  /** Flushes leftover damping motion so it cannot move the camera later. */
+  private stopMotion(): void {
+    this.controls.enableDamping = false
+    this.controls.update()
+    this.controls.enableDamping = true
   }
 
   private clearModel(): void {
