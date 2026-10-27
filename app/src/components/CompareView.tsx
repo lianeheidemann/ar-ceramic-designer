@@ -12,6 +12,8 @@ interface CompareViewProps {
   onActiveChange: (variant: VariantId) => void
   /** Narrow screens show one viewer with an A/B switch instead of two. */
   compact: boolean
+  /** AR is offered only in the compact (single viewer) layout. */
+  arSupported: boolean
 }
 
 function VariantSummary({
@@ -40,6 +42,7 @@ export function CompareView({
   active,
   onActiveChange,
   compact,
+  arSupported,
 }: CompareViewProps) {
   const [cameraSync] = useState(() => new CameraSync())
 
@@ -50,6 +53,7 @@ export function CompareView({
           model={model}
           material={materials[active]}
           label={`Variante ${active}`}
+          arSupported={arSupported}
         />
         <div className="variant-switch" role="group" aria-label="Variante">
           {variantIds.map((variant) => (

@@ -122,7 +122,9 @@ Define typed metadata for each model: `id`, `name`, `url`, `dimensionsMm`, `scal
 
 **Done when:** users can visually compare at least two finishes or colors without losing the original configuration.
 
-## 7. Implement augmented reality (WebXR)
+## ✅ 7. Implement augmented reality (WebXR)
+
+> **Implemented** in `app/src/ar/` (support check, hit-test placement session) and the **Ver em AR** button of the viewer. Support detection, the fallback message and error handling (e.g. camera permission denied) were tested with a simulated WebXR; placement on a real surface still has to be confirmed on the Galaxy S23 Ultra (item 8).
 
 1. Detect support using `navigator.xr?.isSessionSupported('immersive-ar')` in a secure context.
 2. Show **View in AR** only when supported; otherwise explain the limitation and keep the standard 3D viewer available.

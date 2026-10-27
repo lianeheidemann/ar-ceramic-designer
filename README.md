@@ -44,6 +44,12 @@ Aplicação web para visualizar e personalizar objetos de cerâmica em 3D e posi
 
 - Node.js LTS (testado com Node 22) e npm.
 
+### Realidade aumentada
+
+- Android com Chrome atualizado e o app **Google Play Services para RA** (ARCore) instalado.
+- Abrir o app por HTTPS (ex.: GitHub Pages) e permitir o uso da câmera.
+- Em navegadores sem WebXR (desktop, iPhone), o visualizador 3D continua disponível e o app explica por que o AR não está disponível.
+
 ## Estrutura
 
 ```text

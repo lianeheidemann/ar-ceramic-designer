@@ -4,6 +4,7 @@ import { MaterialControls } from './components/MaterialControls'
 import { ModelList } from './components/ModelList'
 import { Viewer } from './components/Viewer'
 import { catalog, defaultModelId, getModelById } from './data/catalog'
+import { useArSupport } from './hooks/useArSupport'
 import { useMediaQuery } from './hooks/useMediaQuery'
 import {
   defaultVariantMaterial,
@@ -29,6 +30,8 @@ function App() {
   const [comparing, setComparing] = useState(false)
   const [activeVariant, setActiveVariant] = useState<VariantId>('A')
   const compact = useMediaQuery('(max-width: 768px)')
+  const arSupport = useArSupport()
+  const arSupported = arSupport.kind === 'supported'
   const selectedModel = getModelById(selectedId)
   const editedVariant = comparing ? activeVariant : 'A'
 
@@ -122,9 +125,14 @@ function App() {
             active={activeVariant}
             onActiveChange={setActiveVariant}
             compact={compact}
+            arSupported={arSupported}
           />
         ) : selectedModel && material ? (
-          <Viewer model={selectedModel} material={material} />
+          <Viewer
+            model={selectedModel}
+            material={material}
+            arSupported={arSupported}
+          />
         ) : (
           <p className="viewport-placeholder">Nenhum modelo selecionado</p>
         )}
@@ -177,6 +185,18 @@ function App() {
             />
           </section>
         )}
+        <section className="controls-section">
+          <h2>Realidade aumentada</h2>
+          <p className="controls-note">
+            {arSupport.kind === 'checking'
+              ? 'Verificando suporte…'
+              : arSupport.kind === 'supported'
+                ? comparing && !compact
+                  ? 'Saia da comparação lado a lado para usar o AR.'
+                  : 'Toque em “Ver em AR” para colocar a peça em tamanho real sobre uma mesa ou o chão.'
+                : arSupport.reason}
+          </p>
+        </section>
       </aside>
     </div>
   )
