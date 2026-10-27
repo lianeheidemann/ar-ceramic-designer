@@ -16,9 +16,19 @@ Stack: TypeScript, React, Vite e Three.js.
 
 - Node.js LTS (testado com Node 22) e npm.
 
+## Estrutura
+
+```text
+app/    # código da aplicação (Vite + React + Three.js)
+docs/   # documentação e planejamento
+```
+
 ## Comandos
 
+Rode os comandos dentro da pasta `app/`:
+
 ```bash
+cd app
 npm install          # instalar dependências
 npm run dev          # servidor de desenvolvimento
 npm run build        # checagem de tipos + build de produção em dist/

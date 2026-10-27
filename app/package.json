@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc --noEmit && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "typecheck": "tsc -b",
+    "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
@@ -27,5 +27,9 @@
     "prettier": "^3.9.10",
     "typescript": "~7.0.2",
     "vite": "^8.3.5"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true
   }
 }

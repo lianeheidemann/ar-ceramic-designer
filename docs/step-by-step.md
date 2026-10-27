@@ -53,19 +53,20 @@ npm run build
 Suggested structure (adjust as implementation evolves):
 
 ```text
-public/
-  models/
-  textures/
-src/
-  components/       # Controls, selectors, status messages
-  viewers/          # Three.js scene, renderer, camera, controls
-  ar/               # WebXR session lifecycle and placement
-  materials/        # Ceramic material presets
-  data/             # Catalog and model metadata
-  types/            # Shared TypeScript interfaces
-  utils/            # Units, validation, export helpers
-  App.tsx
-  main.tsx
+app/
+  public/
+    models/
+    textures/
+  src/
+    components/       # Controls, selectors, status messages
+    viewers/          # Three.js scene, renderer, camera, controls
+    ar/               # WebXR session lifecycle and placement
+    materials/        # Ceramic material presets
+    data/             # Catalog and model metadata
+    types/            # Shared TypeScript interfaces
+    utils/            # Units, validation, export helpers
+    App.tsx
+    main.tsx
 docs/
   development-plan.md
   references.md
