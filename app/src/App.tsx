@@ -46,7 +46,7 @@ function App() {
       <header className="app-header">
         <img
           className="app-logo"
-          src={`${import.meta.env.BASE_URL}favicon.svg`}
+          src={`${import.meta.env.BASE_URL}icons/icon-96.png`}
           alt=""
           aria-hidden="true"
         />
