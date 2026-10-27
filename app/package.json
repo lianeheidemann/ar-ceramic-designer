@@ -9,8 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format": "prettier --write . --ignore-path ../.gitignore",
+    "format:check": "prettier --check . --ignore-path ../.gitignore",
     "test": "vitest run"
   },
   "dependencies": {
