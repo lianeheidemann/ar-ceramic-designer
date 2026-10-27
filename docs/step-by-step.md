@@ -102,7 +102,7 @@ Define typed metadata for each model: `id`, `name`, `url`, `dimensionsMm`, `scal
 
 **Done when:** the user can select, rotate, zoom and inspect each model on desktop and on the S23 Ultra without persistent rendering errors.
 
-## 5. Add ceramic customization
+## ✅ 5. Add ceramic customization
 
 1. Create a small catalog of material presets: matte, glossy and glazed.
 2. Allow color, roughness and (where appropriate) metalness adjustments using physically based materials.

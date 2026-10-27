@@ -13,7 +13,14 @@ export interface MaterialSettings {
   roughness: number
   /** 0 (dielectric, typical ceramic) to 1 (metal). */
   metalness: number
+  /** 0 (none) to 1 (full) glossy glaze layer over the base material. */
+  clearcoat: number
 }
+
+/** Surface treatment of a material, everything except its color. */
+export type Finish = Omit<MaterialSettings, 'color'>
+
+export type MaterialPresetId = 'matte' | 'glossy' | 'glazed'
 
 /** A point of a lathe profile: `[radius, height]` in millimeters. */
 export type ProfilePointMm = readonly [radius: number, height: number]
