@@ -44,7 +44,6 @@ npm test             # testes unitários (Vitest)
 npm run format       # formatar com Prettier
 ```
 
-Em desenvolvimento, o app abre em `http://localhost:5173/ar-ceramic-designer/`.
 
 ## Documentação
 
