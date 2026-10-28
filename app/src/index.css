@@ -173,6 +173,23 @@ select {
   cursor: pointer;
 }
 
+.viewer-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  padding: 0;
+}
+
+.viewer-icon svg {
+  width: 21px;
+  height: 21px;
+}
+
+.viewer-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .viewer-ar {
   color: var(--surface);
   background: var(--text);
@@ -332,7 +349,8 @@ select {
 }
 
 .preset-option,
-.reset-material {
+.reset-material,
+.config-button {
   padding: 0.5rem;
   color: var(--text);
   background: transparent;
@@ -342,7 +360,8 @@ select {
 }
 
 .preset-option:hover,
-.reset-material:hover:not(:disabled) {
+.reset-material:hover:not(:disabled),
+.config-button:hover {
   background: var(--viewport-bg);
 }
 
@@ -368,6 +387,22 @@ select {
 .slider-field input[type='range'] {
   width: 100%;
   accent-color: var(--text);
+}
+
+.config-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.config-message {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+}
+
+.config-error {
+  color: var(--text);
+  font-weight: 600;
 }
 
 .reset-material:disabled {

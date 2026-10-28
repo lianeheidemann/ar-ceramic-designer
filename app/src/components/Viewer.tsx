@@ -3,6 +3,7 @@ import WebGL from 'three/addons/capabilities/WebGL.js'
 import { arStatus, type ArState } from '../ar/arStatus'
 import { arErrorMessage } from '../ar/support'
 import type { CeramicModel, MaterialSettings } from '../types/ceramic'
+import { downloadBlob, downloadName } from '../utils/download'
 import type { CameraSync } from '../viewers/CameraSync'
 import { ArStatusIcon } from './ArStatusIcon'
 import { CeramicViewer } from '../viewers/CeramicViewer'
@@ -131,6 +132,17 @@ export function Viewer({
       )
   }
 
+  function saveImage() {
+    const viewer = viewerRef.current
+    if (!viewer) return
+    const parts = label
+      ? [model.id, label.replace(/^Variante\s*/, '')]
+      : [model.id]
+    viewer.captureImage().then((blob) => {
+      if (blob) downloadBlob(blob, downloadName(parts, 'png'))
+    })
+  }
+
   const status = arStatus(ar, { surfaceFound, noSurfaceTap: noSurface })
   const loading = result?.modelId !== model.id
   const error = webglAvailable
@@ -171,6 +183,27 @@ export function Viewer({
               )}
             </button>
           )}
+          <button
+            type="button"
+            className="viewer-button viewer-icon"
+            disabled={ar !== 'off'}
+            onClick={saveImage}
+            aria-label="Salvar imagem"
+            title="Salvar imagem (PNG)"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 8h3l2-3h6l2 3h3v11H4Z" />
+              <circle cx="12" cy="13" r="3.5" />
+            </svg>
+          </button>
           <button
             type="button"
             className="viewer-button viewer-reset"

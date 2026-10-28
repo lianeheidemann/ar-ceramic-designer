@@ -40,6 +40,14 @@ Aplicação web para visualizar e personalizar objetos de cerâmica em 3D e posi
 
 > **WebXR:** tecnologia prevista para realidade aumentada; não representa uma funcionalidade já concluída.
 
+## Funcionalidades
+
+- Visualizador 3D com vaso, tigela e prato (girar, aproximar, reiniciar vista).
+- Personalização do material: acabamentos (fosco, brilhante, vitrificado), cor, rugosidade e metalicidade.
+- Comparação lado a lado de duas variantes (A/B).
+- Realidade aumentada (WebXR) em Android compatível.
+- Exportar e importar a configuração em `.json` e salvar uma imagem PNG da vista 3D.
+
 ## Requisitos
 
 - Node.js LTS (testado com Node 22) e npm.

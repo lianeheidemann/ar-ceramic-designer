@@ -183,6 +183,19 @@ export class CeramicViewer {
     this.arSession?.end()
   }
 
+  /**
+   * PNG of the current 3D view, or `null` if the browser cannot encode it.
+   * Not available in AR: the camera image is not part of the canvas.
+   */
+  captureImage(): Promise<Blob | null> {
+    if (this.renderer.xr.isPresenting) return Promise.resolve(null)
+    // Render and read in the same task: the drawing buffer is not kept.
+    this.renderer.render(this.scene, this.camera)
+    return new Promise((resolve) =>
+      this.renderer.domElement.toBlob(resolve, 'image/png'),
+    )
+  }
+
   /** Calls `listener` whenever the camera moves. Returns an unsubscribe. */
   onCameraChange(listener: () => void): () => void {
     this.controls.addEventListener('change', listener)

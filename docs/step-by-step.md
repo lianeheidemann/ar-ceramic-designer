@@ -139,7 +139,9 @@ Define typed metadata for each model: `id`, `name`, `url`, `dimensionsMm`, `scal
 
 **Reference:** [Three.js WebXR AR Cones](https://threejs.org/examples/?q=webxr#webxr_ar_cones).
 
-## 8. Save and export
+## ✅ 8. Save and export
+
+> **Implemented** in `app/src/utils/config.ts` (versioned schema `ar-ceramic-designer/config`, version 1, with validation), `app/src/components/ConfigControls.tsx` (**Exportar (.json)** / **Importar** in the side panel) and `CeramicViewer.captureImage()` (camera button in each 3D viewer, transparent PNG). The JSON stores the model id, its dimensions, the A material and, while comparing, the B material; dimensions and preset names are informative and ignored on import. Screenshots are disabled during AR.
 
 1. Define a versioned JSON schema for model ID, material preset, color and dimensions/scale.
 2. Add **Export configuration (.json)** and **Import configuration** actions.
