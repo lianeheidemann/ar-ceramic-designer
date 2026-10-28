@@ -1,10 +1,28 @@
-# AR Ceramic Designer
+<p align="center">
+  <img src="assets/icon-ar-ceramic-designer.png" alt="Logo AR Ceramic Designer" width="110" />
+</p>
 
-Aplicação web para visualizar e personalizar peças de cerâmica em 3D e posicioná-las em ambientes reais com realidade aumentada (WebXR).
+<h1 align="center">AR Ceramic Designer</h1>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/Three.js-111111?style=flat-square&logo=threedotjs&logoColor=white" alt="Three.js" />
+  <img src="https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite" />
+  <img src="https://img.shields.io/badge/WebXR-005A9C?style=flat-square&logo=webxr&logoColor=white" alt="WebXR" />
+</p>
+
+Aplicação web para visualizar e personalizar peças de cerâmica em 3D e posicioná-las em ambientes reais com realidade aumentada.
 
 ## Tecnologias
 
-TypeScript, React, Three.js e Vite.
+| Tecnologia | Utilização |
+| --- | --- |
+| TypeScript | Linguagem principal, com tipagem estática. |
+| React | Interface e componentes da aplicação. |
+| Three.js | Renderização e interação com modelos 3D. |
+| Vite | Desenvolvimento e build da aplicação. |
+| WebXR | Experiência de realidade aumentada em dispositivos compatíveis. |
 
 ## Executar localmente
 
@@ -18,4 +36,4 @@ npm run dev
 
 [Acessar a aplicação](https://lianeheidemann.github.io/ar-ceramic-designer/)
 
-A experiência de realidade aumentada requer um dispositivo Android compatível com WebXR.
+A realidade aumentada requer um dispositivo Android compatível com WebXR.
