@@ -32,33 +32,11 @@ Interface web interativa, publicada no GitHub Pages, para explorar modelos de ce
 | [React](https://react.dev/) | Interface, componentes e gerenciamento de estado. |
 | [Three.js](https://threejs.org/) | Renderização e interação com os modelos 3D. |
 | [Vite](https://vite.dev/) | Ambiente de desenvolvimento e build. |
-
-### Ferramentas de desenvolvimento
-
-| Ferramenta | Utilização |
-| :--- | :--- |
 | [Vitest](https://vitest.dev/) | Testes automatizados. |
 | [Oxlint](https://oxc.rs/docs/guide/usage/linter.html) | Análise estática do código. |
 | [Prettier](https://prettier.io/) | Formatação de código. |
 | [GitHub Actions](https://github.com/features/actions) | Workflows de integração e deploy. |
-
-> **WebXR** 
-
-## Comandos
-
-Rode os comandos dentro da pasta `app/`:
-
-```bash
-cd app
-npm install          # instalar dependências
-npm run dev          # servidor de desenvolvimento
-npm run build        # checagem de tipos + build de produção em dist/
-npm run preview      # servir o build de produção localmente
-npm run lint         # lint (oxlint)
-npm test             # testes unitários (Vitest)
-npm run format       # formatar com Prettier
-```
-
+| [WebXR]() | |
 
 ## Documentação
 
