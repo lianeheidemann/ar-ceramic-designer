@@ -18,6 +18,10 @@
 
 Aplicação web para visualizar e personalizar objetos de cerâmica em 3D e posicioná-los em realidade aumentada (WebXR) em dispositivos Android compatíveis.
 
+<p align="center">
+  <img width="80%" src="assets/interface-ar-ceramic-designer-v1.webp">
+</p>
+
 ## Tecnologias
 
 ### Aplicação
