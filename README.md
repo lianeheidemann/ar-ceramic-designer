@@ -24,8 +24,6 @@ Interface web interativa, publicada no GitHub Pages, para explorar modelos de ce
 
 ## Tecnologias
 
-### Aplicação
-
 | Tecnologia | Utilização |
 | :--- | :--- |
 | [TypeScript](https://www.typescriptlang.org/) | Linguagem principal, com tipagem estática. |
