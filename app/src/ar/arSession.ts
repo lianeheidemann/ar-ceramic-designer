@@ -16,22 +16,41 @@ export interface ArSessionOptions {
   model: Object3D
   /** Element shown over the camera image (DOM Overlay), when supported. */
   overlay: HTMLElement
+  /** The session is open; the piece is being prepared (shaders compiling). */
+  onPreparing: () => void
   onPlaced: () => void
+  /** A tap on a placed piece: the ring is back to choose a new spot. */
+  onMoveStart: () => void
   /** The user tapped while no surface was detected under the ring. */
   onNoSurface: () => void
   /** Called once the session has ended and its resources are released. */
   onEnd: () => void
+  /** Clock in milliseconds; replaceable in tests. */
+  now?: () => number
 }
 
 export interface ArSessionHandle {
   end: () => void
-  /** Places the model on the ring, e.g. from a tap on the DOM overlay. */
+  /** Handles a tap, e.g. from the DOM overlay (same as an XR "select"). */
   place: () => void
 }
 
 /**
+ * placing: choosing the first spot · placed: piece shown, ring hidden ·
+ * moving: piece shown, ring back to choose a new spot.
+ */
+type PlacementMode = 'placing' | 'placed' | 'moving'
+
+/**
+ * One tap can arrive twice (XR "select" and a DOM overlay click); events
+ * closer than this are treated as the same tap.
+ */
+const SAME_TAP_MS = 400
+
+/**
  * Starts an immersive AR session: a ring follows the detected surface
  * under the screen center (hit test) and a tap places the model there.
+ * Resolves once the piece is ready to be placed.
  */
 export async function startArSession({
   renderer,
@@ -39,9 +58,12 @@ export async function startArSession({
   camera,
   model,
   overlay,
+  onPreparing,
   onPlaced,
+  onMoveStart,
   onNoSurface,
   onEnd,
+  now = () => performance.now(),
 }: ArSessionOptions): Promise<ArSessionHandle> {
   if (!navigator.xr) {
     throw new DOMException('WebXR indisponível', 'NotSupportedError')
@@ -62,15 +84,29 @@ export async function startArSession({
   const savedPosition = model.position.clone()
   const savedVisible = model.visible
   let hitTestSource: XRHitTestSource | undefined
+  let mode: PlacementMode = 'placing'
+  /** Whether a surface was detected under the ring in the last frame. */
+  let surfaceFound = false
+  let lastTap = -Infinity
 
   // Pieces are rotationally symmetric, so only the position matters.
   const place = () => {
-    if (!reticle.visible) {
+    const time = now()
+    if (time - lastTap < SAME_TAP_MS) return
+    lastTap = time
+    if (mode === 'placed') {
+      mode = 'moving'
+      onMoveStart()
+      return
+    }
+    if (!surfaceFound) {
       onNoSurface()
       return
     }
     model.position.setFromMatrixPosition(reticle.matrix)
     model.visible = true
+    mode = 'placed'
+    reticle.visible = false
     onPlaced()
   }
 
@@ -90,13 +126,20 @@ export async function startArSession({
     renderer.xr.enabled = true
     renderer.xr.setReferenceSpaceType('local')
     await renderer.xr.setSession(session)
+    onPreparing()
     const viewerSpace = await session.requestReferenceSpace('viewer')
     hitTestSource = await session.requestHitTestSource?.({ space: viewerSpace })
     if (!hitTestSource) {
       throw new DOMException('Hit test indisponível', 'NotSupportedError')
     }
+    // Compile the piece's shaders now, while it is still visible: otherwise
+    // the first render after the tap compiles them and the piece shows up
+    // late on phones.
+    model.visible = true
+    await renderer.compileAsync(model, camera, scene).catch(() => {})
   } catch (error) {
     session.removeEventListener('end', cleanUp)
+    model.visible = savedVisible
     await session.end().catch(() => {})
     throw error
   }
@@ -113,8 +156,9 @@ export async function startArSession({
       frame && hitTestSource && referenceSpace
         ? frame.getHitTestResults(hitTestSource)[0]?.getPose(referenceSpace)
         : undefined
-    reticle.visible = Boolean(pose)
+    surfaceFound = Boolean(pose)
     if (pose) reticle.matrix.fromArray(pose.transform.matrix)
+    reticle.visible = surfaceFound && mode !== 'placed'
     renderer.render(scene, camera)
   })
 

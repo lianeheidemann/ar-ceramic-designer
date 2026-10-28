@@ -16,7 +16,14 @@ interface ViewerProps {
   arSupported?: boolean
 }
 
-type ArState = 'off' | 'starting' | 'placing' | 'placed'
+type ArState =
+  'off' | 'starting' | 'preparing' | 'placing' | 'placed' | 'moving'
+
+const arHints: Record<'placing' | 'placed' | 'moving', string> = {
+  placing: 'Aponte para o chão ou uma mesa e toque para posicionar a peça.',
+  placed: 'Toque na tela para mover a peça.',
+  moving: 'Aponte para o novo lugar e toque para colocar a peça.',
+}
 
 /** Outcome of the latest finished load. */
 interface LoadResult {
@@ -101,15 +108,20 @@ export function Viewer({
     setAr('starting')
     viewer
       .startAr(overlay, {
+        onPreparing: () => setAr('preparing'),
         onPlaced: () => {
           setNoSurface(false)
           setAr('placed')
         },
+        onMoveStart: () => setAr('moving'),
         onNoSurface: showNoSurface,
         onEnd: () => setAr('off'),
       })
       .then(
-        () => setAr((state) => (state === 'starting' ? 'placing' : state)),
+        () =>
+          setAr((state) =>
+            state === 'starting' || state === 'preparing' ? 'placing' : state,
+          ),
         (error: unknown) => {
           setAr('off')
           setArError(arErrorMessage(error))
@@ -146,7 +158,14 @@ export function Viewer({
               disabled={ar !== 'off'}
               onClick={startAr}
             >
-              Ver em AR
+              {ar === 'off' ? (
+                'Ver em AR'
+              ) : (
+                <>
+                  <span className="spinner" aria-hidden="true" />
+                  Abrindo AR…
+                </>
+              )}
             </button>
           )}
           <button
@@ -171,11 +190,16 @@ export function Viewer({
         onClick={() => viewerRef.current?.placeAr()}
       >
         <p className="ar-hint" role="status">
-          {noSurface
-            ? 'Nenhuma superfície detectada — mova o celular devagar.'
-            : ar === 'placed'
-              ? 'Toque em outro lugar para mover a peça.'
-              : 'Aponte para o chão ou uma mesa e toque para posicionar a peça.'}
+          {ar === 'preparing' ? (
+            <>
+              <span className="spinner" aria-hidden="true" />
+              Preparando a peça…
+            </>
+          ) : noSurface ? (
+            'Nenhuma superfície detectada — mova o celular devagar.'
+          ) : ar === 'placing' || ar === 'placed' || ar === 'moving' ? (
+            arHints[ar]
+          ) : null}
         </p>
         <button
           ref={exitArRef}
