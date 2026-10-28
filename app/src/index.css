@@ -209,7 +209,6 @@ select {
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem 1rem;
-  pointer-events: none;
 }
 
 .ar-overlay[hidden] {
@@ -232,7 +231,6 @@ select {
   border: none;
   border-radius: 999px;
   font-weight: 600;
-  pointer-events: auto;
 }
 
 .controls {

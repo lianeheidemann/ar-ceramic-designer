@@ -36,6 +36,8 @@ export function Viewer({
   const exitArRef = useRef<HTMLButtonElement>(null)
   const [ar, setAr] = useState<ArState>('off')
   const [arError, setArError] = useState<string | null>(null)
+  const [noSurface, setNoSurface] = useState(false)
+  const noSurfaceTimer = useRef<number | undefined>(undefined)
   const viewerRef = useRef<CeramicViewer | null>(null)
   const [webglAvailable] = useState(() => WebGL.isWebGL2Available())
   const [result, setResult] = useState<LoadResult | null>(null)
@@ -85,6 +87,12 @@ export function Viewer({
     return () => button.removeEventListener('beforexrselect', keepTap)
   }, [])
 
+  function showNoSurface() {
+    setNoSurface(true)
+    window.clearTimeout(noSurfaceTimer.current)
+    noSurfaceTimer.current = window.setTimeout(() => setNoSurface(false), 2500)
+  }
+
   function startAr() {
     const viewer = viewerRef.current
     const overlay = overlayRef.current
@@ -93,7 +101,11 @@ export function Viewer({
     setAr('starting')
     viewer
       .startAr(overlay, {
-        onPlaced: () => setAr('placed'),
+        onPlaced: () => {
+          setNoSurface(false)
+          setAr('placed')
+        },
+        onNoSurface: showNoSurface,
         onEnd: () => setAr('off'),
       })
       .then(
@@ -155,17 +167,24 @@ export function Viewer({
         className="ar-overlay"
         ref={overlayRef}
         hidden={ar === 'off' || ar === 'starting'}
+        // Second path for taps besides the XR "select" event.
+        onClick={() => viewerRef.current?.placeAr()}
       >
         <p className="ar-hint" role="status">
-          {ar === 'placed'
-            ? 'Toque em outro lugar para mover a peça.'
-            : 'Aponte para o chão ou uma mesa e toque para posicionar a peça.'}
+          {noSurface
+            ? 'Nenhuma superfície detectada — mova o celular devagar.'
+            : ar === 'placed'
+              ? 'Toque em outro lugar para mover a peça.'
+              : 'Aponte para o chão ou uma mesa e toque para posicionar a peça.'}
         </p>
         <button
           ref={exitArRef}
           type="button"
           className="ar-exit"
-          onClick={() => viewerRef.current?.endAr()}
+          onClick={(event) => {
+            event.stopPropagation()
+            viewerRef.current?.endAr()
+          }}
         >
           Sair do AR
         </button>
