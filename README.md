@@ -42,18 +42,7 @@ Aplicação web para visualizar e personalizar objetos de cerâmica em 3D e posi
 | [Prettier](https://prettier.io/) | Formatação de código. |
 | [GitHub Actions](https://github.com/features/actions) | Workflows de integração e deploy. |
 
-> **WebXR:** tecnologia prevista para realidade aumentada; não representa uma funcionalidade já concluída.
-
-## Requisitos
-
-- Node.js LTS (testado com Node 22) e npm.
-- 
-## Estrutura
-
-```text
-app/    # código da aplicação (Vite + React + Three.js)
-docs/   # documentação e planejamento
-```
+> **WebXR** 
 
 ## Comandos
 
