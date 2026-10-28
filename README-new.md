@@ -20,13 +20,18 @@ Interface web interativa, publicada no GitHub Pages, para explorar modelos de ce
 
 ## Tecnologias
 
-| Tecnologia | Utilização |
-| --- | --- |
-| TypeScript | Linguagem principal, com tipagem estática. |
-| React | Interface e componentes da aplicação. |
-| Three.js | Renderização e interação com modelos 3D. |
-| Vite | Desenvolvimento e build da aplicação. |
-| WebXR | Experiência de realidade aumentada em dispositivos compatíveis. |
+| Categoria | Tecnologia | Utilização |
+| --- | --- | --- |
+| Aplicação | [TypeScript](https://www.typescriptlang.org/) | Linguagem principal, com tipagem estática. |
+| Aplicação | [React](https://react.dev/) | Interface, componentes e gerenciamento de estado. |
+| Aplicação | [Three.js](https://threejs.org/) | Renderização e interação com modelos 3D. |
+| Aplicação | [WebXR](https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API) | Recursos de realidade aumentada no navegador. |
+| Desenvolvimento | [Vite](https://vite.dev/) | Servidor local e build da aplicação. |
+| Desenvolvimento | [Vitest](https://vitest.dev/) | Testes automatizados. |
+| Desenvolvimento | [Oxlint](https://oxc.rs/docs/guide/usage/linter.html) | Análise estática do código. |
+| Desenvolvimento | [Prettier](https://prettier.io/) | Formatação do código. |
+| Deploy | [GitHub Actions](https://github.com/features/actions) | Automação de integração e deploy. |
+| Deploy | [GitHub Pages](https://pages.github.com/) | Publicação da interface web. |
 
 ## Executar localmente
 
