@@ -7,8 +7,8 @@
 <p align="center">
   <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB" alt="React" />
-  <img src="https://img.shields.io/badge/Three.js-111111?style=flat-square&logo=threedotjs&logoColor=white" alt="Three.js" />
   <img src="https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite" />
+    <img src="https://img.shields.io/badge/Three.js-111111?style=flat-square&logo=threedotjs&logoColor=white" alt="Three.js" />
   <img src="https://img.shields.io/badge/WebXR-005A9C?style=flat-square&logo=webxr&logoColor=white" alt="WebXR" />
 <br>
   <a href="https://github.com/lianeheidemann/ar-ceramic-designer/actions/workflows/ci.yml?query=branch%3Adevelop"><img src="https://img.shields.io/github/actions/workflow/status/lianeheidemann/ar-ceramic-designer/ci.yml?branch=develop&style=flat-square&logo=githubactions&logoColor=white&label=CI" alt="CI status — develop" /></a>
