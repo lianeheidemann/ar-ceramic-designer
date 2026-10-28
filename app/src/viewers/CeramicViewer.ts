@@ -134,7 +134,9 @@ export class CeramicViewer {
   async startAr(
     overlay: HTMLElement,
     events: {
+      onPreparing: () => void
       onPlaced: () => void
+      onMoveStart: () => void
       onNoSurface: () => void
       onEnd: () => void
     },
@@ -155,7 +157,9 @@ export class CeramicViewer {
         camera: this.camera,
         model: this.model,
         overlay,
+        onPreparing: events.onPreparing,
         onPlaced: events.onPlaced,
+        onMoveStart: events.onMoveStart,
         onNoSurface: events.onNoSurface,
         onEnd: () => {
           restore()
