@@ -42,6 +42,13 @@ export interface ArSessionHandle {
 type PlacementMode = 'placing' | 'placed' | 'moving'
 
 /**
+ * Hit tests drop out for a few frames all the time while the phone moves.
+ * A surface counts as lost only after this long without a hit; meanwhile
+ * the ring stays at the last hit, so the ring and messages do not flicker.
+ */
+export const SURFACE_LOST_AFTER_MS = 800
+
+/**
  * Starts an immersive AR session: a ring follows the detected surface
  * under the screen center (hit test) and a tap places the model there.
  * Resolves once the piece is ready to be placed.
@@ -81,6 +88,7 @@ export async function startArSession({
   let mode: PlacementMode = 'placing'
   /** Whether a surface was detected under the ring in the last frame. */
   let surfaceFound = false
+  let lastHitTime = -Infinity
   /**
    * With a DOM overlay, every tap arrives twice: as a click on the overlay
    * and as an XR "select" (on the S23 Ultra often hundreds of ms apart).
@@ -150,17 +158,21 @@ export async function startArSession({
   // the session itself; Three.js controllers do not get screen taps reliably.
   session.addEventListener('select', onSelect)
 
-  renderer.setAnimationLoop((_time, frame) => {
+  renderer.setAnimationLoop((time, frame) => {
     const referenceSpace = renderer.xr.getReferenceSpace()
     const pose =
       frame && hitTestSource && referenceSpace
         ? frame.getHitTestResults(hitTestSource)[0]?.getPose(referenceSpace)
         : undefined
-    if (Boolean(pose) !== surfaceFound) {
-      surfaceFound = Boolean(pose)
+    if (pose) {
+      lastHitTime = time
+      reticle.matrix.fromArray(pose.transform.matrix)
+    }
+    const found = time - lastHitTime < SURFACE_LOST_AFTER_MS
+    if (found !== surfaceFound) {
+      surfaceFound = found
       onSurfaceChange(surfaceFound)
     }
-    if (pose) reticle.matrix.fromArray(pose.transform.matrix)
     reticle.visible = surfaceFound && mode !== 'placed'
     renderer.render(scene, camera)
   })
