@@ -38,6 +38,8 @@ export function Viewer({
   const [arError, setArError] = useState<string | null>(null)
   const [noSurface, setNoSurface] = useState(false)
   const [surfaceFound, setSurfaceFound] = useState(false)
+  /** Whether any surface was found in this session (ends the intro hint). */
+  const [surfaceSeen, setSurfaceSeen] = useState(false)
   const noSurfaceTimer = useRef<number | undefined>(undefined)
   const viewerRef = useRef<CeramicViewer | null>(null)
   const [webglAvailable] = useState(() => WebGL.isWebGL2Available())
@@ -100,6 +102,7 @@ export function Viewer({
     if (!viewer || !overlay) return
     setArError(null)
     setSurfaceFound(false)
+    setSurfaceSeen(false)
     setAr('starting')
     viewer
       .startAr(overlay, {
@@ -110,7 +113,10 @@ export function Viewer({
         },
         onMoveStart: () => setAr('moving'),
         onNoSurface: showNoSurface,
-        onSurfaceChange: setSurfaceFound,
+        onSurfaceChange: (found) => {
+          setSurfaceFound(found)
+          if (found) setSurfaceSeen(true)
+        },
         onEnd: () => setAr('off'),
       })
       .then(
@@ -194,8 +200,9 @@ export function Viewer({
             </>
           )}
         </p>
-        {status?.icon === 'scanning' && (
-          // Large hint while ARCore looks for a surface (can take seconds).
+        {status?.icon === 'scanning' && !surfaceSeen && (
+          // Large hint while ARCore looks for the first surface (can take
+          // seconds); later dropouts only change the small message.
           <div className="ar-scan" aria-hidden="true">
             <ArStatusIcon name="scanning" />
           </div>

@@ -1,6 +1,6 @@
 import { Matrix4, Mesh, Scene, Vector3, type WebGLRenderer } from 'three'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { startArSession } from './arSession'
+import { SURFACE_LOST_AFTER_MS, startArSession } from './arSession'
 
 type FrameCallback = (time: number, frame?: unknown) => void
 
@@ -50,8 +50,10 @@ function setup({ domOverlay = false } = {}) {
   }
 
   /** Renders one XR frame with a surface at `point`, or none. */
+  // XR frames ~16 ms apart, like a real device at 60 fps.
+  let time = 0
   const frame = (point?: Vector3) =>
-    loop?.(0, {
+    loop?.((time += 16), {
       getHitTestResults: () =>
         point
           ? [
@@ -201,8 +203,22 @@ describe('startArSession', () => {
     frame()
     frame(new Vector3(0, 0, -1))
     frame(new Vector3(0.1, 0, -1))
-    frame()
+    expect(events.onSurfaceChange.mock.calls).toEqual([[true]])
+    for (let i = 0; i < SURFACE_LOST_AFTER_MS / 16 + 1; i++) frame()
     expect(events.onSurfaceChange.mock.calls).toEqual([[true], [false]])
+  })
+
+  it('keeps the ring steady through short hit test dropouts', async () => {
+    const { events, ring, frame, start } = setup()
+    await start()
+    frame(new Vector3(0.5, 0, -1))
+    // A few frames without a hit, as happens while the phone moves.
+    for (let i = 0; i < 10; i++) {
+      frame()
+      expect(ring()?.visible).toBe(true)
+    }
+    frame(new Vector3(0.6, 0, -1))
+    expect(events.onSurfaceChange.mock.calls).toEqual([[true]])
   })
 
   it('restores the model and cleans up when the session ends', async () => {
