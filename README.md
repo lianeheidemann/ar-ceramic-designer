@@ -44,4 +44,4 @@ Interface web interativa, publicada no GitHub Pages, para explorar modelos de ce
 
 ## Demo
 
-[Acessar a aplicação](https://lianeheidemann.github.io/ar-ceramic-designer/)
+[🔗 Acessar a aplicação](https://lianeheidemann.github.io/ar-ceramic-designer/)
