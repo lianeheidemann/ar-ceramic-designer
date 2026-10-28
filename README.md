@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/icon-ar-ceramic-designer.png#gh-light-mode-only" alt="AR Ceramic Designer icon" width="110" />
+  <img src="assets/icon-ar-ceramic-designer-light.svg#gh-light-mode-only" alt="AR Ceramic Designer icon" width="110" />
   <img src="assets/icon-ar-ceramic-designer-dark.svg#gh-dark-mode-only" alt="AR Ceramic Designer icon" width="110" />
 </p>
 
