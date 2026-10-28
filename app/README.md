@@ -1,0 +1,38 @@
+# app
+
+Aplicação web em React + Three.js, com build pelo Vite e deploy no GitHub Pages.
+
+## Estrutura
+
+```
+app/
+├── index.html
+├── vite.config.ts           # base do GitHub Pages
+├── public/                  # ícones, modelos (.glb) e texturas
+└── src/
+    ├── main.tsx             # ponto de entrada
+    ├── App.tsx              # componente raiz e estado da aplicação
+    ├── components/          # interface React (visualizador, controles, comparação)
+    ├── viewers/             # cena Three.js, câmera e enquadramento
+    ├── ar/                  # sessão WebXR (immersive-ar + hit-test)
+    ├── geometry/            # geração das peças por perfil de torno
+    ├── materials/           # acabamentos e variantes A/B
+    ├── data/                # catálogo de modelos
+    ├── hooks/               # suporte a RA e media queries
+    ├── types/               # tipos compartilhados
+    └── utils/               # conversão mm ↔ m
+```
+
+Os testes (`*.test.ts`) ficam ao lado do código que testam.
+
+## Comandos
+
+```bash
+npm install
+npm run dev     # desenvolvimento
+npm run build   # typecheck + build
+npm test        # Vitest
+npm run lint    # Oxlint
+```
+
+A realidade aumentada exige HTTPS.

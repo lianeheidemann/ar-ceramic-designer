@@ -24,6 +24,12 @@ Interface web interativa, publicada no GitHub Pages, para explorar modelos de ce
   <img width="50%" src="assets/interface/interface-ar-ceramic-designer-v3.webp">
 </p>
 
+## Requisitos
+
+- **Visualizador 3D:** navegador com suporte a WebGL 2 — Chrome 56+, Edge 79+, Firefox 51+ ou Safari 15+ (iOS/macOS), no computador ou no celular.
+- **Realidade aumentada:** celular com Android 7.0 ou superior que esteja na [lista de dispositivos compatíveis com ARCore](https://developers.google.com/ar/devices), com o app Google Play Services para RA instalado, usando o Chrome 81 ou superior. O navegador precisa suportar WebXR com detecção de superfícies (`immersive-ar` e `hit-test`), a página deve ser acessada por HTTPS e é necessário autorizar o uso da câmera.
+- **iPhone/iPad:** o Safari no iOS ainda não oferece WebXR, então apenas o visualizador 3D fica disponível.
+
 ## Tecnologias
 
 | Tecnologia | Utilização |
