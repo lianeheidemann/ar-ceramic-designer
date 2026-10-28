@@ -138,6 +138,7 @@ export class CeramicViewer {
       onPlaced: () => void
       onMoveStart: () => void
       onNoSurface: () => void
+      onSurfaceChange: (found: boolean) => void
       onEnd: () => void
     },
   ): Promise<void> {
@@ -161,6 +162,7 @@ export class CeramicViewer {
         onPlaced: events.onPlaced,
         onMoveStart: events.onMoveStart,
         onNoSurface: events.onNoSurface,
+        onSurfaceChange: events.onSurfaceChange,
         onEnd: () => {
           restore()
           events.onEnd()
@@ -174,7 +176,7 @@ export class CeramicViewer {
 
   /** Places the model on the AR surface ring (tap on the DOM overlay). */
   placeAr(): void {
-    this.arSession?.place()
+    this.arSession?.tapOverlay()
   }
 
   endAr(): void {

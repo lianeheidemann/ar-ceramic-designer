@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import WebGL from 'three/addons/capabilities/WebGL.js'
+import { arStatus, type ArState } from '../ar/arStatus'
 import { arErrorMessage } from '../ar/support'
 import type { CeramicModel, MaterialSettings } from '../types/ceramic'
 import type { CameraSync } from '../viewers/CameraSync'
+import { ArStatusIcon } from './ArStatusIcon'
 import { CeramicViewer } from '../viewers/CeramicViewer'
 
 interface ViewerProps {
@@ -14,15 +16,6 @@ interface ViewerProps {
   label?: string
   /** Shows the "Ver em AR" button (the browser supports immersive AR). */
   arSupported?: boolean
-}
-
-type ArState =
-  'off' | 'starting' | 'preparing' | 'placing' | 'placed' | 'moving'
-
-const arHints: Record<'placing' | 'placed' | 'moving', string> = {
-  placing: 'Aponte para o chão ou uma mesa e toque para posicionar a peça.',
-  placed: 'Toque na tela para mover a peça.',
-  moving: 'Aponte para o novo lugar e toque para colocar a peça.',
 }
 
 /** Outcome of the latest finished load. */
@@ -44,6 +37,7 @@ export function Viewer({
   const [ar, setAr] = useState<ArState>('off')
   const [arError, setArError] = useState<string | null>(null)
   const [noSurface, setNoSurface] = useState(false)
+  const [surfaceFound, setSurfaceFound] = useState(false)
   const noSurfaceTimer = useRef<number | undefined>(undefined)
   const viewerRef = useRef<CeramicViewer | null>(null)
   const [webglAvailable] = useState(() => WebGL.isWebGL2Available())
@@ -105,6 +99,7 @@ export function Viewer({
     const overlay = overlayRef.current
     if (!viewer || !overlay) return
     setArError(null)
+    setSurfaceFound(false)
     setAr('starting')
     viewer
       .startAr(overlay, {
@@ -115,6 +110,7 @@ export function Viewer({
         },
         onMoveStart: () => setAr('moving'),
         onNoSurface: showNoSurface,
+        onSurfaceChange: setSurfaceFound,
         onEnd: () => setAr('off'),
       })
       .then(
@@ -129,6 +125,7 @@ export function Viewer({
       )
   }
 
+  const status = arStatus(ar, { surfaceFound, noSurfaceTap: noSurface })
   const loading = result?.modelId !== model.id
   const error = webglAvailable
     ? !loading && result?.error
@@ -190,17 +187,19 @@ export function Viewer({
         onClick={() => viewerRef.current?.placeAr()}
       >
         <p className="ar-hint" role="status">
-          {ar === 'preparing' ? (
+          {status && (
             <>
-              <span className="spinner" aria-hidden="true" />
-              Preparando a peça…
+              <ArStatusIcon name={status.icon} />
+              {status.text}
             </>
-          ) : noSurface ? (
-            'Nenhuma superfície detectada — mova o celular devagar.'
-          ) : ar === 'placing' || ar === 'placed' || ar === 'moving' ? (
-            arHints[ar]
-          ) : null}
+          )}
         </p>
+        {status?.icon === 'scanning' && (
+          // Large hint while ARCore looks for a surface (can take seconds).
+          <div className="ar-scan" aria-hidden="true">
+            <ArStatusIcon name="scanning" />
+          </div>
+        )}
         <button
           ref={exitArRef}
           type="button"
