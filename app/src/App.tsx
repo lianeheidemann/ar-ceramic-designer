@@ -185,18 +185,13 @@ function App() {
             />
           </section>
         )}
-        <section className="controls-section">
-          <h2>Realidade aumentada</h2>
-          <p className="controls-note">
-            {arSupport.kind === 'checking'
-              ? 'Verificando suporte…'
-              : arSupport.kind === 'supported'
-                ? comparing && !compact
-                  ? 'Saia da comparação lado a lado para usar o AR.'
-                  : 'Toque em “Ver em AR” para colocar a peça em tamanho real sobre uma mesa ou o chão.'
-                : arSupport.reason}
-          </p>
-        </section>
+        {arSupport.kind === 'unavailable' && (
+          // Only explains why there is no "Ver em AR" button.
+          <section className="controls-section">
+            <h2>Realidade aumentada</h2>
+            <p className="controls-note">{arSupport.reason}</p>
+          </section>
+        )}
       </aside>
     </div>
   )
