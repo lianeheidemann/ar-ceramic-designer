@@ -12,7 +12,7 @@
   <img src="https://img.shields.io/badge/WebXR-005A9C?style=flat-square&logo=webxr&logoColor=white" alt="WebXR" />
 </p>
 
-Aplicação web para visualizar e personalizar peças de cerâmica em 3D e posicioná-las em ambientes reais com realidade aumentada.
+Interface web interativa, publicada no GitHub Pages, para explorar modelos de cerâmica em 3D, personalizar materiais e comparar acabamentos. Em dispositivos compatíveis, permite visualizar as peças em realidade aumentada.
 
 <p align="center">
   <img src="assets/interface/interface-ar-ceramic-designer-v3.webp" alt="Interface do AR Ceramic Designer" width="75%" />
