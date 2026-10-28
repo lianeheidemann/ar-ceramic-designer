@@ -23,16 +23,16 @@ export interface ArSessionOptions {
   onMoveStart: () => void
   /** The user tapped while no surface was detected under the ring. */
   onNoSurface: () => void
+  /** A surface under the screen center was found (true) or lost (false). */
+  onSurfaceChange: (found: boolean) => void
   /** Called once the session has ended and its resources are released. */
   onEnd: () => void
-  /** Clock in milliseconds; replaceable in tests. */
-  now?: () => number
 }
 
 export interface ArSessionHandle {
   end: () => void
-  /** Handles a tap, e.g. from the DOM overlay (same as an XR "select"). */
-  place: () => void
+  /** Handles a tap on the DOM overlay (ignored if the overlay is not in use). */
+  tapOverlay: () => void
 }
 
 /**
@@ -40,12 +40,6 @@ export interface ArSessionHandle {
  * moving: piece shown, ring back to choose a new spot.
  */
 type PlacementMode = 'placing' | 'placed' | 'moving'
-
-/**
- * One tap can arrive twice (XR "select" and a DOM overlay click); events
- * closer than this are treated as the same tap.
- */
-const SAME_TAP_MS = 400
 
 /**
  * Starts an immersive AR session: a ring follows the detected surface
@@ -62,8 +56,8 @@ export async function startArSession({
   onPlaced,
   onMoveStart,
   onNoSurface,
+  onSurfaceChange,
   onEnd,
-  now = () => performance.now(),
 }: ArSessionOptions): Promise<ArSessionHandle> {
   if (!navigator.xr) {
     throw new DOMException('WebXR indisponível', 'NotSupportedError')
@@ -87,13 +81,15 @@ export async function startArSession({
   let mode: PlacementMode = 'placing'
   /** Whether a surface was detected under the ring in the last frame. */
   let surfaceFound = false
-  let lastTap = -Infinity
+  /**
+   * With a DOM overlay, every tap arrives twice: as a click on the overlay
+   * and as an XR "select" (on the S23 Ultra often hundreds of ms apart).
+   * Only one path is used per session so a tap always counts once.
+   */
+  let overlayActive = false
 
   // Pieces are rotationally symmetric, so only the position matters.
-  const place = () => {
-    const time = now()
-    if (time - lastTap < SAME_TAP_MS) return
-    lastTap = time
+  const handleTap = () => {
     if (mode === 'placed') {
       mode = 'moving'
       onMoveStart()
@@ -112,7 +108,7 @@ export async function startArSession({
 
   const cleanUp = () => {
     hitTestSource?.cancel()
-    session.removeEventListener('select', place)
+    session.removeEventListener('select', onSelect)
     scene.remove(reticle)
     reticle.geometry.dispose()
     reticle.material.dispose()
@@ -120,12 +116,16 @@ export async function startArSession({
     model.visible = savedVisible
     onEnd()
   }
+  const onSelect = () => {
+    if (!overlayActive) handleTap()
+  }
   session.addEventListener('end', cleanUp, { once: true })
 
   try {
     renderer.xr.enabled = true
     renderer.xr.setReferenceSpaceType('local')
     await renderer.xr.setSession(session)
+    overlayActive = Boolean(session.domOverlayState)
     onPreparing()
     const viewerSpace = await session.requestReferenceSpace('viewer')
     hitTestSource = await session.requestHitTestSource?.({ space: viewerSpace })
@@ -146,9 +146,9 @@ export async function startArSession({
 
   model.visible = false
   scene.add(reticle)
-  // Listen on the session itself: with a DOM overlay, screen taps are not
-  // reliably routed to Three.js controllers.
-  session.addEventListener('select', place)
+  // Without a DOM overlay, taps arrive only as XR "select" events. Listen on
+  // the session itself; Three.js controllers do not get screen taps reliably.
+  session.addEventListener('select', onSelect)
 
   renderer.setAnimationLoop((_time, frame) => {
     const referenceSpace = renderer.xr.getReferenceSpace()
@@ -156,7 +156,10 @@ export async function startArSession({
       frame && hitTestSource && referenceSpace
         ? frame.getHitTestResults(hitTestSource)[0]?.getPose(referenceSpace)
         : undefined
-    surfaceFound = Boolean(pose)
+    if (Boolean(pose) !== surfaceFound) {
+      surfaceFound = Boolean(pose)
+      onSurfaceChange(surfaceFound)
+    }
     if (pose) reticle.matrix.fromArray(pose.transform.matrix)
     reticle.visible = surfaceFound && mode !== 'placed'
     renderer.render(scene, camera)
@@ -166,6 +169,8 @@ export async function startArSession({
     end: () => {
       session.end().catch(() => {})
     },
-    place,
+    tapOverlay: () => {
+      if (overlayActive) handleTap()
+    },
   }
 }
