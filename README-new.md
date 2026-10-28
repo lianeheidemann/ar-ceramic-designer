@@ -14,6 +14,10 @@
 
 Aplicação web para visualizar e personalizar peças de cerâmica em 3D e posicioná-las em ambientes reais com realidade aumentada.
 
+<p align="center">
+  <img src="assets/interface/interface-ar-ceramic-designer-v3.webp" alt="Interface do AR Ceramic Designer" width="75%" />
+</p>
+
 ## Tecnologias
 
 | Tecnologia | Utilização |
