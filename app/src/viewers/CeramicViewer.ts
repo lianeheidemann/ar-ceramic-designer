@@ -17,7 +17,7 @@ import {
 } from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-import { startArSession } from '../ar/arSession'
+import { startArSession, type ArSessionHandle } from '../ar/arSession'
 import { createModelGeometry } from '../geometry/lathe'
 import type { CeramicModel, MaterialSettings } from '../types/ceramic'
 import { fitDistance } from './framing'
@@ -51,8 +51,8 @@ export class CeramicViewer {
   private material: MaterialSettings | null = null
   /** Increments on every load so stale results can be discarded. */
   private loadId = 0
-  /** Ends the running AR session, if any. */
-  private endArSession: (() => void) | null = null
+  /** The running AR session, if any. */
+  private arSession: ArSessionHandle | null = null
 
   constructor(container: HTMLElement) {
     this.container = container
@@ -133,25 +133,30 @@ export class CeramicViewer {
    */
   async startAr(
     overlay: HTMLElement,
-    events: { onPlaced: () => void; onEnd: () => void },
+    events: {
+      onPlaced: () => void
+      onNoSurface: () => void
+      onEnd: () => void
+    },
   ): Promise<void> {
-    if (!this.model || this.endArSession) return
+    if (!this.model || this.arSession) return
     this.controls.enabled = false
     const restore = () => {
-      this.endArSession = null
+      this.arSession = null
       this.controls.enabled = true
       this.startRenderLoop()
       this.resize()
       this.resetView()
     }
     try {
-      this.endArSession = await startArSession({
+      this.arSession = await startArSession({
         renderer: this.renderer,
         scene: this.scene,
         camera: this.camera,
         model: this.model,
         overlay,
         onPlaced: events.onPlaced,
+        onNoSurface: events.onNoSurface,
         onEnd: () => {
           restore()
           events.onEnd()
@@ -163,8 +168,13 @@ export class CeramicViewer {
     }
   }
 
+  /** Places the model on the AR surface ring (tap on the DOM overlay). */
+  placeAr(): void {
+    this.arSession?.place()
+  }
+
   endAr(): void {
-    this.endArSession?.()
+    this.arSession?.end()
   }
 
   /** Calls `listener` whenever the camera moves. Returns an unsubscribe. */

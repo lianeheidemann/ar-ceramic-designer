@@ -17,14 +17,21 @@ export interface ArSessionOptions {
   /** Element shown over the camera image (DOM Overlay), when supported. */
   overlay: HTMLElement
   onPlaced: () => void
+  /** The user tapped while no surface was detected under the ring. */
+  onNoSurface: () => void
   /** Called once the session has ended and its resources are released. */
   onEnd: () => void
+}
+
+export interface ArSessionHandle {
+  end: () => void
+  /** Places the model on the ring, e.g. from a tap on the DOM overlay. */
+  place: () => void
 }
 
 /**
  * Starts an immersive AR session: a ring follows the detected surface
  * under the screen center (hit test) and a tap places the model there.
- * Resolves with a function that ends the session.
  */
 export async function startArSession({
   renderer,
@@ -33,8 +40,9 @@ export async function startArSession({
   model,
   overlay,
   onPlaced,
+  onNoSurface,
   onEnd,
-}: ArSessionOptions): Promise<() => void> {
+}: ArSessionOptions): Promise<ArSessionHandle> {
   if (!navigator.xr) {
     throw new DOMException('WebXR indisponível', 'NotSupportedError')
   }
@@ -53,12 +61,14 @@ export async function startArSession({
 
   const savedPosition = model.position.clone()
   const savedVisible = model.visible
-  const controller = renderer.xr.getController(0)
   let hitTestSource: XRHitTestSource | undefined
 
   // Pieces are rotationally symmetric, so only the position matters.
   const place = () => {
-    if (!reticle.visible) return
+    if (!reticle.visible) {
+      onNoSurface()
+      return
+    }
     model.position.setFromMatrixPosition(reticle.matrix)
     model.visible = true
     onPlaced()
@@ -66,7 +76,7 @@ export async function startArSession({
 
   const cleanUp = () => {
     hitTestSource?.cancel()
-    controller.removeEventListener('select', place)
+    session.removeEventListener('select', place)
     scene.remove(reticle)
     reticle.geometry.dispose()
     reticle.material.dispose()
@@ -93,7 +103,9 @@ export async function startArSession({
 
   model.visible = false
   scene.add(reticle)
-  controller.addEventListener('select', place)
+  // Listen on the session itself: with a DOM overlay, screen taps are not
+  // reliably routed to Three.js controllers.
+  session.addEventListener('select', place)
 
   renderer.setAnimationLoop((_time, frame) => {
     const referenceSpace = renderer.xr.getReferenceSpace()
@@ -106,7 +118,10 @@ export async function startArSession({
     renderer.render(scene, camera)
   })
 
-  return () => {
-    session.end().catch(() => {})
+  return {
+    end: () => {
+      session.end().catch(() => {})
+    },
+    place,
   }
 }
