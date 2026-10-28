@@ -43,3 +43,7 @@ Interface web interativa, publicada no GitHub Pages, para explorar modelos de ce
 - [Guia passo a passo](docs/step-by-step.md)
 - [Plano de desenvolvimento](docs/development-plan.md)
 - [Referências](docs/references.md)
+
+## Demo
+
+[Acessar a aplicação](https://lianeheidemann.github.io/ar-ceramic-designer/)
