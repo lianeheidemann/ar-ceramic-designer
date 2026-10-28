@@ -38,10 +38,12 @@ export interface ArSessionOptions {
    */
   testCube?: boolean
   /**
-   * Makes Three.js render into a classic XRWebGLLayer instead of a WebXR
-   * Layers projection layer, which it picks whenever the browser has one.
+   * Lets Three.js render into a WebXR Layers projection layer, which it
+   * picks whenever the browser has one. Off by default: in Chrome's AR on
+   * the Galaxy S23 Ultra, nothing drawn into it showed over the camera
+   * (draw calls went through, the screen stayed empty). Only for testing.
    */
-  forceWebGLLayer?: boolean
+  projectionLayer?: boolean
 }
 
 /** Diagnostics for testing on a phone (`?debug=1`). */
@@ -128,7 +130,7 @@ export async function startArSession({
   onEnd,
   onDebug,
   testCube = false,
-  forceWebGLLayer = false,
+  projectionLayer = false,
 }: ArSessionOptions): Promise<ArSessionHandle> {
   if (!navigator.xr) {
     throw new DOMException('WebXR indisponível', 'NotSupportedError')
@@ -278,7 +280,7 @@ export async function startArSession({
   try {
     renderer.xr.enabled = true
     renderer.xr.setReferenceSpaceType('local')
-    const restoreLayers = forceWebGLLayer ? hideProjectionLayers() : undefined
+    const restoreLayers = projectionLayer ? undefined : hideProjectionLayers()
     try {
       await renderer.xr.setSession(session)
     } finally {

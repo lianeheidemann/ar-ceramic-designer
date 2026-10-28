@@ -126,7 +126,9 @@ Define typed metadata for each model: `id`, `name`, `url`, `dimensionsMm`, `scal
 
 > **Implemented** in `app/src/ar/` (support check, hit-test placement session) and the **Ver em AR** button of the viewer. Support detection, the fallback message and error handling (e.g. camera permission denied) were tested with a simulated WebXR; placement on a real surface still has to be confirmed on the Galaxy S23 Ultra (item 8).
 >
-> **Testing on the phone:** `?debug=1` shows a diagnostics panel during AR (tracking, hits, ring distance, frames, draw calls, XR framebuffer, WebGL errors); `?cubo=1` adds a magenta test cube 50 cm in front of the starting position, to tell a rendering problem apart from a placement problem. `?camada=webgl` makes Three.js render into a classic `XRWebGLLayer` instead of a WebXR Layers projection layer (which it picks whenever the browser offers one). `npm run test:e2e` runs the AR flow in Chromium with a fake WebXR device (`app/e2e/`).
+> **Known issue (S23 Ultra, Chrome):** Three.js renders into a WebXR Layers projection layer whenever the browser offers `XRWebGLBinding.createProjectionLayer`. In Chrome's AR on the S23 Ultra nothing drawn into it showed over the camera (draw calls went through, the screen stayed empty), so the AR session always uses a classic `XRWebGLLayer` (`hideProjectionLayers()` in `app/src/ar/arSession.ts`).
+>
+> **Testing on the phone:** `?debug=1` shows a diagnostics panel during AR (tracking, hits, ring distance, frames, draw calls, XR framebuffer, WebGL errors); `?cubo=1` adds a magenta test cube 50 cm in front of the starting position, to tell a rendering problem apart from a placement problem. `?camada=projection` lets Three.js render into a WebXR Layers projection layer, to reproduce the problem below. `npm run test:e2e` runs the AR flow in Chromium with a fake WebXR device (`app/e2e/`).
 
 1. Detect support using `navigator.xr?.isSessionSupported('immersive-ar')` in a secure context.
 2. Show **View in AR** only when supported; otherwise explain the limitation and keep the standard 3D viewer available.

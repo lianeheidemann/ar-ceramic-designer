@@ -12,12 +12,13 @@ import { CeramicViewer } from '../viewers/CeramicViewer'
 /**
  * Switches for testing AR on a phone: `?debug=1` shows what the session
  * sees and draws; `?cubo=1` adds a test cube in front of the phone;
- * `?camada=webgl` renders into a classic XRWebGLLayer.
+ * `?camada=projection` lets Three.js render into a WebXR Layers projection
+ * layer (shows nothing on the S23 Ultra; to reproduce that only).
  */
 const arParams = new URLSearchParams(window.location.search)
 const AR_DEBUG = arParams.has('debug')
 const AR_TEST_CUBE = arParams.get('cubo') === '1'
-const AR_WEBGL_LAYER = arParams.get('camada') === 'webgl'
+const AR_PROJECTION_LAYER = arParams.get('camada') === 'projection'
 
 /** The debug panel's lines. */
 function debugLines(info: ArDebugInfo): string[] {
@@ -25,7 +26,7 @@ function debugLines(info: ArDebugInfo): string[] {
   const meters = (value: number | null) => (value === null ? '—' : `${value} m`)
   return [
     `frames: sessão ${info.sessionFrames} · app ${info.loopFrames} · desenhados ${info.frames}`,
-    `camada: ${info.layer ?? '—'} (forçada webgl: ${yesNo(AR_WEBGL_LAYER)})`,
+    `camada: ${info.layer ?? '—'}`,
     `erro não capturado: ${info.uncaught ?? '—'}`,
     `rastreando: ${yesNo(info.tracking)} · acerto: ${yesNo(info.hit)} · superfície: ${yesNo(info.found)}`,
     `anel: ${meters(info.ringDistance)} do celular, ${meters(info.ringDrop)} abaixo`,
@@ -157,7 +158,7 @@ export function Viewer({
           onEnd: () => setAr('off'),
           onDebug: AR_DEBUG ? setDebugInfo : undefined,
         },
-        { testCube: AR_TEST_CUBE, forceWebGLLayer: AR_WEBGL_LAYER },
+        { testCube: AR_TEST_CUBE, projectionLayer: AR_PROJECTION_LAYER },
       )
       .then(
         () =>

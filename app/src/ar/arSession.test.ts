@@ -9,7 +9,7 @@ function setup({
   domOverlay = false,
   testCube = false,
   debug = false,
-  forceWebGLLayer = false,
+  projectionLayer = false,
 } = {}) {
   const session = Object.assign(new EventTarget(), {
     domOverlayState: domOverlay ? { type: 'screen' } : undefined,
@@ -96,7 +96,7 @@ function setup({
       overlay: {} as HTMLElement,
       ...events,
       testCube,
-      forceWebGLLayer,
+      projectionLayer,
       onDebug: debug ? events.onDebug : undefined,
     })
 
@@ -353,7 +353,7 @@ describe('startArSession', () => {
     })
   })
 
-  describe('forceWebGLLayer (?camada=webgl)', () => {
+  describe('WebXR Layers', () => {
     /** A browser with WebXR Layers; records what Three.js would see. */
     function withLayers(renderer: WebGLRenderer) {
       class XRWebGLBinding {
@@ -371,15 +371,15 @@ describe('startArSession', () => {
     }
 
     it('hides projection layers only while the session starts', async () => {
-      const { renderer, start } = setup({ forceWebGLLayer: true })
+      const { renderer, start } = setup()
       const layers = withLayers(renderer)
       await start()
       expect(layers.layersDuringStart()).toBe(false)
       expect(layers.layersAfter()).toBe(true)
     })
 
-    it('leaves projection layers alone by default', async () => {
-      const { renderer, start } = setup()
+    it('offers projection layers with ?camada=projection', async () => {
+      const { renderer, start } = setup({ projectionLayer: true })
       const layers = withLayers(renderer)
       await start()
       expect(layers.layersDuringStart()).toBe(true)

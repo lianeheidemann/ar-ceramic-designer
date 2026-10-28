@@ -146,7 +146,7 @@ export class CeramicViewer {
       onEnd: () => void
       onDebug?: ArSessionOptions['onDebug']
     },
-    options: Pick<ArSessionOptions, 'testCube' | 'forceWebGLLayer'> = {},
+    options: Pick<ArSessionOptions, 'testCube' | 'projectionLayer'> = {},
   ): Promise<void> {
     if (!this.model || this.arSession) return
     this.controls.enabled = false

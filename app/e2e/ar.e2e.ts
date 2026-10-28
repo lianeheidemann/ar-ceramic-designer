@@ -123,10 +123,10 @@ test.describe('with WebXR Layers that fail to draw', () => {
     await page.addInitScript(installFakeXr, { brokenLayers: true })
   })
 
-  test('the debug panel shows the frame loop never running', async ({
+  test('?camada=projection reproduces the frame loop never running', async ({
     page,
   }) => {
-    await page.goto('./?debug=1&cubo=1')
+    await page.goto('./?debug=1&cubo=1&camada=projection')
     await page.getByRole('button', { name: 'Ver em AR' }).click()
     await setXr(page, {
       tracking: true,
@@ -147,8 +147,10 @@ test.describe('with WebXR Layers that fail to draw', () => {
     await expect(hint(page)).toHaveText(/Procurando uma superfície/)
   })
 
-  test('?camada=webgl brings the ring and the piece back', async ({ page }) => {
-    await page.goto('./?debug=1&cubo=1&camada=webgl')
+  test('draws the ring and the cube into a classic XRWebGLLayer', async ({
+    page,
+  }) => {
+    await page.goto('./?debug=1&cubo=1')
     await page.getByRole('button', { name: 'Ver em AR' }).click()
     await setXr(page, {
       tracking: true,
@@ -156,7 +158,7 @@ test.describe('with WebXR Layers that fail to draw', () => {
       plane: [0, 0, -2],
     })
     const panel = page.locator('.ar-debug')
-    await expect(panel).toContainText('camada: webgl (forçada webgl: sim)')
+    await expect(panel).toContainText('camada: webgl')
     await expect(hint(page)).toHaveText(/Superfície encontrada/)
     // The ring and the cube.
     await expect.poll(() => debugNumber(page, 'draw calls')).toBe(2)
