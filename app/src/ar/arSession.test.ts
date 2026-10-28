@@ -1,14 +1,20 @@
 import { Matrix4, Mesh, Scene, Vector3, type WebGLRenderer } from 'three'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { SURFACE_LOST_AFTER_MS, startArSession } from './arSession'
 
 type FrameCallback = (time: number, frame?: unknown) => void
 
 /** Minimal stand-ins for the WebXR session and the Three.js renderer. */
-function setup({ domOverlay = false, testCube = false, debug = false } = {}) {
+function setup({
+  domOverlay = false,
+  testCube = false,
+  debug = false,
+  forceWebGLLayer = false,
+} = {}) {
   const session = Object.assign(new EventTarget(), {
     domOverlayState: domOverlay ? { type: 'screen' } : undefined,
     environmentBlendMode: 'alpha-blend',
+    enabledFeatures: ['hit-test', 'dom-overlay'],
     renderState: { depthNear: 0.01, depthFar: 100 },
     requestReferenceSpace: vi.fn(async () => ({})),
     requestHitTestSource: vi.fn(async () => ({ cancel: vi.fn() })),
@@ -19,6 +25,8 @@ function setup({ domOverlay = false, testCube = false, debug = false } = {}) {
   vi.stubGlobal('navigator', {
     xr: { requestSession: vi.fn(async () => session) },
   })
+  // Node has no window; the debug panel listens for uncaught errors on it.
+  vi.stubGlobal('window', new EventTarget())
 
   const scene = new Scene()
   const model = new Mesh()
@@ -88,6 +96,7 @@ function setup({ domOverlay = false, testCube = false, debug = false } = {}) {
       overlay: {} as HTMLElement,
       ...events,
       testCube,
+      forceWebGLLayer,
       onDebug: debug ? events.onDebug : undefined,
     })
 
@@ -252,12 +261,36 @@ describe('startArSession', () => {
   })
 
   describe('diagnostics (?debug=1)', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
+    })
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('reports as soon as the session starts, before any frame', async () => {
+      const { events, start } = setup({ debug: true })
+      await start()
+      expect(events.onDebug).toHaveBeenCalledOnce()
+      expect(events.onDebug.mock.lastCall?.[0]).toMatchObject({
+        loopFrames: 0,
+        frames: 0,
+        layer: 'webgl',
+        framebuffer: '1080×2316',
+        features: 'hit-test, dom-overlay',
+        blendMode: 'alpha-blend',
+        depthRange: '0.01–100',
+        uncaught: null,
+      })
+    })
+
     it('reports what the session sees and draws', async () => {
       const { events, frame, start } = setup({ debug: true })
       await start()
       frame(new Vector3(0, 0.4, -0.75))
-      expect(events.onDebug).toHaveBeenCalledOnce()
+      vi.advanceTimersByTime(250)
       expect(events.onDebug.mock.lastCall?.[0]).toMatchObject({
+        loopFrames: 1,
         tracking: true,
         hit: true,
         found: true,
@@ -268,18 +301,31 @@ describe('startArSession', () => {
         modelVisible: false,
         frames: 1,
         calls: 2,
-        framebuffer: '1080×2316',
-        blendMode: 'alpha-blend',
-        depthRange: '0.01–100',
         error: null,
       })
     })
 
-    it('reports a few times per second, not every frame', async () => {
-      const { events, frame, start } = setup({ debug: true })
+    it('keeps reporting a few times per second without frames', async () => {
+      const { events, start } = setup({ debug: true })
       await start()
-      for (let i = 0; i < 32; i++) frame()
-      expect(events.onDebug.mock.calls.length).toBe(2)
+      vi.advanceTimersByTime(1000)
+      expect(events.onDebug).toHaveBeenCalledTimes(5)
+    })
+
+    it('shows uncaught errors, e.g. from inside Three.js', async () => {
+      const { events, start } = setup({ debug: true })
+      await start()
+      window.dispatchEvent(
+        Object.assign(new Event('error'), {
+          message: 'getViewSubImage failed',
+          filename: 'https://example.com/ar-ceramic-designer/assets/index.js',
+          lineno: 12,
+        }),
+      )
+      vi.advanceTimersByTime(250)
+      expect(events.onDebug.mock.lastCall?.[0].uncaught).toBe(
+        'getViewSubImage failed @ index.js:12',
+      )
     })
 
     it('keeps the loop running when a frame fails to render', async () => {
@@ -288,11 +334,55 @@ describe('startArSession', () => {
       vi.mocked(renderer.render).mockImplementationOnce(() => {
         throw new Error('render failed')
       })
-      frame(new Vector3(0, 0, -1))
-      for (let i = 0; i < 16; i++) frame(new Vector3(0, 0, -1))
+      for (let i = 0; i < 17; i++) frame(new Vector3(0, 0, -1))
+      vi.advanceTimersByTime(250)
       const info = events.onDebug.mock.lastCall?.[0]
       expect(info.error).toBe('render failed')
+      expect(info.loopFrames).toBe(17)
       expect(info.frames).toBe(16)
+    })
+
+    it('stops reporting when the session ends', async () => {
+      const { events, start } = setup({ debug: true })
+      const handle = await start()
+      handle.end()
+      await vi.waitFor(() => expect(events.onEnd).toHaveBeenCalledOnce())
+      const calls = events.onDebug.mock.calls.length
+      vi.advanceTimersByTime(1000)
+      expect(events.onDebug).toHaveBeenCalledTimes(calls)
+    })
+  })
+
+  describe('forceWebGLLayer (?camada=webgl)', () => {
+    /** A browser with WebXR Layers; records what Three.js would see. */
+    function withLayers(renderer: WebGLRenderer) {
+      class XRWebGLBinding {
+        createProjectionLayer() {}
+      }
+      vi.stubGlobal('XRWebGLBinding', XRWebGLBinding)
+      let layersDuringStart: boolean | undefined
+      vi.mocked(renderer.xr.setSession).mockImplementation(async () => {
+        layersDuringStart = 'createProjectionLayer' in XRWebGLBinding.prototype
+      })
+      return {
+        layersDuringStart: () => layersDuringStart,
+        layersAfter: () => 'createProjectionLayer' in XRWebGLBinding.prototype,
+      }
+    }
+
+    it('hides projection layers only while the session starts', async () => {
+      const { renderer, start } = setup({ forceWebGLLayer: true })
+      const layers = withLayers(renderer)
+      await start()
+      expect(layers.layersDuringStart()).toBe(false)
+      expect(layers.layersAfter()).toBe(true)
+    })
+
+    it('leaves projection layers alone by default', async () => {
+      const { renderer, start } = setup()
+      const layers = withLayers(renderer)
+      await start()
+      expect(layers.layersDuringStart()).toBe(true)
     })
   })
 

@@ -11,25 +11,31 @@ import { CeramicViewer } from '../viewers/CeramicViewer'
 
 /**
  * Switches for testing AR on a phone: `?debug=1` shows what the session
- * sees and draws; `?cubo=1` adds a test cube in front of the phone.
+ * sees and draws; `?cubo=1` adds a test cube in front of the phone;
+ * `?camada=webgl` renders into a classic XRWebGLLayer.
  */
 const arParams = new URLSearchParams(window.location.search)
 const AR_DEBUG = arParams.has('debug')
 const AR_TEST_CUBE = arParams.get('cubo') === '1'
+const AR_WEBGL_LAYER = arParams.get('camada') === 'webgl'
 
 /** The debug panel's lines. */
 function debugLines(info: ArDebugInfo): string[] {
   const yesNo = (value: boolean) => (value ? 'sim' : 'não')
   const meters = (value: number | null) => (value === null ? '—' : `${value} m`)
   return [
+    `frames: sessão ${info.sessionFrames} · app ${info.loopFrames} · desenhados ${info.frames}`,
+    `camada: ${info.layer ?? '—'} (forçada webgl: ${yesNo(AR_WEBGL_LAYER)})`,
+    `erro não capturado: ${info.uncaught ?? '—'}`,
     `rastreando: ${yesNo(info.tracking)} · acerto: ${yesNo(info.hit)} · superfície: ${yesNo(info.found)}`,
     `anel: ${meters(info.ringDistance)} do celular, ${meters(info.ringDrop)} abaixo`,
     `1º anel: ${info.firstRingMs === null ? '—' : `${info.firstRingMs} ms`}`,
     `visível: anel ${yesNo(info.reticleVisible)} · peça ${yesNo(info.modelVisible)} · cubo ${yesNo(AR_TEST_CUBE)}`,
-    `frames: ${info.frames} · draw calls: ${info.calls} · triângulos: ${info.triangles}`,
+    `draw calls: ${info.calls} · triângulos: ${info.triangles}`,
     `framebuffer: ${info.framebuffer ?? '—'} · modo: ${info.blendMode ?? '—'}`,
     `profundidade: ${info.depthRange ?? '—'}`,
     `erro WebGL: ${info.glError} · contexto perdido: ${yesNo(info.contextLost)}`,
+    `recursos: ${info.features ?? '—'}`,
     `erro: ${info.error ?? '—'}`,
   ]
 }
@@ -151,7 +157,7 @@ export function Viewer({
           onEnd: () => setAr('off'),
           onDebug: AR_DEBUG ? setDebugInfo : undefined,
         },
-        AR_TEST_CUBE,
+        { testCube: AR_TEST_CUBE, forceWebGLLayer: AR_WEBGL_LAYER },
       )
       .then(
         () =>

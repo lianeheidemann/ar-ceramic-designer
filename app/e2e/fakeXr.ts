@@ -5,8 +5,12 @@
  * and lets the test set what ARCore "sees" through `window.fakeXr`.
  *
  * Runs in the browser: it must not use imports or outer variables.
+ *
+ * With `brokenLayers`, the browser also offers WebXR Layers, but drawing
+ * into a projection layer fails on every frame: what the Galaxy S23 Ultra
+ * seems to do.
  */
-export function installFakeXr(): void {
+export function installFakeXr({ brokenLayers = false } = {}): void {
   type Point = [number, number, number]
 
   const control = {
@@ -140,6 +144,21 @@ export function installFakeXr(): void {
   Object.assign(window, { XRWebGLLayer: FakeXRWebGLLayer })
   // Without XRWebGLBinding, Three.js uses the XRWebGLLayer above.
   delete (window as { XRWebGLBinding?: unknown }).XRWebGLBinding
+  if (brokenLayers) {
+    class FakeXRWebGLBinding {
+      createProjectionLayer() {
+        return {
+          textureWidth: 360,
+          textureHeight: 800,
+          ignoreDepthValues: true,
+        }
+      }
+      getViewSubImage(): never {
+        throw new Error('getViewSubImage failed (fake)')
+      }
+    }
+    Object.assign(window, { XRWebGLBinding: FakeXRWebGLBinding })
+  }
   WebGL2RenderingContext.prototype.makeXRCompatible = async () => {}
 }
 

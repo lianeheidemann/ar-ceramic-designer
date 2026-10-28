@@ -89,7 +89,7 @@ test('explains a denied camera permission', async ({ page }) => {
 /** The number after `label` in the debug panel, e.g. `draw calls: 2`. */
 async function debugNumber(page: Page, label: string): Promise<number> {
   const text = await page.locator('.ar-debug').textContent()
-  const match = text?.match(new RegExp(`${label}: (\\d+)`))
+  const match = text?.match(new RegExp(`${label}:? (\\d+)`))
   if (!match) throw new Error(`"${label}" not in the debug panel: ${text}`)
   return Number(match[1])
 }
@@ -103,7 +103,7 @@ test('shows diagnostics with ?debug=1', async ({ page }) => {
   await expect(panel).toContainText('anel: 2.06 m do celular, 0.5 m abaixo')
   await expect(panel).toContainText('visível: anel sim · peça não · cubo não')
   await expect(panel).toContainText('erro: —')
-  await expect.poll(() => debugNumber(page, 'frames')).toBeGreaterThan(0)
+  await expect.poll(() => debugNumber(page, 'desenhados')).toBeGreaterThan(0)
   // Only the ring is drawn before the piece is placed.
   await expect.poll(() => debugNumber(page, 'draw calls')).toBe(1)
 })
@@ -116,4 +116,50 @@ test('draws a test cube with ?cubo=1', async ({ page }) => {
   await expect(page.locator('.ar-debug')).toContainText('cubo sim')
   // The ring and the cube.
   await expect.poll(() => debugNumber(page, 'draw calls')).toBe(2)
+})
+
+test.describe('with WebXR Layers that fail to draw', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(installFakeXr, { brokenLayers: true })
+  })
+
+  test('the debug panel shows the frame loop never running', async ({
+    page,
+  }) => {
+    await page.goto('./?debug=1&cubo=1')
+    await page.getByRole('button', { name: 'Ver em AR' }).click()
+    await setXr(page, {
+      tracking: true,
+      viewer: [0, 0.5, 0],
+      plane: [0, 0, -2],
+    })
+    const panel = page.locator('.ar-debug')
+    await expect(panel).toContainText('camada: projection')
+    await expect(panel).toContainText('getViewSubImage failed (fake)')
+    // The app's frames run only until tracking starts (no pose, no layer
+    // drawing); after that the session keeps going without them.
+    const app = await debugNumber(page, 'app')
+    const session = await debugNumber(page, 'sessão')
+    await page.waitForTimeout(500)
+    expect(await debugNumber(page, 'app')).toBe(app)
+    expect(await debugNumber(page, 'sessão')).toBeGreaterThan(session)
+    // The same symptom as on the phone: no surface, nothing drawn.
+    await expect(hint(page)).toHaveText(/Procurando uma superfície/)
+  })
+
+  test('?camada=webgl brings the ring and the piece back', async ({ page }) => {
+    await page.goto('./?debug=1&cubo=1&camada=webgl')
+    await page.getByRole('button', { name: 'Ver em AR' }).click()
+    await setXr(page, {
+      tracking: true,
+      viewer: [0, 0.5, 0],
+      plane: [0, 0, -2],
+    })
+    const panel = page.locator('.ar-debug')
+    await expect(panel).toContainText('camada: webgl (forçada webgl: sim)')
+    await expect(hint(page)).toHaveText(/Superfície encontrada/)
+    // The ring and the cube.
+    await expect.poll(() => debugNumber(page, 'draw calls')).toBe(2)
+    await expect(panel).toContainText('erro não capturado: —')
+  })
 })
