@@ -17,7 +17,11 @@ import {
 } from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-import { startArSession, type ArSessionHandle } from '../ar/arSession'
+import {
+  startArSession,
+  type ArSessionHandle,
+  type ArSessionOptions,
+} from '../ar/arSession'
 import { createModelGeometry } from '../geometry/lathe'
 import type { CeramicModel, MaterialSettings } from '../types/ceramic'
 import { fitDistance } from './framing'
@@ -140,7 +144,9 @@ export class CeramicViewer {
       onNoSurface: () => void
       onSurfaceChange: (found: boolean) => void
       onEnd: () => void
+      onDebug?: ArSessionOptions['onDebug']
     },
+    testCube = false,
   ): Promise<void> {
     if (!this.model || this.arSession) return
     this.controls.enabled = false
@@ -163,6 +169,8 @@ export class CeramicViewer {
         onMoveStart: events.onMoveStart,
         onNoSurface: events.onNoSurface,
         onSurfaceChange: events.onSurfaceChange,
+        onDebug: events.onDebug,
+        testCube,
         onEnd: () => {
           restore()
           events.onEnd()

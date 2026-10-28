@@ -1,7 +1,9 @@
 import {
+  BoxGeometry,
   Mesh,
   MeshBasicMaterial,
   RingGeometry,
+  Vector3,
   type Camera,
   type Object3D,
   type Scene,
@@ -27,7 +29,48 @@ export interface ArSessionOptions {
   onSurfaceChange: (found: boolean) => void
   /** Called once the session has ended and its resources are released. */
   onEnd: () => void
+  /** Called a few times per second with what the session sees and draws. */
+  onDebug?: (info: ArDebugInfo) => void
+  /**
+   * Shows a test cube 50 cm in front of where the phone was when AR
+   * started, whatever the hit test finds: tells a rendering problem apart
+   * from a placement problem on a real device.
+   */
+  testCube?: boolean
 }
+
+/** Diagnostics for testing on a phone (`?debug=1`). */
+export interface ArDebugInfo {
+  /** The viewer pose is tracked (not emulated). */
+  tracking: boolean
+  /** A hit test result arrived in the last frame. */
+  hit: boolean
+  found: boolean
+  /** Ring distance from the phone and how far below it, in meters. */
+  ringDistance: number | null
+  ringDrop: number | null
+  /** Time from the first XR frame to the first ring, in ms. */
+  firstRingMs: number | null
+  reticleVisible: boolean
+  modelVisible: boolean
+  /** XR frames rendered so far. */
+  frames: number
+  /** Draw calls and triangles of the last frame. */
+  calls: number
+  triangles: number
+  /** XR framebuffer size, e.g. `1440×3088`. */
+  framebuffer: string | null
+  blendMode: string | null
+  depthRange: string | null
+  /** Latest WebGL error code, 0 when none. */
+  glError: number
+  contextLost: boolean
+  /** First error thrown in the frame loop, if any. */
+  error: string | null
+}
+
+/** How often `onDebug` is called. */
+const DEBUG_INTERVAL_MS = 250
 
 export interface ArSessionHandle {
   end: () => void
@@ -65,6 +108,8 @@ export async function startArSession({
   onNoSurface,
   onSurfaceChange,
   onEnd,
+  onDebug,
+  testCube = false,
 }: ArSessionOptions): Promise<ArSessionHandle> {
   if (!navigator.xr) {
     throw new DOMException('WebXR indisponível', 'NotSupportedError')
@@ -81,6 +126,18 @@ export async function startArSession({
   )
   reticle.matrixAutoUpdate = false
   reticle.visible = false
+
+  // Unlit and never culled: if this does not show, nothing 3D can.
+  const cube = testCube
+    ? new Mesh(
+        new BoxGeometry(0.1, 0.1, 0.1),
+        new MeshBasicMaterial({ color: '#ff00ff' }),
+      )
+    : undefined
+  if (cube) {
+    cube.position.set(0, 0, -0.5)
+    cube.frustumCulled = false
+  }
 
   const savedPosition = model.position.clone()
   const savedVisible = model.visible
@@ -120,6 +177,11 @@ export async function startArSession({
     scene.remove(reticle)
     reticle.geometry.dispose()
     reticle.material.dispose()
+    if (cube) {
+      scene.remove(cube)
+      cube.geometry.dispose()
+      cube.material.dispose()
+    }
     model.position.copy(savedPosition)
     model.visible = savedVisible
     onEnd()
@@ -154,28 +216,114 @@ export async function startArSession({
 
   model.visible = false
   scene.add(reticle)
+  if (cube) scene.add(cube)
   // Without a DOM overlay, taps arrive only as XR "select" events. Listen on
   // the session itself; Three.js controllers do not get screen taps reliably.
   session.addEventListener('select', onSelect)
 
+  let firstFrameTime: number | undefined
+  let lastDebugTime = -Infinity
+  const debug: ArDebugInfo = {
+    tracking: false,
+    hit: false,
+    found: false,
+    ringDistance: null,
+    ringDrop: null,
+    firstRingMs: null,
+    reticleVisible: false,
+    modelVisible: false,
+    frames: 0,
+    calls: 0,
+    triangles: 0,
+    framebuffer: null,
+    blendMode: null,
+    depthRange: null,
+    glError: 0,
+    contextLost: false,
+    error: null,
+  }
+  const reportError = (error: unknown) => {
+    debug.error ??= error instanceof Error ? error.message : String(error)
+  }
+
   renderer.setAnimationLoop((time, frame) => {
-    const referenceSpace = renderer.xr.getReferenceSpace()
-    const pose =
-      frame && hitTestSource && referenceSpace
-        ? frame.getHitTestResults(hitTestSource)[0]?.getPose(referenceSpace)
-        : undefined
-    if (pose) {
-      lastHitTime = time
-      reticle.matrix.fromArray(pose.transform.matrix)
+    firstFrameTime ??= time
+    // A failing frame must not stop the session: keep rendering.
+    try {
+      const referenceSpace = renderer.xr.getReferenceSpace()
+      const pose =
+        frame && hitTestSource && referenceSpace
+          ? frame.getHitTestResults(hitTestSource)[0]?.getPose(referenceSpace)
+          : undefined
+      if (pose) {
+        lastHitTime = time
+        reticle.matrix.fromArray(pose.transform.matrix)
+      }
+      const found = time - lastHitTime < SURFACE_LOST_AFTER_MS
+      if (found !== surfaceFound) {
+        surfaceFound = found
+        onSurfaceChange(surfaceFound)
+      }
+      reticle.visible = surfaceFound && mode !== 'placed'
+      if (onDebug) {
+        debug.hit = Boolean(pose)
+        if (found) debug.firstRingMs ??= Math.round(time - firstFrameTime)
+        const viewer =
+          frame && referenceSpace
+            ? frame.getViewerPose(referenceSpace)
+            : undefined
+        debug.tracking = Boolean(viewer && !viewer.emulatedPosition)
+        if (viewer && found) {
+          const { x, y, z } = viewer.transform.position
+          const ring = new Vector3().setFromMatrixPosition(reticle.matrix)
+          debug.ringDistance = round(ring.distanceTo(new Vector3(x, y, z)))
+          debug.ringDrop = round(y - ring.y)
+        }
+      }
+    } catch (error) {
+      reportError(error)
     }
-    const found = time - lastHitTime < SURFACE_LOST_AFTER_MS
-    if (found !== surfaceFound) {
-      surfaceFound = found
-      onSurfaceChange(surfaceFound)
+    try {
+      renderer.render(scene, camera)
+      debug.frames++
+    } catch (error) {
+      reportError(error)
     }
-    reticle.visible = surfaceFound && mode !== 'placed'
-    renderer.render(scene, camera)
+    if (onDebug && time - lastDebugTime >= DEBUG_INTERVAL_MS) {
+      lastDebugTime = time
+      onDebug(collectDebug())
+    }
   })
+
+  /** Fills in the rendering side of `debug`. */
+  function collectDebug(): ArDebugInfo {
+    try {
+      const gl = renderer.getContext()
+      const layer = renderer.xr.getBaseLayer()
+      const { depthNear, depthFar } = session.renderState ?? {}
+      Object.assign(debug, {
+        found: surfaceFound,
+        reticleVisible: reticle.visible,
+        modelVisible: model.visible,
+        calls: renderer.info.render.calls,
+        triangles: renderer.info.render.triangles,
+        framebuffer:
+          layer && 'framebufferWidth' in layer
+            ? `${layer.framebufferWidth}×${layer.framebufferHeight}`
+            : null,
+        blendMode: session.environmentBlendMode ?? null,
+        depthRange:
+          depthNear === undefined
+            ? null
+            : `${round(depthNear)}–${round(depthFar)}`,
+        glError: gl.getError(),
+        contextLost: gl.isContextLost(),
+      })
+    } catch (error) {
+      reportError(error)
+    }
+    return { ...debug }
+  }
 
   return {
     end: () => {
@@ -185,4 +333,9 @@ export async function startArSession({
       if (overlayActive) handleTap()
     },
   }
+}
+
+/** Rounds to centimeters, enough for the debug panel. */
+function round(meters: number): number {
+  return Math.round(meters * 100) / 100
 }

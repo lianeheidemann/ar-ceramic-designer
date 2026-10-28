@@ -248,6 +248,23 @@ select {
   line-height: 1.35;
 }
 
+/* Diagnostics for testing on a phone (?debug=1). */
+.ar-debug {
+  position: absolute;
+  right: 1rem;
+  bottom: 5rem;
+  left: 1rem;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  color: #fff;
+  background: rgb(0 0 0 / 0.6);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  pointer-events: none;
+}
+
 .ar-exit {
   padding: 0 1.5rem;
   color: #2b2622;

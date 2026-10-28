@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import WebGL from 'three/addons/capabilities/WebGL.js'
+import type { ArDebugInfo } from '../ar/arSession'
 import { arStatus, type ArState } from '../ar/arStatus'
 import { arErrorMessage } from '../ar/support'
 import type { CeramicModel, MaterialSettings } from '../types/ceramic'
@@ -7,6 +8,31 @@ import { downloadBlob, downloadName } from '../utils/download'
 import type { CameraSync } from '../viewers/CameraSync'
 import { ArStatusIcon } from './ArStatusIcon'
 import { CeramicViewer } from '../viewers/CeramicViewer'
+
+/**
+ * Switches for testing AR on a phone: `?debug=1` shows what the session
+ * sees and draws; `?cubo=1` adds a test cube in front of the phone.
+ */
+const arParams = new URLSearchParams(window.location.search)
+const AR_DEBUG = arParams.has('debug')
+const AR_TEST_CUBE = arParams.get('cubo') === '1'
+
+/** The debug panel's lines. */
+function debugLines(info: ArDebugInfo): string[] {
+  const yesNo = (value: boolean) => (value ? 'sim' : 'não')
+  const meters = (value: number | null) => (value === null ? '—' : `${value} m`)
+  return [
+    `rastreando: ${yesNo(info.tracking)} · acerto: ${yesNo(info.hit)} · superfície: ${yesNo(info.found)}`,
+    `anel: ${meters(info.ringDistance)} do celular, ${meters(info.ringDrop)} abaixo`,
+    `1º anel: ${info.firstRingMs === null ? '—' : `${info.firstRingMs} ms`}`,
+    `visível: anel ${yesNo(info.reticleVisible)} · peça ${yesNo(info.modelVisible)} · cubo ${yesNo(AR_TEST_CUBE)}`,
+    `frames: ${info.frames} · draw calls: ${info.calls} · triângulos: ${info.triangles}`,
+    `framebuffer: ${info.framebuffer ?? '—'} · modo: ${info.blendMode ?? '—'}`,
+    `profundidade: ${info.depthRange ?? '—'}`,
+    `erro WebGL: ${info.glError} · contexto perdido: ${yesNo(info.contextLost)}`,
+    `erro: ${info.error ?? '—'}`,
+  ]
+}
 
 interface ViewerProps {
   model: CeramicModel
@@ -41,6 +67,7 @@ export function Viewer({
   const [surfaceFound, setSurfaceFound] = useState(false)
   /** Whether any surface was found in this session (ends the intro hint). */
   const [surfaceSeen, setSurfaceSeen] = useState(false)
+  const [debugInfo, setDebugInfo] = useState<ArDebugInfo | null>(null)
   const noSurfaceTimer = useRef<number | undefined>(undefined)
   const viewerRef = useRef<CeramicViewer | null>(null)
   const [webglAvailable] = useState(() => WebGL.isWebGL2Available())
@@ -104,22 +131,28 @@ export function Viewer({
     setArError(null)
     setSurfaceFound(false)
     setSurfaceSeen(false)
+    setDebugInfo(null)
     setAr('starting')
     viewer
-      .startAr(overlay, {
-        onPreparing: () => setAr('preparing'),
-        onPlaced: () => {
-          setNoSurface(false)
-          setAr('placed')
+      .startAr(
+        overlay,
+        {
+          onPreparing: () => setAr('preparing'),
+          onPlaced: () => {
+            setNoSurface(false)
+            setAr('placed')
+          },
+          onMoveStart: () => setAr('moving'),
+          onNoSurface: showNoSurface,
+          onSurfaceChange: (found) => {
+            setSurfaceFound(found)
+            if (found) setSurfaceSeen(true)
+          },
+          onEnd: () => setAr('off'),
+          onDebug: AR_DEBUG ? setDebugInfo : undefined,
         },
-        onMoveStart: () => setAr('moving'),
-        onNoSurface: showNoSurface,
-        onSurfaceChange: (found) => {
-          setSurfaceFound(found)
-          if (found) setSurfaceSeen(true)
-        },
-        onEnd: () => setAr('off'),
-      })
+        AR_TEST_CUBE,
+      )
       .then(
         () =>
           setAr((state) =>
@@ -239,6 +272,9 @@ export function Viewer({
           <div className="ar-scan" aria-hidden="true">
             <ArStatusIcon name="scanning" />
           </div>
+        )}
+        {AR_DEBUG && debugInfo && (
+          <pre className="ar-debug">{debugLines(debugInfo).join('\n')}</pre>
         )}
         <button
           ref={exitArRef}

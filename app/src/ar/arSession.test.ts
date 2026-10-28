@@ -5,9 +5,11 @@ import { SURFACE_LOST_AFTER_MS, startArSession } from './arSession'
 type FrameCallback = (time: number, frame?: unknown) => void
 
 /** Minimal stand-ins for the WebXR session and the Three.js renderer. */
-function setup({ domOverlay = false } = {}) {
+function setup({ domOverlay = false, testCube = false, debug = false } = {}) {
   const session = Object.assign(new EventTarget(), {
     domOverlayState: domOverlay ? { type: 'screen' } : undefined,
+    environmentBlendMode: 'alpha-blend',
+    renderState: { depthNear: 0.01, depthFar: 100 },
     requestReferenceSpace: vi.fn(async () => ({})),
     requestHitTestSource: vi.fn(async () => ({ cancel: vi.fn() })),
     end: vi.fn(async () => {
@@ -31,7 +33,10 @@ function setup({ domOverlay = false } = {}) {
       setReferenceSpaceType: vi.fn(),
       setSession: vi.fn(async () => {}),
       getReferenceSpace: () => ({}),
+      getBaseLayer: () => ({ framebufferWidth: 1080, framebufferHeight: 2316 }),
     },
+    getContext: () => ({ getError: () => 0, isContextLost: () => false }),
+    info: { render: { calls: 2, triangles: 300 } },
     compileAsync: vi.fn(async () => {
       compiledWhileVisible = model.visible
     }),
@@ -47,6 +52,7 @@ function setup({ domOverlay = false } = {}) {
     onNoSurface: vi.fn(),
     onSurfaceChange: vi.fn(),
     onEnd: vi.fn(),
+    onDebug: vi.fn(),
   }
 
   /** Renders one XR frame with a surface at `point`, or none. */
@@ -54,6 +60,11 @@ function setup({ domOverlay = false } = {}) {
   let time = 0
   const frame = (point?: Vector3) =>
     loop?.((time += 16), {
+      // The phone 1.4 m above the local origin.
+      getViewerPose: () => ({
+        emulatedPosition: false,
+        transform: { position: { x: 0, y: 1.4, z: 0 } },
+      }),
       getHitTestResults: () =>
         point
           ? [
@@ -76,6 +87,8 @@ function setup({ domOverlay = false } = {}) {
       model,
       overlay: {} as HTMLElement,
       ...events,
+      testCube,
+      onDebug: debug ? events.onDebug : undefined,
     })
 
   const ring = () => scene.children.find((child) => child !== model)
@@ -236,5 +249,63 @@ describe('startArSession', () => {
     expect(scene.children.length).toBe(objects - 1) // ring removed
     tap()
     expect(events.onPlaced).toHaveBeenCalledOnce() // listener removed
+  })
+
+  describe('diagnostics (?debug=1)', () => {
+    it('reports what the session sees and draws', async () => {
+      const { events, frame, start } = setup({ debug: true })
+      await start()
+      frame(new Vector3(0, 0.4, -0.75))
+      expect(events.onDebug).toHaveBeenCalledOnce()
+      expect(events.onDebug.mock.lastCall?.[0]).toMatchObject({
+        tracking: true,
+        hit: true,
+        found: true,
+        ringDistance: 1.25,
+        ringDrop: 1,
+        firstRingMs: 0,
+        reticleVisible: true,
+        modelVisible: false,
+        frames: 1,
+        calls: 2,
+        framebuffer: '1080×2316',
+        blendMode: 'alpha-blend',
+        depthRange: '0.01–100',
+        error: null,
+      })
+    })
+
+    it('reports a few times per second, not every frame', async () => {
+      const { events, frame, start } = setup({ debug: true })
+      await start()
+      for (let i = 0; i < 32; i++) frame()
+      expect(events.onDebug.mock.calls.length).toBe(2)
+    })
+
+    it('keeps the loop running when a frame fails to render', async () => {
+      const { events, frame, renderer, start } = setup({ debug: true })
+      await start()
+      vi.mocked(renderer.render).mockImplementationOnce(() => {
+        throw new Error('render failed')
+      })
+      frame(new Vector3(0, 0, -1))
+      for (let i = 0; i < 16; i++) frame(new Vector3(0, 0, -1))
+      const info = events.onDebug.mock.lastCall?.[0]
+      expect(info.error).toBe('render failed')
+      expect(info.frames).toBe(16)
+    })
+  })
+
+  it('shows a test cube in front of the phone until the session ends', async () => {
+    const { events, scene, model, start } = setup({ testCube: true })
+    const handle = await start()
+    const cube = scene.children.find(
+      (child) => child !== model && child.position.z === -0.5,
+    )
+    expect(cube).toBeDefined()
+    expect(cube?.frustumCulled).toBe(false)
+    handle.end()
+    await vi.waitFor(() => expect(events.onEnd).toHaveBeenCalledOnce())
+    expect(scene.children).not.toContain(cube)
   })
 })
