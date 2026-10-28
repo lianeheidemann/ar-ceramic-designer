@@ -36,7 +36,7 @@ Interface web interativa, publicada no GitHub Pages, para explorar modelos de ce
 | [Oxlint](https://oxc.rs/docs/guide/usage/linter.html) | Análise estática do código. |
 | [Prettier](https://prettier.io/) | Formatação de código. |
 | [GitHub Actions](https://github.com/features/actions) | Workflows de integração e deploy. |
-| [WebXR]() | |
+| [WebXR](https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API) | Recursos de realidade aumentada no navegador. |
 
 ## Documentação
 
