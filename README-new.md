@@ -15,7 +15,7 @@
 Interface web interativa, publicada no GitHub Pages, para explorar modelos de cerâmica em 3D, personalizar materiais e comparar acabamentos. Em dispositivos compatíveis, permite visualizar as peças em realidade aumentada.
 
 <p align="center">
-  <img src="assets/interface/interface-ar-ceramic-designer-v3.webp" alt="Interface do AR Ceramic Designer" width="75%" />
+  <img src="assets/interface/interface-ar-ceramic-designer-v3.webp" alt="Interface do AR Ceramic Designer" width="50%" />
 </p>
 
 ## Tecnologias
