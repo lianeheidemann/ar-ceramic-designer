@@ -4,56 +4,50 @@ Código-fonte da aplicação web: React + Three.js, empacotada com Vite e public
 
 ## Arquitetura
 
-```mermaid
-flowchart TD
-  subgraph UI["Interface (React)"]
-    App["App.tsx<br/>estado: modelo, tema,<br/>materiais, comparação"]
-    ModelList[ModelList]
-    MaterialControls[MaterialControls]
-    CompareView["CompareView<br/>variantes A/B"]
-    Viewer["Viewer<br/>canvas + botão de RA"]
-    Hooks["hooks/<br/>useArSupport, useMediaQuery"]
-  end
-
-  subgraph Scene["Cena 3D (Three.js, sem React)"]
-    CeramicViewer["CeramicViewer<br/>renderer, luzes, câmera,<br/>OrbitControls, GLTFLoader"]
-    CameraSync["CameraSync<br/>sincroniza câmeras"]
-    Framing["framing<br/>enquadramento"]
-  end
-
-  subgraph AR["Realidade aumentada (WebXR)"]
-    Support["support<br/>suporte a immersive-ar"]
-    ArSession["arSession<br/>sessão + hit-test"]
-    ArStatus["arStatus<br/>mensagens da sessão"]
-  end
-
-  subgraph Domain["Dados e modelagem"]
-    Catalog["data/catalog<br/>modelos e dimensões"]
-    Lathe["geometry/lathe<br/>perfil de torno → malha"]
-    Materials["materials/<br/>presets e variantes"]
-    Units["utils/units<br/>mm ↔ m"]
-  end
-
-  App --> ModelList & MaterialControls & CompareView & Viewer
-  App --> Hooks
-  App --> Catalog & Materials
-  CompareView --> Viewer
-  CompareView --> CameraSync
-  CompareView --> Materials
-  MaterialControls --> Materials
-  Viewer --> CeramicViewer
-  Viewer --> ArStatus
-  Viewer --> Support
-  Hooks --> Support
-  CameraSync --> CeramicViewer
-  CeramicViewer --> Framing
-  CeramicViewer --> ArSession
-  CeramicViewer --> Lathe
-  Catalog --> Lathe & Materials
-  Lathe --> Units
+```
+app/
+├── index.html                 # página HTML que carrega src/main.tsx
+├── vite.config.ts             # configuração do Vite (base do GitHub Pages)
+├── package.json               # dependências e scripts
+├── public/
+│   ├── icons/                 # ícones do site
+│   ├── models/                # reservado para modelos .glb
+│   └── textures/              # reservado para texturas
+└── src/
+    ├── main.tsx               # ponto de entrada do React
+    ├── App.tsx                # componente raiz e estado da aplicação
+    ├── index.css              # estilos globais
+    ├── components/            # interface (React)
+    │   ├── Viewer.tsx         # canvas 3D e botão de RA
+    │   ├── CompareView.tsx    # comparação lado a lado (variantes A/B)
+    │   ├── ModelList.tsx      # lista de modelos do catálogo
+    │   ├── MaterialControls.tsx # cor, rugosidade, metalicidade e acabamentos
+    │   └── ArStatusIcon.tsx   # ícones das mensagens de RA
+    ├── viewers/               # cena 3D (Three.js, sem React)
+    │   ├── CeramicViewer.ts   # renderer, luzes, câmera e carregamento das peças
+    │   ├── CameraSync.ts      # sincroniza as câmeras na comparação
+    │   └── framing.ts         # enquadramento da peça na tela
+    ├── ar/                    # realidade aumentada (WebXR)
+    │   ├── support.ts         # verifica suporte a immersive-ar
+    │   ├── arSession.ts       # sessão de RA com hit-test
+    │   └── arStatus.ts        # mensagens exibidas durante a sessão
+    ├── geometry/
+    │   └── lathe.ts           # gera a peça a partir do perfil de torno
+    ├── materials/
+    │   ├── presets.ts         # acabamentos: fosco, brilhante, vitrificado
+    │   └── variants.ts        # materiais iniciais das variantes A/B
+    ├── data/
+    │   └── catalog.ts         # catálogo de modelos e dimensões
+    ├── hooks/
+    │   ├── useArSupport.ts    # suporte a RA no navegador
+    │   └── useMediaQuery.ts   # layout responsivo
+    ├── types/
+    │   └── ceramic.ts         # tipos compartilhados
+    └── utils/
+        └── units.ts           # conversão mm ↔ m
 ```
 
-`App` guarda todo o estado e repassa aos componentes. Cada `Viewer` cria um `CeramicViewer`, que monta a cena: as peças do catálogo são geradas a partir de um perfil de torno (`geometry/lathe`) ou carregadas de um arquivo `.glb`. Ao entrar em RA, o `CeramicViewer` abre a sessão WebXR (`ar/arSession`), que usa o `hit-test` para posicionar a peça em uma superfície real. Os tipos compartilhados (`types/ceramic`) são usados por quase todos os módulos e foram omitidos do diagrama.
+`App` guarda todo o estado e repassa aos componentes. Cada `Viewer` cria um `CeramicViewer`, que monta a cena: as peças do catálogo são geradas a partir de um perfil de torno (`geometry/lathe`) ou carregadas de um arquivo `.glb`. Ao entrar em RA, o `CeramicViewer` abre a sessão WebXR (`ar/arSession`), que usa o `hit-test` para posicionar a peça em uma superfície real.
 
 ## Estrutura
 
