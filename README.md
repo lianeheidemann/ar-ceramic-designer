@@ -16,29 +16,13 @@
   <a href="https://lianeheidemann.github.io/ar-ceramic-designer/"><img src="https://img.shields.io/badge/GitHub%20Pages-Live%20Demo-238636?style=flat-square&logo=githubpages&logoColor=white&labelColor=22272e" alt="Open GitHub Pages" /></a>
 </p>
 
-Aplicação web para visualizar e personalizar objetos de cerâmica em 3D e posicioná-los em realidade aumentada (WebXR) em dispositivos Android compatíveis.
+Interface web interativa, publicada no GitHub Pages, para explorar modelos de cerâmica em 3D, personalizar materiais e comparar acabamentos. Em dispositivos compatíveis, permite visualizar as peças em realidade aumentada.
 
-## Tecnologias
+> AR on supported Android browsers; verify compatibility on device
 
-### Aplicação
-
-| Tecnologia | Utilização |
-| :--- | :--- |
-| [TypeScript](https://www.typescriptlang.org/) | Linguagem principal, com tipagem estática. |
-| [React](https://react.dev/) | Interface, componentes e gerenciamento de estado. |
-| [Three.js](https://threejs.org/) | Renderização e interação com os modelos 3D. |
-| [Vite](https://vite.dev/) | Ambiente de desenvolvimento e build. |
-
-### Ferramentas de desenvolvimento
-
-| Ferramenta | Utilização |
-| :--- | :--- |
-| [Vitest](https://vitest.dev/) | Testes automatizados. |
-| [Oxlint](https://oxc.rs/docs/guide/usage/linter.html) | Análise estática do código. |
-| [Prettier](https://prettier.io/) | Formatação de código. |
-| [GitHub Actions](https://github.com/features/actions) | Workflows de integração e deploy. |
-
-> **WebXR:** tecnologia prevista para realidade aumentada; não representa uma funcionalidade já concluída.
+<p align="center">
+  <img width="50%" src="assets/interface/interface-ar-ceramic-designer-v3.webp">
+</p>
 
 ## Funcionalidades
 
@@ -50,39 +34,30 @@ Aplicação web para visualizar e personalizar objetos de cerâmica em 3D e posi
 
 ## Requisitos
 
-- Node.js LTS (testado com Node 22) e npm.
+- **Visualizador 3D:** navegador com suporte a WebGL 2 — Chrome 56+, Edge 79+, Firefox 51+ ou Safari 15+ (iOS/macOS), no computador ou no celular.
+- **Realidade aumentada:** celular com Android 7.0 ou superior que esteja na [lista de dispositivos compatíveis com ARCore](https://developers.google.com/ar/devices), com o app Google Play Services para RA instalado, usando o Chrome 81 ou superior. O navegador precisa suportar WebXR com detecção de superfícies (`immersive-ar` e `hit-test`), a página deve ser acessada por HTTPS e é necessário autorizar o uso da câmera.
+- **iPhone/iPad:** o Safari no iOS ainda não oferece WebXR, então apenas o visualizador 3D fica disponível.
 
-### Realidade aumentada
+## Tecnologias
 
-- Android com Chrome atualizado e o app **Google Play Services para RA** (ARCore) instalado.
-- Abrir o app por HTTPS (ex.: GitHub Pages) e permitir o uso da câmera.
-- Em navegadores sem WebXR (desktop, iPhone), o visualizador 3D continua disponível e o app explica por que o AR não está disponível.
-
-## Estrutura
-
-```text
-app/    # código da aplicação (Vite + React + Three.js)
-docs/   # documentação e planejamento
-```
-
-## Comandos
-
-Rode os comandos dentro da pasta `app/`:
-
-```bash
-cd app
-npm install          # instalar dependências
-npm run dev          # servidor de desenvolvimento
-npm run build        # checagem de tipos + build de produção em dist/
-npm run preview      # servir o build de produção localmente
-npm run lint         # lint (oxlint)
-npm test             # testes unitários (Vitest)
-npm run format       # formatar com Prettier
-```
-
+| Tecnologia | Utilização |
+| :--- | :--- |
+| [TypeScript](https://www.typescriptlang.org/) | Linguagem principal, com tipagem estática. |
+| [React](https://react.dev/) | Interface, componentes e gerenciamento de estado. |
+| [Three.js](https://threejs.org/) | Renderização e interação com os modelos 3D. |
+| [Vite](https://vite.dev/) | Ambiente de desenvolvimento e build. |
+| [Vitest](https://vitest.dev/) | Testes automatizados. |
+| [Playwright](https://playwright.dev/) | Testes de ponta a ponta do AR com WebXR simulado. |
+| [Oxlint](https://oxc.rs/docs/guide/usage/linter.html) | Análise estática do código. |
+| [GitHub Actions](https://github.com/features/actions) | Workflows de integração e deploy. |
+| [WebXR](https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API) | Recursos de realidade aumentada no navegador. |
 
 ## Documentação
 
 - [Guia passo a passo](docs/step-by-step.md)
 - [Plano de desenvolvimento](docs/development-plan.md)
 - [Referências](docs/references.md)
+
+## Demo
+
+[🔗 Acessar a aplicação](https://lianeheidemann.github.io/ar-ceramic-designer/)
