@@ -11,6 +11,7 @@ import {
   PerspectiveCamera,
   Scene,
   Sphere,
+  Spherical,
   Texture,
   Vector3,
   WebGLRenderer,
@@ -24,7 +25,7 @@ import {
 } from '../ar/arSession'
 import { createModelGeometry } from '../geometry/lathe'
 import type { CeramicModel, MaterialSettings } from '../types/ceramic'
-import { fitDistance } from './framing'
+import { fitDistance, stepOrbit } from './framing'
 
 const FOV_DEG = 35
 /** Camera elevation above the horizon when framing, in radians. */
@@ -32,6 +33,28 @@ const VIEW_ELEVATION = (25 * Math.PI) / 180
 const MAX_PIXEL_RATIO = 2
 /** Glaze layer stays smooth whatever the body roughness. */
 const CLEARCOAT_ROUGHNESS = 0.05
+/** One arrow key press turns the camera this much. */
+const KEY_ORBIT_STEP = (15 * Math.PI) / 180
+/** One +/- key press scales the camera distance by this much. */
+const KEY_ZOOM_STEP = 0.85
+
+/** Rendering figures for the debug panel (`?debug=1`). */
+export interface ViewerStats {
+  /** Frames rendered in the last second; 0 while nothing changes. */
+  fps: number
+  framesRendered: number
+  drawCalls: number
+  triangles: number
+  /** GPU resources alive; should not grow when switching models. */
+  geometries: number
+  textures: number
+  pixelRatio: number
+  /** Time to build or load the current model, in ms. */
+  loadMs: number | null
+  /** Camera angle around the vertical axis, in degrees. */
+  azimuthDeg: number
+  damping: boolean
+}
 
 export interface CameraState {
   position: Vector3
@@ -57,6 +80,15 @@ export class CeramicViewer {
   private loadId = 0
   /** The running AR session, if any. */
   private arSession: ArSessionHandle | null = null
+  /** Set when the next frame must be drawn even if the camera is still. */
+  private needsRender = true
+  /** Camera glide after a drag; off for users who prefer reduced motion. */
+  private readonly damping: boolean
+  private framesRendered = 0
+  /** When each of the last second's frames was rendered. */
+  private readonly frameTimes: number[] = []
+  private loadMs: number | null = null
+  private readonly contextListeners = new Set<(lost: boolean) => void>()
 
   constructor(container: HTMLElement) {
     this.container = container
@@ -73,9 +105,22 @@ export class CeramicViewer {
     this.scene.add(keyLight)
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement)
-    this.controls.enableDamping = true
+    this.damping = !window.matchMedia?.('(prefers-reduced-motion: reduce)')
+      .matches
+    this.controls.enableDamping = this.damping
     // Stop just above the horizon so the camera never goes under the floor.
     this.controls.maxPolarAngle = Math.PI / 2 - 0.05
+
+    const canvas = this.renderer.domElement
+    // Keyboard control: focus the canvas, then arrows, +/- and Home.
+    canvas.tabIndex = 0
+    canvas.setAttribute(
+      'aria-label',
+      'Peça em 3D. Setas giram, + e − aproximam, Home reinicia a vista.',
+    )
+    canvas.addEventListener('keydown', this.onKeyDown)
+    canvas.addEventListener('webglcontextlost', this.onContextLost)
+    canvas.addEventListener('webglcontextrestored', this.onContextRestored)
 
     this.resizeObserver = new ResizeObserver(() => this.resize())
     this.resizeObserver.observe(container)
@@ -87,6 +132,7 @@ export class CeramicViewer {
   /** Shows `model`, replacing the current one. Rejects if loading fails. */
   async setModel(model: CeramicModel): Promise<void> {
     const id = ++this.loadId
+    const started = performance.now()
     const object = await this.loadObject(model)
     if (id !== this.loadId) {
       disposeObject(object)
@@ -96,6 +142,7 @@ export class CeramicViewer {
     applyMaterial(object, this.material ?? model.defaultMaterial)
     this.model = object
     this.scene.add(object)
+    this.loadMs = Math.round(performance.now() - started)
     this.resetView()
   }
 
@@ -103,6 +150,7 @@ export class CeramicViewer {
   setMaterial(settings: MaterialSettings): void {
     this.material = settings
     if (this.model) applyMaterial(this.model, settings)
+    this.invalidate()
   }
 
   /** Frames the current model from the default angle. */
@@ -129,6 +177,81 @@ export class CeramicViewer {
     this.controls.minDistance = sphere.radius * 1.2
     this.controls.maxDistance = distance * 4
     this.controls.update()
+    this.invalidate()
+  }
+
+  /**
+   * Keyboard control: arrows turn the camera, + and - zoom, Home (or 0)
+   * frames the piece again. Returns whether the key was used.
+   */
+  handleKey(key: string): boolean {
+    const steps: Record<string, Parameters<typeof stepOrbit>[1]> = {
+      ArrowLeft: { dAzimuth: -KEY_ORBIT_STEP },
+      ArrowRight: { dAzimuth: KEY_ORBIT_STEP },
+      ArrowUp: { dPolar: -KEY_ORBIT_STEP },
+      ArrowDown: { dPolar: KEY_ORBIT_STEP },
+      '+': { zoom: KEY_ZOOM_STEP },
+      '=': { zoom: KEY_ZOOM_STEP },
+      '-': { zoom: 1 / KEY_ZOOM_STEP },
+    }
+    if (key === 'Home' || key === '0') {
+      this.resetView()
+      return true
+    }
+    const step = steps[key]
+    if (!step || !this.model) return false
+    const { target } = this.controls
+    const offset = this.camera.position.clone().sub(target)
+    const spherical = new Spherical().setFromVector3(offset)
+    const next = stepOrbit(
+      {
+        radius: spherical.radius,
+        polar: spherical.phi,
+        azimuth: spherical.theta,
+      },
+      step,
+      {
+        minDistance: this.controls.minDistance,
+        maxDistance: this.controls.maxDistance,
+        minPolar: this.controls.minPolarAngle,
+        maxPolar: this.controls.maxPolarAngle,
+      },
+    )
+    spherical.set(next.radius, next.polar, next.azimuth)
+    this.stopMotion()
+    this.camera.position.copy(target).add(offset.setFromSpherical(spherical))
+    // Also emits "change", so the other viewers in a comparison follow.
+    this.controls.update()
+    this.invalidate()
+    return true
+  }
+
+  /** Calls `listener` when the WebGL context is lost (true) or back. */
+  onContextChange(listener: (lost: boolean) => void): () => void {
+    this.contextListeners.add(listener)
+    return () => this.contextListeners.delete(listener)
+  }
+
+  getStats(): ViewerStats {
+    const now = performance.now()
+    while (this.frameTimes.length && this.frameTimes[0] < now - 1000) {
+      this.frameTimes.shift()
+    }
+    const { render, memory } = this.renderer.info
+    const offset = this.camera.position.clone().sub(this.controls.target)
+    const azimuth = new Spherical().setFromVector3(offset).theta
+    return {
+      fps: this.frameTimes.length,
+      framesRendered: this.framesRendered,
+      drawCalls: render.calls,
+      triangles: render.triangles,
+      geometries: memory.geometries,
+      textures: memory.textures,
+      pixelRatio: this.renderer.getPixelRatio(),
+      loadMs: this.loadMs,
+      azimuthDeg: Math.round((azimuth * 180) / Math.PI),
+      damping: this.damping,
+    }
   }
 
   /**
@@ -223,6 +346,7 @@ export class CeramicViewer {
     this.camera.position.copy(position)
     this.controls.target.copy(target)
     this.controls.update()
+    this.invalidate()
   }
 
   dispose(): void {
@@ -230,6 +354,11 @@ export class CeramicViewer {
     this.loadId++
     this.renderer.setAnimationLoop(null)
     this.resizeObserver.disconnect()
+    const canvas = this.renderer.domElement
+    canvas.removeEventListener('keydown', this.onKeyDown)
+    canvas.removeEventListener('webglcontextlost', this.onContextLost)
+    canvas.removeEventListener('webglcontextrestored', this.onContextRestored)
+    this.contextListeners.clear()
     this.controls.dispose()
     this.clearModel()
     this.renderer.dispose()
@@ -248,18 +377,49 @@ export class CeramicViewer {
     )
   }
 
+  /**
+   * Draws only when something changed (camera moving or gliding, model,
+   * material, size): a still piece costs no GPU work or battery.
+   */
   private startRenderLoop(): void {
-    this.renderer.setAnimationLoop(() => {
-      this.controls.update()
+    this.invalidate()
+    this.renderer.setAnimationLoop((time) => {
+      const moved = this.controls.update()
+      if (!moved && !this.needsRender) return
+      this.needsRender = false
       this.renderer.render(this.scene, this.camera)
+      this.framesRendered++
+      this.frameTimes.push(time)
+      if (this.frameTimes.length > 120) this.frameTimes.shift()
     })
+  }
+
+  private invalidate(): void {
+    this.needsRender = true
+  }
+
+  private readonly onKeyDown = (event: KeyboardEvent) => {
+    if (event.altKey || event.ctrlKey || event.metaKey) return
+    if (this.handleKey(event.key)) event.preventDefault()
+  }
+
+  private readonly onContextLost = (event: Event) => {
+    // Without this the browser never gives the context back.
+    event.preventDefault()
+    for (const listener of this.contextListeners) listener(true)
+  }
+
+  private readonly onContextRestored = () => {
+    // Three.js re-creates its GPU state; draw the scene again.
+    this.invalidate()
+    for (const listener of this.contextListeners) listener(false)
   }
 
   /** Flushes leftover damping motion so it cannot move the camera later. */
   private stopMotion(): void {
     this.controls.enableDamping = false
     this.controls.update()
-    this.controls.enableDamping = true
+    this.controls.enableDamping = this.damping
   }
 
   private clearModel(): void {
@@ -276,6 +436,7 @@ export class CeramicViewer {
     this.renderer.setSize(width, height)
     this.camera.aspect = width / height
     this.camera.updateProjectionMatrix()
+    this.invalidate()
   }
 }
 

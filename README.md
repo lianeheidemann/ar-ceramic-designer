@@ -18,7 +18,7 @@
 
 Interface web interativa, publicada no GitHub Pages, para explorar modelos de cerâmica em 3D, personalizar materiais e comparar acabamentos. Em dispositivos compatíveis, permite visualizar as peças em realidade aumentada.
 
-> AR on supported Android browsers; verify compatibility on device
+> Realidade aumentada testada no Galaxy S23 Ultra (Chrome, Android 16). Em outros aparelhos, verifique a compatibilidade.
 
 <p align="center">
   <img width="50%" src="assets/interface/interface-ar-ceramic-designer-v3.webp">
@@ -29,14 +29,23 @@ Interface web interativa, publicada no GitHub Pages, para explorar modelos de ce
 - Visualizador 3D com vaso, tigela e prato (girar, aproximar, reiniciar vista).
 - Personalização do material: acabamentos (fosco, brilhante, vitrificado), cor, rugosidade e metalicidade.
 - Comparação lado a lado de duas variantes (A/B).
-- Realidade aumentada (WebXR) em Android compatível.
+- Realidade aumentada (WebXR) em Android compatível: um anel mostra a superfície detectada e um toque posiciona a peça em tamanho real; outro toque permite movê-la.
 - Exportar e importar a configuração em `.json` e salvar uma imagem PNG da vista 3D.
+- Acessibilidade: controle da câmera pelo teclado (setas giram, `+`/`−` aproximam, Home reinicia), foco visível e respeito à preferência por menos movimento.
+- Desempenho: a cena só é redesenhada quando algo muda, e o visualizador se recupera se o sistema interromper o WebGL.
 
 ## Requisitos
 
 - **Visualizador 3D:** navegador com suporte a WebGL 2 — Chrome 56+, Edge 79+, Firefox 51+ ou Safari 15+ (iOS/macOS), no computador ou no celular.
 - **Realidade aumentada:** celular com Android 7.0 ou superior que esteja na [lista de dispositivos compatíveis com ARCore](https://developers.google.com/ar/devices), com o app Google Play Services para RA instalado, usando o Chrome 81 ou superior. O navegador precisa suportar WebXR com detecção de superfícies (`immersive-ar` e `hit-test`), a página deve ser acessada por HTTPS e é necessário autorizar o uso da câmera.
 - **iPhone/iPad:** o Safari no iOS ainda não oferece WebXR, então apenas o visualizador 3D fica disponível.
+
+## Limitações conhecidas
+
+- **WebXR Layers no Chrome:** o AR sempre desenha numa `XRWebGLLayer` clássica, porque no AR do Chrome (S23 Ultra) nada desenhado numa camada de projeção aparecia sobre a câmera.
+- **Modelos:** as três peças de exemplo são geradas em código. O carregamento de GLB existe, mas ainda não há modelos do Blender no projeto.
+- **Captura no AR:** a imagem PNG é só da vista 3D; a câmera do AR não entra na captura.
+- **Desempenho:** ainda não foi medido no aparelho. Para medir, abra a aplicação com `?debug=1`.
 
 ## Tecnologias
 

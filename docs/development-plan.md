@@ -11,18 +11,20 @@ Build a lightweight web app to view, customize and place 3D ceramic objects in a
 - **Optional later:** Python + Open3D for geometric checks; Capacitor for Android packaging
 
 ## MVP roadmap
-1. **3D viewer:** load sample GLB models; orbit, zoom, reset and responsive UI.
-2. **Customization:** change ceramic colors, roughness and finishes; restore defaults.
-3. **AR mode:** place a correctly scaled object on a detected surface; handle unsupported browsers gracefully.
-4. **Comparison and export:** compare two variants; save configurations as JSON and screenshots when supported.
-5. **Validation:** test on S23 Ultra, optimize model sizes, measure loading time/FPS and document limitations.
+1. ✅ **3D viewer:** load sample models; orbit, zoom, reset and responsive UI.
+2. ✅ **Customization:** change ceramic colors, roughness and finishes; restore defaults.
+3. ✅ **AR mode:** place a correctly scaled object on a detected surface; handle unsupported browsers gracefully. *Confirmed on the S23 Ultra on 2026-10-29.*
+4. ✅ **Comparison and export:** compare two variants; save configurations as JSON and screenshots when supported.
+5. 🔄 **Validation:** test on S23 Ultra, optimize model sizes, measure loading time/FPS and document limitations. *AR tested on the phone; on-demand rendering, debug figures (`?debug=1`) and known limitations done; performance numbers still to measure.*
+
+Details per step: [step-by-step guide](step-by-step.md).
 
 ## Acceptance criteria
-- At least two optimized sample ceramic models.
-- Smooth interactive viewing on desktop and Galaxy S23 Ultra.
-- Material edits persist in exported JSON.
-- AR is tested on a compatible device, with a clear fallback where unavailable.
-- README documents installation, running, screenshots and known limitations.
+- ✅ At least two optimized sample ceramic models (three, generated in code, ~10k triangles each, no textures).
+- 🔄 Smooth interactive viewing on desktop and Galaxy S23 Ultra (desktop ✅; numbers on the phone to measure).
+- ✅ Material edits persist in exported JSON.
+- ✅ AR is tested on a compatible device (S23 Ultra), with a clear fallback where unavailable.
+- 🔄 README documents installation, running, screenshots and known limitations (asset licenses and AR media to add).
 
 ## Suggested structure
 ```text

@@ -7,7 +7,7 @@ import type { CeramicModel, MaterialSettings } from '../types/ceramic'
 import { downloadBlob, downloadName } from '../utils/download'
 import type { CameraSync } from '../viewers/CameraSync'
 import { ArStatusIcon } from './ArStatusIcon'
-import { CeramicViewer } from '../viewers/CeramicViewer'
+import { CeramicViewer, type ViewerStats } from '../viewers/CeramicViewer'
 
 /**
  * Switches for testing AR on a phone: `?debug=1` shows what the session
@@ -20,7 +20,18 @@ const AR_DEBUG = arParams.has('debug')
 const AR_TEST_CUBE = arParams.get('cubo') === '1'
 const AR_PROJECTION_LAYER = arParams.get('camada') === 'projection'
 
-/** The debug panel's lines. */
+/** The 3D viewer's debug lines (`?debug=1`, outside AR). */
+function statsLines(stats: ViewerStats): string[] {
+  return [
+    `quadros/s: ${stats.fps} · desenhados: ${stats.framesRendered}`,
+    `draw calls: ${stats.drawCalls} · triângulos: ${stats.triangles}`,
+    `memória GPU: geometrias ${stats.geometries} · texturas ${stats.textures}`,
+    `pixel ratio: ${stats.pixelRatio} · modelo: ${stats.loadMs ?? '—'} ms`,
+    `câmera: ${stats.azimuthDeg}° · amortecimento: ${stats.damping ? 'sim' : 'não'}`,
+  ]
+}
+
+/** The AR debug panel's lines. */
 function debugLines(info: ArDebugInfo): string[] {
   const yesNo = (value: boolean) => (value ? 'sim' : 'não')
   const meters = (value: number | null) => (value === null ? '—' : `${value} m`)
@@ -79,6 +90,12 @@ export function Viewer({
   const viewerRef = useRef<CeramicViewer | null>(null)
   const [webglAvailable] = useState(() => WebGL.isWebGL2Available())
   const [result, setResult] = useState<LoadResult | null>(null)
+  /** Bumped to rebuild the viewer, e.g. after the GPU context was lost. */
+  const [instance, setInstance] = useState(0)
+  /** Bumped to load the model again after a failure. */
+  const [retry, setRetry] = useState(0)
+  const [contextLost, setContextLost] = useState(false)
+  const [stats, setStats] = useState<ViewerStats | null>(null)
 
   useEffect(() => {
     const container = containerRef.current
@@ -86,12 +103,14 @@ export function Viewer({
     const viewer = new CeramicViewer(container)
     viewerRef.current = viewer
     const removeFromSync = cameraSync?.add(viewer)
+    const removeContextListener = viewer.onContextChange(setContextLost)
     return () => {
+      removeContextListener()
       removeFromSync?.()
       viewer.dispose()
       viewerRef.current = null
     }
-  }, [webglAvailable, cameraSync])
+  }, [webglAvailable, cameraSync, instance])
 
   // Runs after the effect above, so the viewer already exists.
   useEffect(() => {
@@ -110,11 +129,21 @@ export function Viewer({
     return () => {
       cancelled = true
     }
-  }, [model])
+  }, [model, instance, retry])
 
+  // Also after a rebuild: a new viewer starts without the custom material.
   useEffect(() => {
     viewerRef.current?.setMaterial(material)
-  }, [material])
+  }, [material, instance])
+
+  useEffect(() => {
+    if (!AR_DEBUG || ar !== 'off') return
+    const timer = window.setInterval(() => {
+      const viewer = viewerRef.current
+      if (viewer) setStats(viewer.getStats())
+    }, 500)
+    return () => window.clearInterval(timer)
+  }, [ar, instance])
 
   // A tap on "Sair do AR" must not also place the piece behind it.
   useEffect(() => {
@@ -183,6 +212,17 @@ export function Viewer({
     })
   }
 
+  function rebuildViewer() {
+    setContextLost(false)
+    setResult(null)
+    setInstance((value) => value + 1)
+  }
+
+  function retryLoad() {
+    setResult(null)
+    setRetry((value) => value + 1)
+  }
+
   const status = arStatus(ar, { surfaceFound, noSurfaceTap: noSurface })
   const loading = result?.modelId !== model.id
   const error = webglAvailable
@@ -196,10 +236,29 @@ export function Viewer({
       role={label ? 'group' : undefined}
       aria-label={label}
     >
-      {error ? (
-        <p className="viewer-status viewer-error" role="alert">
-          {error}
-        </p>
+      {contextLost ? (
+        <div className="viewer-status viewer-error" role="alert">
+          <p>
+            O visualizador 3D foi interrompido pelo sistema (pouca memória de
+            vídeo). Tentando restaurar…
+          </p>
+          <button
+            type="button"
+            className="viewer-button"
+            onClick={rebuildViewer}
+          >
+            Recarregar visualizador
+          </button>
+        </div>
+      ) : error ? (
+        <div className="viewer-status viewer-error" role="alert">
+          <p>{error}</p>
+          {webglAvailable && (
+            <button type="button" className="viewer-button" onClick={retryLoad}>
+              Tentar novamente
+            </button>
+          )}
+        </div>
       ) : loading ? (
         <p className="viewer-status" role="status">
           Carregando…
@@ -252,6 +311,9 @@ export function Viewer({
             Reiniciar vista
           </button>
         </div>
+      )}
+      {AR_DEBUG && stats && ar === 'off' && (
+        <pre className="viewer-debug">{statsLines(stats).join('\n')}</pre>
       )}
       {arError && (
         <p className="viewer-ar-error" role="alert">
