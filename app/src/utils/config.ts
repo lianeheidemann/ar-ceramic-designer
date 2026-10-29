@@ -55,30 +55,28 @@ export function parseConfig(text: string): ParseResult {
   try {
     data = JSON.parse(text)
   } catch {
-    return fail('O arquivo não é um JSON válido.')
+    return fail('The file is not valid JSON.')
   }
   if (!isRecord(data) || data.schema !== CONFIG_SCHEMA) {
-    return fail('O arquivo não é uma configuração do AR Ceramic Designer.')
+    return fail('The file is not an AR Ceramic Designer settings file.')
   }
   if (data.version !== CONFIG_VERSION) {
-    return fail(
-      `Versão de configuração não suportada: ${String(data.version)}.`,
-    )
+    return fail(`Unsupported settings version: ${String(data.version)}.`)
   }
   const model =
     typeof data.modelId === 'string' ? getModelById(data.modelId) : undefined
   if (!model) {
-    return fail(`Modelo desconhecido: ${String(data.modelId)}.`)
+    return fail(`Unknown model: ${String(data.modelId)}.`)
   }
   if (!isRecord(data.variants)) {
-    return fail('A configuração não tem materiais.')
+    return fail('The settings have no materials.')
   }
   const a = parseMaterial(data.variants.A)
-  if (!a) return fail('Material da variante A inválido.')
+  if (!a) return fail('Invalid material for variant A.')
   const variants: CeramicConfig['variants'] = { A: a }
   if (data.variants.B !== undefined) {
     const b = parseMaterial(data.variants.B)
-    if (!b) return fail('Material da variante B inválido.')
+    if (!b) return fail('Invalid material for variant B.')
     variants.B = b
   }
   return { ok: true, config: createConfig(model, variants) }

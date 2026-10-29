@@ -21,29 +21,29 @@ export function arStatus(
     case 'starting':
       return null
     case 'preparing':
-      return { icon: 'loading', text: 'Preparando a peça…' }
+      return { icon: 'loading', text: 'Preparing the piece…' }
     case 'placed':
       return {
         icon: 'placed',
-        text: 'Peça posicionada. Toque na tela para mover.',
+        text: 'Piece placed. Tap the screen to move it.',
       }
   }
   if (noSurfaceTap) {
     return {
       icon: 'warning',
-      text: 'Nenhuma superfície detectada — mova o celular devagar.',
+      text: 'No surface detected — move the phone slowly.',
     }
   }
   if (!surfaceFound) {
     return {
       icon: 'scanning',
-      text: 'Procurando uma superfície… mova o celular devagar.',
+      text: 'Looking for a surface… move the phone slowly.',
     }
   }
   return state === 'moving'
-    ? { icon: 'move', text: 'Toque para colocar a peça aqui.' }
+    ? { icon: 'move', text: 'Tap to place the piece here.' }
     : {
         icon: 'tap',
-        text: 'Superfície encontrada. Toque para posicionar a peça.',
+        text: 'Surface found. Tap to place the piece.',
       }
 }

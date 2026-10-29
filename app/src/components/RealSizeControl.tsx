@@ -44,9 +44,9 @@ export function RealSizeControl({
 
   return (
     <section className="controls-section">
-      <h2>Tamanho real</h2>
+      <h2>Real size</h2>
       <label className="control-row" htmlFor={`${id}-height`}>
-        <span className="control-label">Altura (cm)</span>
+        <span className="control-label">Height (cm)</span>
         <input
           id={`${id}-height`}
           className="size-input"
@@ -60,7 +60,7 @@ export function RealSizeControl({
         />
       </label>
       <p className="controls-note">
-        Peça: ⌀ {width} × {Math.round(heightMm)} mm. No arquivo: ⌀{' '}
+        Piece: ⌀ {width} × {Math.round(heightMm)} mm. In the file: ⌀{' '}
         {fileDimensionsMm.width} × {fileDimensionsMm.height} mm.
       </p>
       {changed && (
@@ -69,7 +69,7 @@ export function RealSizeControl({
           className="reset-material"
           onClick={() => onChange(fileDimensionsMm.height)}
         >
-          Usar o tamanho do arquivo
+          Use the file size
         </button>
       )}
     </section>

@@ -12,8 +12,8 @@ export function createGltfLoader(): GLTFLoader {
 
 /** Extensions a file may require that this app cannot read, with a name to show. */
 const UNSUPPORTED: Record<string, string> = {
-  KHR_draco_mesh_compression: 'compressão Draco',
-  KHR_texture_basisu: 'texturas KTX2 (Basis)',
+  KHR_draco_mesh_compression: 'Draco compression',
+  KHR_texture_basisu: 'KTX2 (Basis) textures',
 }
 
 /**

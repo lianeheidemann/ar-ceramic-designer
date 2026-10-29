@@ -18,14 +18,14 @@ export async function checkArSupport(
   if (!env.isSecureContext) {
     return {
       kind: 'unavailable',
-      reason: 'A realidade aumentada exige uma conexão segura (HTTPS).',
+      reason: 'Augmented reality needs a secure connection (HTTPS).',
     }
   }
   if (!env.xr) {
     return {
       kind: 'unavailable',
       reason:
-        'Este navegador não suporta WebXR. No Android, use o Chrome atualizado.',
+        'This browser does not support WebXR. On Android, use an up-to-date Chrome.',
     }
   }
   try {
@@ -38,7 +38,7 @@ export async function checkArSupport(
   return {
     kind: 'unavailable',
     reason:
-      'Este dispositivo ou navegador não oferece realidade aumentada (WebXR). O visualizador 3D continua disponível.',
+      'This device or browser does not offer augmented reality (WebXR). The 3D viewer is still available.',
   }
 }
 
@@ -48,10 +48,10 @@ export function arErrorMessage(error: unknown): string {
   switch (name) {
     case 'NotAllowedError':
     case 'SecurityError':
-      return 'Permissão negada. Autorize o uso da câmera para usar a realidade aumentada.'
+      return 'Permission denied. Allow camera access to use augmented reality.'
     case 'NotSupportedError':
-      return 'Este dispositivo não oferece os recursos de AR necessários (detecção de superfícies).'
+      return 'This device lacks the AR features needed (surface detection).'
     default:
-      return 'Não foi possível iniciar a realidade aumentada.'
+      return 'Could not start augmented reality.'
   }
 }

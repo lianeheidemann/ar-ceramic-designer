@@ -43,14 +43,18 @@ describe('arErrorMessage', () => {
     Object.assign(new Error('x'), { name }) as Error
 
   it('explains permission denial', () => {
-    expect(arErrorMessage(named('NotAllowedError'))).toMatch(/Permissão/)
+    expect(arErrorMessage(named('NotAllowedError'))).toMatch(
+      /Permission denied/,
+    )
   })
 
   it('explains missing features', () => {
-    expect(arErrorMessage(named('NotSupportedError'))).toMatch(/superfícies/)
+    expect(arErrorMessage(named('NotSupportedError'))).toMatch(
+      /surface detection/,
+    )
   })
 
   it('falls back to a generic message', () => {
-    expect(arErrorMessage('???')).toMatch(/Não foi possível/)
+    expect(arErrorMessage('???')).toMatch(/Could not start/)
   })
 })

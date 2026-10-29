@@ -1,51 +1,50 @@
 # app
 
-Aplicação web em React + Three.js, com build pelo Vite e deploy no GitHub Pages.
+React + Three.js web app, built with Vite and deployed to GitHub Pages.
 
-## Estrutura
+## Structure
 
 ```
 app/
 ├── index.html
-├── vite.config.ts           # base do GitHub Pages
-├── public/                  # ícones, modelos (.glb) e texturas
-├── e2e/                     # testes Playwright (visualizador e AR com WebXR simulado)
+├── vite.config.ts      # GitHub Pages base path
+├── public/             # icons, models (.glb), textures
+├── e2e/                # Playwright tests (viewer, and AR with a fake WebXR device)
 └── src/
-    ├── main.tsx             # ponto de entrada
-    ├── App.tsx              # componente raiz e estado da aplicação
-    ├── components/          # interface React (visualizador, controles, comparação)
-    ├── viewers/             # cena Three.js, câmera e enquadramento
-    ├── ar/                  # sessão WebXR (immersive-ar + hit-test)
-    ├── geometry/            # geração das peças por perfil de torno
-    ├── materials/           # acabamentos e variantes A/B
-    ├── data/                # catálogo de modelos
-    ├── hooks/               # suporte a RA e media queries
-    ├── types/               # tipos compartilhados
-    └── utils/               # mm ↔ m, configuração JSON, importação .glb e downloads
+    ├── App.tsx         # root component and app state
+    ├── components/     # React UI (viewer, controls, tabs, comparison)
+    ├── viewers/        # Three.js scene, GLB loading, simplification
+    ├── ar/             # WebXR session (immersive-ar + hit-test)
+    ├── geometry/       # lathe-profile pieces
+    ├── materials/      # finishes and A/B variants
+    ├── data/           # model catalog
+    ├── hooks/          # AR support, media queries
+    ├── types/          # shared types
+    └── utils/          # units, JSON settings, .glb import, downloads
 ```
 
-Os testes (`*.test.ts`) ficam ao lado do código que testam.
+Unit tests (`*.test.ts`) sit next to the code they test.
 
-## Comandos
+## Commands
 
 ```bash
 npm install
-npm run dev       # desenvolvimento
-npm run build     # typecheck + build
-npm test          # Vitest
-npm run test:e2e  # Playwright (antes: npx playwright install chromium)
-npm run lint      # Oxlint
-npm run format    # Prettier
+npm run dev           # dev server
+npm run build         # typecheck + build
+npm test              # Vitest
+npm run test:e2e      # Playwright (first: npx playwright install chromium)
+npm run lint          # Oxlint
+npm run format        # Prettier
 ```
 
-A realidade aumentada exige HTTPS.
+AR needs HTTPS.
 
-## Parâmetros de teste
+## Test switches
 
-Para testar no celular, acrescente à URL:
+Add to the URL:
 
-| Parâmetro            | Efeito                                                                                                     |
-| :------------------- | :--------------------------------------------------------------------------------------------------------- |
-| `?debug=1`           | Painel com quadros por segundo, draw calls, memória da GPU (visualizador 3D) e diagnóstico da sessão (AR). |
-| `?cubo=1`            | Cubo de teste no AR, 50 cm à frente da posição inicial.                                                    |
-| `?camada=projection` | Usa a camada de projeção do WebXR Layers, para reproduzir o problema do S23 Ultra.                         |
+| Switch              | Effect                                                                         |
+| :------------------ | :----------------------------------------------------------------------------- |
+| `?debug=1`          | Panel with fps, draw calls, GPU memory (3D viewer) and AR session diagnostics. |
+| `?cube=1`           | Test cube in AR, 50 cm in front of the start position.                         |
+| `?layer=projection` | Uses a WebXR Layers projection layer, to reproduce the S23 Ultra issue.        |

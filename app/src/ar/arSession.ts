@@ -133,7 +133,7 @@ export async function startArSession({
   projectionLayer = false,
 }: ArSessionOptions): Promise<ArSessionHandle> {
   if (!navigator.xr) {
-    throw new DOMException('WebXR indisponível', 'NotSupportedError')
+    throw new DOMException('WebXR unavailable', 'NotSupportedError')
   }
   const session = await navigator.xr.requestSession('immersive-ar', {
     requiredFeatures: ['hit-test'],
@@ -292,7 +292,7 @@ export async function startArSession({
     const viewerSpace = await session.requestReferenceSpace('viewer')
     hitTestSource = await session.requestHitTestSource?.({ space: viewerSpace })
     if (!hitTestSource) {
-      throw new DOMException('Hit test indisponível', 'NotSupportedError')
+      throw new DOMException('Hit test unavailable', 'NotSupportedError')
     }
     // Compile the piece's shaders now, while it is still visible: otherwise
     // the first render after the tap compiles them and the piece shows up

@@ -16,67 +16,60 @@
   <a href="https://lianeheidemann.github.io/ar-ceramic-designer/"><img src="https://img.shields.io/badge/GitHub%20Pages-Live%20Demo-238636?style=flat-square&logo=githubpages&logoColor=white&labelColor=22272e" alt="Open GitHub Pages" /></a>
 </p>
 
-Interface web interativa, publicada no GitHub Pages, para explorar modelos de cerâmica em 3D, personalizar materiais e comparar acabamentos. Em dispositivos compatíveis, permite visualizar as peças em realidade aumentada.
+A web app, live on GitHub Pages, to view ceramic pieces in 3D, change their finish, compare two variants and, on supported phones, place them in augmented reality.
 
-> Realidade aumentada testada no Galaxy S23 Ultra (Chrome, Android 16). Em outros aparelhos, verifique a compatibilidade.
+> AR tested on the Galaxy S23 Ultra (Chrome, Android 16).
 
 <p align="center">
-  <img width="100%" src="assets/interface/interface-ar-ceramic-designer-v6.webp">
+  <img width="100%" src="assets/interface/interface-ar-ceramic-designer-v6.webp" alt="App interface">
 </p>
 
-## Funcionalidades
+## Features
 
-- Visualizador 3D com vaso, tigela e prato (girar, aproximar, reiniciar vista).
-- Importar um modelo 3D próprio (`.glb`) pelo botão **Importar**: ele entra na lista de modelos, com as medidas lidas do arquivo, e funciona no visualizador, na comparação A/B e no AR. O **×** ao lado do modelo importado tira ele da lista. Exemplo para baixar e testar: [xícara de porcelana com pires](https://lianeheidemann.github.io/ar-ceramic-designer/models/xicara-porcelana.glb).
-- Personalização do material: acabamentos (fosco, brilhante, vitrificado), cor, rugosidade e metalicidade.
-- Comparação lado a lado de duas variantes (A/B).
-- Realidade aumentada (WebXR) em Android compatível: um anel mostra a superfície detectada e um toque posiciona a peça em tamanho real; outro toque permite movê-la.
-- Exportar e importar a configuração em `.json` e salvar uma imagem PNG da vista 3D.
-- Acessibilidade: controle da câmera pelo teclado (setas giram, `+`/`−` aproximam, Home reinicia), foco visível e respeito à preferência por menos movimento.
-- Desempenho: a cena só é redesenhada quando algo muda, e o visualizador se recupera se o sistema interromper o WebGL.
+- 3D viewer with a vase, bowl and plate: turn, zoom, reset.
+- Import your own `.glb` model (**Settings → Import**); **×** removes it from the list.
+- Finishes (matte, glossy, glazed), color, roughness and metalness; A/B comparison.
+- AR (WebXR): a ring marks the surface, a tap places the piece at real size, another tap moves it.
+- Export/import settings as `.json`; save a PNG of the 3D view.
+- Keyboard camera (arrows, `+`/`−`, Home), visible focus, reduced motion, on-demand rendering.
 
-## Requisitos
+## Supported 3D files
 
-- **Visualizador 3D:** navegador com suporte a WebGL 2 — Chrome 56+, Edge 79+, Firefox 51+ ou Safari 15+ (iOS/macOS), no computador ou no celular.
-- **Realidade aumentada:** celular com Android 7.0 ou superior que esteja na [lista de dispositivos compatíveis com ARCore](https://developers.google.com/ar/devices), com o app Google Play Services para RA instalado, usando o Chrome 81 ou superior. O navegador precisa suportar WebXR com detecção de superfícies (`immersive-ar` e `hit-test`), a página deve ser acessada por HTTPS e é necessário autorizar o uso da câmera.
-- **iPhone/iPad:** o Safari no iOS ainda não oferece WebXR, então apenas o visualizador 3D fica disponível.
+- A single binary **`.glb`** (glTF 2.0), optionally **Meshopt**-compressed (gltfpack, Tripo).
+- Textures embedded as PNG, JPEG or WebP.
+- Units in meters; set the true height in **Models → Real size** (AI generators export about 1 m).
+- Meshes over 300k triangles are simplified on load; the file is not changed.
+- Not accepted: `.gltf` with separate files, `.obj`/`.fbx`/`.stl`, Draco compression, KTX2 textures. The app says what is missing.
+- Imported models stay in the browser until the page reloads.
 
-## Limitações conhecidas
+## Requirements
 
-- **WebXR Layers no Chrome:** o AR sempre desenha numa `XRWebGLLayer` clássica, porque no AR do Chrome (S23 Ultra) nada desenhado numa camada de projeção aparecia sobre a câmera.
-- **Modelos importados (`.glb`):** ficam só até recarregar a página e não são enviados a nenhum servidor. O app lê o tamanho em metros (padrão do glTF), apoia a base da peça na superfície do AR e mostra o campo **Tamanho real** (aba Modelos) para digitar a altura verdadeira: geradores como a Tripo entregam as peças com cerca de 1 m, e o app avisa quando a peça passa de 60 cm. Modelos com mais de 300 mil triângulos são simplificados ao abrir (o arquivo não muda) para rodar leve no celular. Só arquivo único `.glb`, com ou sem compressão Meshopt (a usada pelo gltfpack e por geradores como a Tripo). Não são aceitos `.gltf` com arquivos separados, `.obj`, compressão Draco e texturas KTX2; nesses casos o app diz qual recurso falta.
-- **Material de modelos importados:** cor, rugosidade e metalicidade multiplicam os valores do próprio arquivo, então a cor tinge as texturas, e o acabamento vitrificado não muda o brilho.
-- **Configuração de modelo importado:** o `.json` exportado só volta a abrir depois de importar o mesmo `.glb` de novo.
-- **Captura no AR:** a imagem PNG é só da vista 3D; a câmera do AR não entra na captura.
-- **Desempenho:** ainda não foi medido no aparelho. Para medir, abra a aplicação com `?debug=1`.
+- **3D viewer:** a WebGL 2 browser (Chrome, Edge, Firefox, Safari 15+).
+- **AR:** an [ARCore-supported](https://developers.google.com/ar/devices) Android phone with Chrome 81+, over HTTPS, with camera permission.
+- **iPhone/iPad:** Safari has no WebXR yet, so only the 3D viewer works.
 
-## Licenças dos modelos
+## Known limitations
 
-| Modelo | Origem | Licença |
-| :--- | :--- | :--- |
-| Vaso, tigela e prato | Gerados por código neste projeto | MIT |
-| Xícara com pires, exemplo para importar (`app/public/models/xicara-porcelana.glb`) | [Poly Haven](https://polyhaven.com/) e Eric Chadwick, via [glTF Sample Assets](https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/DiffuseTransmissionTeacup) (Khronos); texturas reduzidas para 1024 px em WebP | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) |
+- AR always draws into a classic `XRWebGLLayer`: on the S23 Ultra a WebXR Layers projection layer showed nothing.
+- On imported models, color, roughness and metalness multiply the file's own values (color tints textures).
+- A `.json` saved for an imported model opens only after the same `.glb` is imported again.
+- PNG capture covers the 3D view only, not the AR camera.
+- Performance on the phone is not measured yet (open the app with `?debug=1`).
 
-## Tecnologias
+## Development
 
-| Tecnologia | Utilização |
-| :--- | :--- |
-| [TypeScript](https://www.typescriptlang.org/) | Linguagem principal, com tipagem estática. |
-| [React](https://react.dev/) | Interface, componentes e gerenciamento de estado. |
-| [Three.js](https://threejs.org/) | Renderização e interação com os modelos 3D. |
-| [Vite](https://vite.dev/) | Ambiente de desenvolvimento e build. |
-| [Vitest](https://vitest.dev/) | Testes automatizados. |
-| [Playwright](https://playwright.dev/) | Testes de ponta a ponta do AR com WebXR simulado. |
-| [Oxlint](https://oxc.rs/docs/guide/usage/linter.html) | Análise estática do código. |
-| [GitHub Actions](https://github.com/features/actions) | Workflows de integração e deploy. |
-| [WebXR](https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API) | Recursos de realidade aumentada no navegador. |
+```bash
+cd app
+npm install
+npm run dev
+```
 
-## Documentação
+Commands, structure and test switches: [`app/README.md`](app/README.md).
 
-- [Guia passo a passo](docs/step-by-step.md)
-- [Plano de desenvolvimento](docs/development-plan.md)
-- [Referências](docs/references.md)
+## License
 
-## Demo
+MIT. The vase, bowl and plate are generated in code by this project.
 
-[🔗 Acessar a aplicação](https://lianeheidemann.github.io/ar-ceramic-designer/)
+## Docs
+
+[Step-by-step guide](docs/step-by-step.md) · [Development plan](docs/development-plan.md) · [References](docs/references.md) · [Live demo](https://lianeheidemann.github.io/ar-ceramic-designer/)

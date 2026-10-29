@@ -36,7 +36,7 @@ describe('unsupportedFeatures', () => {
           extensionsUsed: ['KHR_draco_mesh_compression', 'KHR_texture_basisu'],
         }),
       ),
-    ).toEqual(['compressão Draco', 'texturas KTX2 (Basis)'])
+    ).toEqual(['Draco compression', 'KTX2 (Basis) textures'])
   })
 
   it('does not fail on a damaged file', () => {

@@ -37,26 +37,26 @@ describe('dimensionsFromBox', () => {
 
 describe('modelNameFromFile', () => {
   it('drops the extension and folders', () => {
-    expect(modelNameFromFile('xicara-porcelana.glb')).toBe('xicara-porcelana')
-    expect(modelNameFromFile('C:\\modelos\\Vaso Azul.GLB')).toBe('Vaso Azul')
+    expect(modelNameFromFile('porcelain-teacup.glb')).toBe('porcelain-teacup')
+    expect(modelNameFromFile('C:\\models\\Blue Vase.GLB')).toBe('Blue Vase')
   })
 
   it('has a fallback for empty names', () => {
-    expect(modelNameFromFile('.glb')).toBe('Modelo importado')
+    expect(modelNameFromFile('.glb')).toBe('Imported model')
   })
 })
 
 describe('message formats', () => {
   it('writes lengths in the unit that reads best', () => {
     expect(formatLength(0.98)).toBe('98 cm')
-    expect(formatLength(1.25)).toBe('1,3 m')
+    expect(formatLength(1.25)).toBe('1.3 m')
     expect(formatLength(0.004)).toBe('4 mm')
   })
 
   it('writes triangle counts in words', () => {
-    expect(formatTriangles(1_945_534)).toBe('1,9 milhão de triângulos')
-    expect(formatTriangles(2_400_000)).toBe('2,4 milhões de triângulos')
-    expect(formatTriangles(940_202)).toBe('940 mil triângulos')
-    expect(formatTriangles(12)).toBe('12 triângulos')
+    expect(formatTriangles(1_945_534)).toBe('1.9 million triangles')
+    expect(formatTriangles(2_400_000)).toBe('2.4 million triangles')
+    expect(formatTriangles(940_202)).toBe('940k triangles')
+    expect(formatTriangles(12)).toBe('12 triangles')
   })
 })

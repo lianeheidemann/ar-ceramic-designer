@@ -42,8 +42,8 @@ export function ModelList({
               <button
                 type="button"
                 className="model-remove"
-                aria-label={`Remover ${model.name}`}
-                title="Remover"
+                aria-label={`Remove ${model.name}`}
+                title="Remove"
                 onClick={() => onRemove?.(model.id)}
               >
                 <span aria-hidden="true">×</span>

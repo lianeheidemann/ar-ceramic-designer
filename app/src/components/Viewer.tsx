@@ -11,44 +11,44 @@ import { CeramicViewer, type ViewerStats } from '../viewers/CeramicViewer'
 
 /**
  * Switches for testing AR on a phone: `?debug=1` shows what the session
- * sees and draws; `?cubo=1` adds a test cube in front of the phone;
- * `?camada=projection` lets Three.js render into a WebXR Layers projection
+ * sees and draws; `?cube=1` adds a test cube in front of the phone;
+ * `?layer=projection` lets Three.js render into a WebXR Layers projection
  * layer (shows nothing on the S23 Ultra; to reproduce that only).
  */
 const arParams = new URLSearchParams(window.location.search)
 const AR_DEBUG = arParams.has('debug')
-const AR_TEST_CUBE = arParams.get('cubo') === '1'
-const AR_PROJECTION_LAYER = arParams.get('camada') === 'projection'
+const AR_TEST_CUBE = arParams.get('cube') === '1'
+const AR_PROJECTION_LAYER = arParams.get('layer') === 'projection'
 
 /** The 3D viewer's debug lines (`?debug=1`, outside AR). */
 function statsLines(stats: ViewerStats): string[] {
   return [
-    `quadros/s: ${stats.fps} · desenhados: ${stats.framesRendered}`,
-    `draw calls: ${stats.drawCalls} · triângulos: ${stats.triangles}`,
-    `memória GPU: geometrias ${stats.geometries} · texturas ${stats.textures}`,
-    `pixel ratio: ${stats.pixelRatio} · modelo: ${stats.loadMs ?? '—'} ms`,
-    `câmera: ${stats.azimuthDeg}° · amortecimento: ${stats.damping ? 'sim' : 'não'}`,
+    `fps: ${stats.fps} · drawn: ${stats.framesRendered}`,
+    `draw calls: ${stats.drawCalls} · triangles: ${stats.triangles}`,
+    `GPU memory: geometries ${stats.geometries} · textures ${stats.textures}`,
+    `pixel ratio: ${stats.pixelRatio} · model: ${stats.loadMs ?? '—'} ms`,
+    `camera: ${stats.azimuthDeg}° · damping: ${stats.damping ? 'yes' : 'no'}`,
   ]
 }
 
 /** The AR debug panel's lines. */
 function debugLines(info: ArDebugInfo): string[] {
-  const yesNo = (value: boolean) => (value ? 'sim' : 'não')
+  const yesNo = (value: boolean) => (value ? 'yes' : 'no')
   const meters = (value: number | null) => (value === null ? '—' : `${value} m`)
   return [
-    `frames: sessão ${info.sessionFrames} · app ${info.loopFrames} · desenhados ${info.frames}`,
-    `camada: ${info.layer ?? '—'}`,
-    `erro não capturado: ${info.uncaught ?? '—'}`,
-    `rastreando: ${yesNo(info.tracking)} · acerto: ${yesNo(info.hit)} · superfície: ${yesNo(info.found)}`,
-    `anel: ${meters(info.ringDistance)} do celular, ${meters(info.ringDrop)} abaixo`,
-    `1º anel: ${info.firstRingMs === null ? '—' : `${info.firstRingMs} ms`}`,
-    `visível: anel ${yesNo(info.reticleVisible)} · peça ${yesNo(info.modelVisible)} · cubo ${yesNo(AR_TEST_CUBE)}`,
-    `draw calls: ${info.calls} · triângulos: ${info.triangles}`,
-    `framebuffer: ${info.framebuffer ?? '—'} · modo: ${info.blendMode ?? '—'}`,
-    `profundidade: ${info.depthRange ?? '—'}`,
-    `erro WebGL: ${info.glError} · contexto perdido: ${yesNo(info.contextLost)}`,
-    `recursos: ${info.features ?? '—'}`,
-    `erro: ${info.error ?? '—'}`,
+    `frames: session ${info.sessionFrames} · app ${info.loopFrames} · drawn ${info.frames}`,
+    `layer: ${info.layer ?? '—'}`,
+    `uncaught error: ${info.uncaught ?? '—'}`,
+    `tracking: ${yesNo(info.tracking)} · hit: ${yesNo(info.hit)} · surface: ${yesNo(info.found)}`,
+    `ring: ${meters(info.ringDistance)} from the phone, ${meters(info.ringDrop)} below`,
+    `first ring: ${info.firstRingMs === null ? '—' : `${info.firstRingMs} ms`}`,
+    `visible: ring ${yesNo(info.reticleVisible)} · piece ${yesNo(info.modelVisible)} · cube ${yesNo(AR_TEST_CUBE)}`,
+    `draw calls: ${info.calls} · triangles: ${info.triangles}`,
+    `framebuffer: ${info.framebuffer ?? '—'} · mode: ${info.blendMode ?? '—'}`,
+    `depth: ${info.depthRange ?? '—'}`,
+    `WebGL error: ${info.glError} · context lost: ${yesNo(info.contextLost)}`,
+    `features: ${info.features ?? '—'}`,
+    `error: ${info.error ?? '—'}`,
   ]
 }
 
@@ -57,9 +57,9 @@ interface ViewerProps {
   material: MaterialSettings
   /** Shares camera movement with other viewers in the same sync. */
   cameraSync?: CameraSync
-  /** Accessible name of the viewer, e.g. "Variante A". */
+  /** Accessible name of the viewer, e.g. "Variant A". */
   label?: string
-  /** Shows the "Ver em AR" button (the browser supports immersive AR). */
+  /** Shows the "View in AR" button (the browser supports immersive AR). */
   arSupported?: boolean
   /** Uniform scale, e.g. to give an imported piece its real size. */
   scale?: number
@@ -126,7 +126,7 @@ export function Viewer({
         !cancelled &&
         setResult({
           modelId: model.id,
-          error: `Não foi possível carregar o modelo "${model.name}".`,
+          error: `Could not load the model "${model.name}".`,
         }),
     )
     return () => {
@@ -152,7 +152,7 @@ export function Viewer({
     return () => window.clearInterval(timer)
   }, [ar, instance])
 
-  // A tap on "Sair do AR" must not also place the piece behind it.
+  // A tap on "Exit AR" must not also place the piece behind it.
   useEffect(() => {
     const button = exitArRef.current
     if (!button) return
@@ -212,7 +212,7 @@ export function Viewer({
     const viewer = viewerRef.current
     if (!viewer) return
     const parts = label
-      ? [model.id, label.replace(/^Variante\s*/, '')]
+      ? [model.id, label.replace(/^Variant\s*/, '')]
       : [model.id]
     viewer.captureImage().then((blob) => {
       if (blob) downloadBlob(blob, downloadName(parts, 'png'))
@@ -234,7 +234,7 @@ export function Viewer({
   const loading = result?.modelId !== model.id
   const error = webglAvailable
     ? !loading && result?.error
-    : 'Seu navegador não suporta WebGL, necessário para o visualizador 3D.'
+    : 'Your browser does not support WebGL, which the 3D viewer needs.'
 
   return (
     <div
@@ -246,15 +246,15 @@ export function Viewer({
       {contextLost ? (
         <div className="viewer-status viewer-error" role="alert">
           <p>
-            O visualizador 3D foi interrompido pelo sistema (pouca memória de
-            vídeo). Tentando restaurar…
+            The system stopped the 3D viewer (low video memory). Trying to
+            restore it…
           </p>
           <button
             type="button"
             className="viewer-button"
             onClick={rebuildViewer}
           >
-            Recarregar visualizador
+            Reload viewer
           </button>
         </div>
       ) : error ? (
@@ -262,13 +262,13 @@ export function Viewer({
           <p>{error}</p>
           {webglAvailable && (
             <button type="button" className="viewer-button" onClick={retryLoad}>
-              Tentar novamente
+              Try again
             </button>
           )}
         </div>
       ) : loading ? (
         <p className="viewer-status" role="status">
-          Carregando…
+          Loading…
         </p>
       ) : (
         <div className="viewer-actions">
@@ -277,8 +277,8 @@ export function Viewer({
             className="viewer-button viewer-icon"
             disabled={ar !== 'off'}
             onClick={saveImage}
-            aria-label="Salvar imagem"
-            title="Salvar imagem (PNG)"
+            aria-label="Save image"
+            title="Save image (PNG)"
           >
             <svg
               viewBox="0 0 24 24"
@@ -297,8 +297,8 @@ export function Viewer({
             type="button"
             className="viewer-button viewer-icon"
             onClick={() => viewerRef.current?.resetView()}
-            aria-label="Reiniciar vista"
-            title="Reiniciar vista"
+            aria-label="Reset view"
+            title="Reset view"
           >
             <svg
               viewBox="0 0 24 24"
@@ -322,11 +322,11 @@ export function Viewer({
               onClick={startAr}
             >
               {ar === 'off' ? (
-                'Ver em AR'
+                'View in AR'
               ) : (
                 <>
                   <span className="spinner" aria-hidden="true" />
-                  Abrindo AR…
+                  Opening AR…
                 </>
               )}
             </button>
@@ -375,7 +375,7 @@ export function Viewer({
             viewerRef.current?.endAr()
           }}
         >
-          Sair do AR
+          Exit AR
         </button>
       </div>
     </div>

@@ -92,7 +92,7 @@ export function createModelGeometry(model: CeramicModel): BufferGeometry {
       return createLatheGeometry(model.source)
     case 'glb':
       throw new Error(
-        `O modelo "${model.id}" é um GLB e deve ser carregado pelo visualizador.`,
+        `The model "${model.id}" is a GLB and must be loaded by the viewer.`,
       )
   }
 }

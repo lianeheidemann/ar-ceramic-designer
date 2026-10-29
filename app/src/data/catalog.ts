@@ -6,7 +6,7 @@ import type {
 import { smoothProfileMm } from '../geometry/lathe'
 import { presetMaterial } from '../materials/presets'
 
-const GENERATED_LICENSE = 'Gerado por código (MIT)'
+const GENERATED_LICENSE = 'Generated in code (MIT)'
 
 /** Bounding size of a lathe profile revolved around the vertical axis. */
 export function profileDimensionsMm(
@@ -40,7 +40,7 @@ function latheModel(
 export const catalog: readonly CeramicModel[] = [
   latheModel({
     id: 'vase',
-    name: 'Vaso',
+    name: 'Vase',
     wallMm: 5,
     profileMm: [
       [0, 0],
@@ -55,7 +55,7 @@ export const catalog: readonly CeramicModel[] = [
   }),
   latheModel({
     id: 'bowl',
-    name: 'Tigela',
+    name: 'Bowl',
     wallMm: 4,
     profileMm: [
       [0, 0],
@@ -68,7 +68,7 @@ export const catalog: readonly CeramicModel[] = [
   }),
   latheModel({
     id: 'plate',
-    name: 'Prato',
+    name: 'Plate',
     wallMm: 4,
     profileMm: [
       [0, 0],

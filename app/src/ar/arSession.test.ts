@@ -378,7 +378,7 @@ describe('startArSession', () => {
       expect(layers.layersAfter()).toBe(true)
     })
 
-    it('offers projection layers with ?camada=projection', async () => {
+    it('offers projection layers with ?layer=projection', async () => {
       const { renderer, start } = setup({ projectionLayer: true })
       const layers = withLayers(renderer)
       await start()

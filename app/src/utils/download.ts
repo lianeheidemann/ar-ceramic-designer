@@ -1,10 +1,10 @@
 /**
- * File name for a download, e.g. `ceramica-vase-a-2026-10-28.png`.
+ * File name for a download, e.g. `ceramic-vase-a-2026-10-28.png`.
  * Only ever names new files; exported assets never overwrite the originals.
  */
 export function downloadName(parts: string[], extension: string): string {
   const date = new Date().toISOString().slice(0, 10)
-  const slug = ['ceramica', ...parts, date]
+  const slug = ['ceramic', ...parts, date]
     .join('-')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')

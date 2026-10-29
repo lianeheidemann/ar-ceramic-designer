@@ -45,16 +45,16 @@ describe('configuration export', () => {
 
 describe('configuration import', () => {
   it('rejects malformed JSON', () => {
-    expect(errorOf('{ not json')).toMatch(/JSON válido/)
+    expect(errorOf('{ not json')).toMatch(/not valid JSON/)
   })
 
   it('rejects other JSON files', () => {
-    expect(errorOf('{"name": "something else"}')).toMatch(/não é uma/)
-    expect(errorOf('[]')).toMatch(/não é uma/)
+    expect(errorOf('{"name": "something else"}')).toMatch(/not an AR Ceramic/)
+    expect(errorOf('[]')).toMatch(/not an AR Ceramic/)
   })
 
   it('rejects unsupported versions', () => {
-    expect(errorOf(exported({ version: 2 }))).toMatch(/Versão/)
+    expect(errorOf(exported({ version: 2 }))).toMatch(/version/i)
   })
 
   it('rejects unknown model ids', () => {
@@ -69,7 +69,7 @@ describe('configuration import', () => {
     ['a non-numeric value', { ...a, clearcoat: '1' }],
   ])('rejects a material with %s', (_, material) => {
     expect(errorOf(exported({ variants: { A: material } }))).toMatch(
-      /variante A/,
+      /variant A/,
     )
   })
 })

@@ -33,7 +33,7 @@ function VariantSummary({
         style={{ background: material.color }}
         aria-hidden="true"
       />
-      <span>{findPreset(material)?.name ?? 'Personalizado'}</span>
+      <span>{findPreset(material)?.name ?? 'Custom'}</span>
     </>
   )
 }
@@ -55,11 +55,11 @@ export function CompareView({
         <Viewer
           model={model}
           material={materials[active]}
-          label={`Variante ${active}`}
+          label={`Variant ${active}`}
           arSupported={arSupported}
           scale={scale}
         />
-        <div className="variant-switch" role="group" aria-label="Variante">
+        <div className="variant-switch" role="group" aria-label="Variant">
           {variantIds.map((variant) => (
             <button
               key={variant}
@@ -88,7 +88,7 @@ export function CompareView({
             model={model}
             material={materials[variant]}
             cameraSync={cameraSync}
-            label={`Variante ${variant}`}
+            label={`Variant ${variant}`}
             scale={scale}
           />
           <button

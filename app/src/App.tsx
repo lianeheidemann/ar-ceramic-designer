@@ -153,7 +153,7 @@ function App() {
           type="button"
           onClick={toggleTheme}
           aria-label={
-            theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'
+            theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
           }
           title={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
         >
@@ -186,7 +186,7 @@ function App() {
         </button>
       </header>
 
-      <main className="viewport" aria-label="Visualizador 3D">
+      <main className="viewport" aria-label="3D viewer">
         {selectedModel && material && comparing ? (
           <CompareView
             model={selectedModel}
@@ -208,19 +208,19 @@ function App() {
             scale={scaleOf(selectedModel)}
           />
         ) : (
-          <p className="viewport-placeholder">Nenhum modelo selecionado</p>
+          <p className="viewport-placeholder">No model selected</p>
         )}
       </main>
 
-      <aside className="controls" aria-label="Controles">
+      <aside className="controls" aria-label="Controls">
         <Tabs
-          label="Controles"
+          label="Controls"
           active={tab}
           onChange={setTab}
           tabs={[
             {
               id: 'models',
-              label: 'Modelos',
+              label: 'Models',
               content: (
                 <>
                   <ModelList
@@ -249,9 +249,9 @@ function App() {
                     />
                   )}
                   {arSupport.kind === 'unavailable' && (
-                    // Only explains why there is no "Ver em AR" button.
+                    // Only explains why there is no "View in AR" button.
                     <section className="controls-section">
-                      <h2>Realidade aumentada</h2>
+                      <h2>Augmented reality</h2>
                       <p className="controls-note">{arSupport.reason}</p>
                     </section>
                   )}
@@ -270,14 +270,14 @@ function App() {
                       aria-pressed={comparing}
                       onClick={() => setComparing(!comparing)}
                     >
-                      Comparar A/B
+                      Compare A/B
                     </button>
                   </div>
                   {comparing && (
                     <div
                       className="variant-picker"
                       role="group"
-                      aria-label="Variante em edição"
+                      aria-label="Variant being edited"
                     >
                       {variantIds.map((variant) => (
                         <button
@@ -287,7 +287,7 @@ function App() {
                           aria-pressed={variant === activeVariant}
                           onClick={() => setActiveVariant(variant)}
                         >
-                          Editar {variant}
+                          Edit {variant}
                         </button>
                       ))}
                     </div>
@@ -306,7 +306,7 @@ function App() {
             },
             {
               id: 'config',
-              label: 'Configuração',
+              label: 'Settings',
               content: selectedModel && material && (
                 <ConfigControls
                   model={selectedModel}

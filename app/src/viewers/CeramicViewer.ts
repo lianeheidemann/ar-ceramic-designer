@@ -121,7 +121,7 @@ export class CeramicViewer {
     canvas.tabIndex = 0
     canvas.setAttribute(
       'aria-label',
-      'Peça em 3D. Setas giram, + e − aproximam, Home reinicia a vista.',
+      '3D piece. Arrows turn it, + and − zoom, Home resets the view.',
     )
     canvas.addEventListener('keydown', this.onKeyDown)
     canvas.addEventListener('webglcontextlost', this.onContextLost)

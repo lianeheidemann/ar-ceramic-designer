@@ -41,7 +41,7 @@ export function ConfigControls({
   }
 
   async function importModel(file: File) {
-    setMessage({ kind: 'done', text: `Lendo o modelo "${file.name}"…` })
+    setMessage({ kind: 'done', text: `Reading the model "${file.name}"…` })
     const result = await importGlb(file)
     if (!result.ok) {
       setMessage({ kind: 'error', text: result.error })
@@ -50,7 +50,7 @@ export function ConfigControls({
     onImportModel(result.model)
     setMessage({
       kind: 'done',
-      text: [`Modelo "${result.model.name}" importado.`, result.warning]
+      text: [`Model "${result.model.name}" imported.`, result.warning]
         .filter(Boolean)
         .join(' '),
     })
@@ -62,7 +62,7 @@ export function ConfigControls({
       onImport(result.config)
       setMessage({
         kind: 'done',
-        text: `Configuração "${file.name}" aplicada.`,
+        text: `Settings "${file.name}" applied.`,
       })
     } else {
       setMessage({ kind: 'error', text: result.error })
@@ -73,14 +73,14 @@ export function ConfigControls({
     <div>
       <div className="config-actions">
         <button type="button" className="config-button" onClick={exportConfig}>
-          Exportar (.json)
+          Export (.json)
         </button>
         <button
           type="button"
           className="config-button"
           onClick={() => fileRef.current?.click()}
         >
-          Importar
+          Import
         </button>
       </div>
       <input
@@ -96,7 +96,7 @@ export function ConfigControls({
         }}
       />
       <p className="config-message controls-note">
-        Importar aceita uma configuração (.json) ou um modelo 3D (.glb).
+        Import takes saved settings (.json) or a 3D model (.glb).
       </p>
       {message && (
         <p

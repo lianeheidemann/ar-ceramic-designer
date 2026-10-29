@@ -13,18 +13,18 @@ export interface MaterialPreset {
 export const materialPresets: readonly MaterialPreset[] = [
   {
     id: 'matte',
-    name: 'Fosco',
+    name: 'Matte',
     finish: { roughness: 0.9, metalness: 0, clearcoat: 0 },
   },
   {
     id: 'glossy',
-    name: 'Brilhante',
+    name: 'Glossy',
     finish: { roughness: 0.25, metalness: 0, clearcoat: 0 },
   },
   {
     // A rough clay body under a smooth glaze layer.
     id: 'glazed',
-    name: 'Vitrificado',
+    name: 'Glazed',
     finish: { roughness: 0.45, metalness: 0, clearcoat: 1 },
   },
 ]

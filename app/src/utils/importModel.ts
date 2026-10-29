@@ -36,7 +36,7 @@ export function dimensionsFromBox(box: Box3): DimensionsMm {
 /** Display name from a file name: no extension, no folders. */
 export function modelNameFromFile(fileName: string): string {
   const base = fileName.split(/[\\/]/).pop() ?? ''
-  return base.replace(/\.glb$/i, '').trim() || 'Modelo importado'
+  return base.replace(/\.glb$/i, '').trim() || 'Imported model'
 }
 
 let importCount = 0
@@ -49,13 +49,13 @@ let importCount = 0
 export async function importGlb(file: File): Promise<ImportResult> {
   const bytes = await file.arrayBuffer()
   if (!isGlb(bytes)) {
-    return { ok: false, error: `"${file.name}" não é um arquivo .glb.` }
+    return { ok: false, error: `"${file.name}" is not a .glb file.` }
   }
   const unsupported = unsupportedFeatures(bytes)
   if (unsupported.length) {
     return {
       ok: false,
-      error: `O modelo "${file.name}" usa ${unsupported.join(' e ')}, que o app ainda não abre. Exporte de novo sem essa compressão.`,
+      error: `The model "${file.name}" uses ${unsupported.join(' and ')}, which the app cannot open yet. Export it again without it.`,
     }
   }
   let box: Box3
@@ -68,15 +68,15 @@ export async function importGlb(file: File): Promise<ImportResult> {
   } catch {
     return {
       ok: false,
-      error: `Não foi possível ler o modelo "${file.name}".`,
+      error: `Could not read the model "${file.name}".`,
     }
   }
   if (box.isEmpty()) {
-    return { ok: false, error: `O arquivo "${file.name}" não tem geometria.` }
+    return { ok: false, error: `The file "${file.name}" has no geometry.` }
   }
   const largest = Math.max(...box.getSize(new Vector3()).toArray())
   const model: CeramicModel = {
-    id: `importado-${++importCount}`,
+    id: `imported-${++importCount}`,
     name: modelNameFromFile(file.name),
     source: { kind: 'glb', url: URL.createObjectURL(file) },
     dimensionsMm: dimensionsFromBox(box),
@@ -87,40 +87,40 @@ export async function importGlb(file: File): Promise<ImportResult> {
       metalness: 1,
       clearcoat: 0,
     },
-    license: 'Arquivo importado pelo usuário',
+    license: 'File imported by the user',
   }
   const notes: string[] = []
   if (largest < MIN_SIZE_M || largest > MAX_SIZE_M) {
     notes.push(
-      `No arquivo a peça mede ${formatLength(largest)}; ajuste a altura real na aba Modelos.`,
+      `In the file the piece measures ${formatLength(largest)}; set its real height in the Models tab.`,
     )
   }
   if (triangles > MAX_TRIANGLES) {
     notes.push(
-      `Ele tem ${formatTriangles(triangles)}; o app mostra uma versão simplificada com até ${formatTriangles(MAX_TRIANGLES)} para ficar leve no celular.`,
+      `It has ${formatTriangles(triangles)}; the app shows a simplified version with up to ${formatTriangles(MAX_TRIANGLES)} so it runs smoothly on phones.`,
     )
   }
   const warning = notes.length ? notes.join(' ') : undefined
   return { ok: true, model, warning }
 }
 
-/** "98 cm", "1,2 m" or "4 mm", for messages. */
+/** "98 cm", "1.2 m" or "4 mm", for messages. */
 export function formatLength(meters: number): string {
   const format = (value: number, digits: number) =>
-    value.toLocaleString('pt-BR', { maximumFractionDigits: digits })
+    value.toLocaleString('en-US', { maximumFractionDigits: digits })
   if (meters >= 1) return `${format(meters, 1)} m`
   if (meters >= 0.01) return `${format(meters * 100, 0)} cm`
   return `${format(meters * 1000, 0)} mm`
 }
 
-/** "1,9 milhão de triângulos", "940 mil triângulos", for messages. */
+/** "1.9 million triangles", "940k triangles", for messages. */
 export function formatTriangles(count: number): string {
   if (count >= 1_000_000) {
-    const millions = (count / 1_000_000).toLocaleString('pt-BR', {
+    const millions = (count / 1_000_000).toLocaleString('en-US', {
       maximumFractionDigits: 1,
     })
-    return `${millions} ${count >= 2_000_000 ? 'milhões' : 'milhão'} de triângulos`
+    return `${millions} million triangles`
   }
-  if (count >= 1000) return `${Math.round(count / 1000)} mil triângulos`
-  return `${count} triângulos`
+  if (count >= 1000) return `${Math.round(count / 1000)}k triangles`
+  return `${count} triangles`
 }

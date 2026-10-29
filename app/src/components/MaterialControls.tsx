@@ -17,8 +17,8 @@ interface MaterialControlsProps {
 type Slider = 'roughness' | 'metalness'
 
 const sliders: { key: Slider; label: string }[] = [
-  { key: 'roughness', label: 'Rugosidade' },
-  { key: 'metalness', label: 'Metalicidade' },
+  { key: 'roughness', label: 'Roughness' },
+  { key: 'metalness', label: 'Metalness' },
 ]
 
 export function MaterialControls({
@@ -33,12 +33,10 @@ export function MaterialControls({
   return (
     <div className="material-controls">
       <div className="control-row">
-        <span className="control-label">Acabamento</span>
-        <span className="control-value">
-          {activePreset?.name ?? 'Personalizado'}
-        </span>
+        <span className="control-label">Finish</span>
+        <span className="control-value">{activePreset?.name ?? 'Custom'}</span>
       </div>
-      <div className="preset-list" role="group" aria-label="Acabamento">
+      <div className="preset-list" role="group" aria-label="Finish">
         {materialPresets.map((preset) => (
           <button
             key={preset.id}
@@ -53,7 +51,7 @@ export function MaterialControls({
       </div>
 
       <label className="control-row" htmlFor={`${id}-color`}>
-        <span className="control-label">Cor</span>
+        <span className="control-label">Color</span>
         <input
           id={`${id}-color`}
           type="color"
@@ -91,7 +89,7 @@ export function MaterialControls({
         disabled={sameMaterial(material, original)}
         onClick={onReset}
       >
-        Restaurar original
+        Restore original
       </button>
     </div>
   )
