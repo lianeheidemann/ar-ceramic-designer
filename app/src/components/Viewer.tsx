@@ -1,11 +1,45 @@
 import { useEffect, useRef, useState } from 'react'
 import WebGL from 'three/addons/capabilities/WebGL.js'
+import type { ArDebugInfo } from '../ar/arSession'
 import { arStatus, type ArState } from '../ar/arStatus'
 import { arErrorMessage } from '../ar/support'
 import type { CeramicModel, MaterialSettings } from '../types/ceramic'
+import { downloadBlob, downloadName } from '../utils/download'
 import type { CameraSync } from '../viewers/CameraSync'
 import { ArStatusIcon } from './ArStatusIcon'
 import { CeramicViewer } from '../viewers/CeramicViewer'
+
+/**
+ * Switches for testing AR on a phone: `?debug=1` shows what the session
+ * sees and draws; `?cubo=1` adds a test cube in front of the phone;
+ * `?camada=projection` lets Three.js render into a WebXR Layers projection
+ * layer (shows nothing on the S23 Ultra; to reproduce that only).
+ */
+const arParams = new URLSearchParams(window.location.search)
+const AR_DEBUG = arParams.has('debug')
+const AR_TEST_CUBE = arParams.get('cubo') === '1'
+const AR_PROJECTION_LAYER = arParams.get('camada') === 'projection'
+
+/** The debug panel's lines. */
+function debugLines(info: ArDebugInfo): string[] {
+  const yesNo = (value: boolean) => (value ? 'sim' : 'não')
+  const meters = (value: number | null) => (value === null ? '—' : `${value} m`)
+  return [
+    `frames: sessão ${info.sessionFrames} · app ${info.loopFrames} · desenhados ${info.frames}`,
+    `camada: ${info.layer ?? '—'}`,
+    `erro não capturado: ${info.uncaught ?? '—'}`,
+    `rastreando: ${yesNo(info.tracking)} · acerto: ${yesNo(info.hit)} · superfície: ${yesNo(info.found)}`,
+    `anel: ${meters(info.ringDistance)} do celular, ${meters(info.ringDrop)} abaixo`,
+    `1º anel: ${info.firstRingMs === null ? '—' : `${info.firstRingMs} ms`}`,
+    `visível: anel ${yesNo(info.reticleVisible)} · peça ${yesNo(info.modelVisible)} · cubo ${yesNo(AR_TEST_CUBE)}`,
+    `draw calls: ${info.calls} · triângulos: ${info.triangles}`,
+    `framebuffer: ${info.framebuffer ?? '—'} · modo: ${info.blendMode ?? '—'}`,
+    `profundidade: ${info.depthRange ?? '—'}`,
+    `erro WebGL: ${info.glError} · contexto perdido: ${yesNo(info.contextLost)}`,
+    `recursos: ${info.features ?? '—'}`,
+    `erro: ${info.error ?? '—'}`,
+  ]
+}
 
 interface ViewerProps {
   model: CeramicModel
@@ -40,6 +74,7 @@ export function Viewer({
   const [surfaceFound, setSurfaceFound] = useState(false)
   /** Whether any surface was found in this session (ends the intro hint). */
   const [surfaceSeen, setSurfaceSeen] = useState(false)
+  const [debugInfo, setDebugInfo] = useState<ArDebugInfo | null>(null)
   const noSurfaceTimer = useRef<number | undefined>(undefined)
   const viewerRef = useRef<CeramicViewer | null>(null)
   const [webglAvailable] = useState(() => WebGL.isWebGL2Available())
@@ -103,22 +138,28 @@ export function Viewer({
     setArError(null)
     setSurfaceFound(false)
     setSurfaceSeen(false)
+    setDebugInfo(null)
     setAr('starting')
     viewer
-      .startAr(overlay, {
-        onPreparing: () => setAr('preparing'),
-        onPlaced: () => {
-          setNoSurface(false)
-          setAr('placed')
+      .startAr(
+        overlay,
+        {
+          onPreparing: () => setAr('preparing'),
+          onPlaced: () => {
+            setNoSurface(false)
+            setAr('placed')
+          },
+          onMoveStart: () => setAr('moving'),
+          onNoSurface: showNoSurface,
+          onSurfaceChange: (found) => {
+            setSurfaceFound(found)
+            if (found) setSurfaceSeen(true)
+          },
+          onEnd: () => setAr('off'),
+          onDebug: AR_DEBUG ? setDebugInfo : undefined,
         },
-        onMoveStart: () => setAr('moving'),
-        onNoSurface: showNoSurface,
-        onSurfaceChange: (found) => {
-          setSurfaceFound(found)
-          if (found) setSurfaceSeen(true)
-        },
-        onEnd: () => setAr('off'),
-      })
+        { testCube: AR_TEST_CUBE, projectionLayer: AR_PROJECTION_LAYER },
+      )
       .then(
         () =>
           setAr((state) =>
@@ -129,6 +170,17 @@ export function Viewer({
           setArError(arErrorMessage(error))
         },
       )
+  }
+
+  function saveImage() {
+    const viewer = viewerRef.current
+    if (!viewer) return
+    const parts = label
+      ? [model.id, label.replace(/^Variante\s*/, '')]
+      : [model.id]
+    viewer.captureImage().then((blob) => {
+      if (blob) downloadBlob(blob, downloadName(parts, 'png'))
+    })
   }
 
   const status = arStatus(ar, { surfaceFound, noSurfaceTap: noSurface })
@@ -173,6 +225,27 @@ export function Viewer({
           )}
           <button
             type="button"
+            className="viewer-button viewer-icon"
+            disabled={ar !== 'off'}
+            onClick={saveImage}
+            aria-label="Salvar imagem"
+            title="Salvar imagem (PNG)"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M4 8h3l2-3h6l2 3h3v11H4Z" />
+              <circle cx="12" cy="13" r="3.5" />
+            </svg>
+          </button>
+          <button
+            type="button"
             className="viewer-button viewer-reset"
             onClick={() => viewerRef.current?.resetView()}
           >
@@ -206,6 +279,9 @@ export function Viewer({
           <div className="ar-scan" aria-hidden="true">
             <ArStatusIcon name="scanning" />
           </div>
+        )}
+        {AR_DEBUG && debugInfo && (
+          <pre className="ar-debug">{debugLines(debugInfo).join('\n')}</pre>
         )}
         <button
           ref={exitArRef}

@@ -1,13 +1,21 @@
 import { Matrix4, Mesh, Scene, Vector3, type WebGLRenderer } from 'three'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { SURFACE_LOST_AFTER_MS, startArSession } from './arSession'
 
 type FrameCallback = (time: number, frame?: unknown) => void
 
 /** Minimal stand-ins for the WebXR session and the Three.js renderer. */
-function setup({ domOverlay = false } = {}) {
+function setup({
+  domOverlay = false,
+  testCube = false,
+  debug = false,
+  projectionLayer = false,
+} = {}) {
   const session = Object.assign(new EventTarget(), {
     domOverlayState: domOverlay ? { type: 'screen' } : undefined,
+    environmentBlendMode: 'alpha-blend',
+    enabledFeatures: ['hit-test', 'dom-overlay'],
+    renderState: { depthNear: 0.01, depthFar: 100 },
     requestReferenceSpace: vi.fn(async () => ({})),
     requestHitTestSource: vi.fn(async () => ({ cancel: vi.fn() })),
     end: vi.fn(async () => {
@@ -17,6 +25,8 @@ function setup({ domOverlay = false } = {}) {
   vi.stubGlobal('navigator', {
     xr: { requestSession: vi.fn(async () => session) },
   })
+  // Node has no window; the debug panel listens for uncaught errors on it.
+  vi.stubGlobal('window', new EventTarget())
 
   const scene = new Scene()
   const model = new Mesh()
@@ -31,7 +41,10 @@ function setup({ domOverlay = false } = {}) {
       setReferenceSpaceType: vi.fn(),
       setSession: vi.fn(async () => {}),
       getReferenceSpace: () => ({}),
+      getBaseLayer: () => ({ framebufferWidth: 1080, framebufferHeight: 2316 }),
     },
+    getContext: () => ({ getError: () => 0, isContextLost: () => false }),
+    info: { render: { calls: 2, triangles: 300 } },
     compileAsync: vi.fn(async () => {
       compiledWhileVisible = model.visible
     }),
@@ -47,6 +60,7 @@ function setup({ domOverlay = false } = {}) {
     onNoSurface: vi.fn(),
     onSurfaceChange: vi.fn(),
     onEnd: vi.fn(),
+    onDebug: vi.fn(),
   }
 
   /** Renders one XR frame with a surface at `point`, or none. */
@@ -54,6 +68,11 @@ function setup({ domOverlay = false } = {}) {
   let time = 0
   const frame = (point?: Vector3) =>
     loop?.((time += 16), {
+      // The phone 1.4 m above the local origin.
+      getViewerPose: () => ({
+        emulatedPosition: false,
+        transform: { position: { x: 0, y: 1.4, z: 0 } },
+      }),
       getHitTestResults: () =>
         point
           ? [
@@ -76,6 +95,9 @@ function setup({ domOverlay = false } = {}) {
       model,
       overlay: {} as HTMLElement,
       ...events,
+      testCube,
+      projectionLayer,
+      onDebug: debug ? events.onDebug : undefined,
     })
 
   const ring = () => scene.children.find((child) => child !== model)
@@ -236,5 +258,144 @@ describe('startArSession', () => {
     expect(scene.children.length).toBe(objects - 1) // ring removed
     tap()
     expect(events.onPlaced).toHaveBeenCalledOnce() // listener removed
+  })
+
+  describe('diagnostics (?debug=1)', () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
+    })
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('reports as soon as the session starts, before any frame', async () => {
+      const { events, start } = setup({ debug: true })
+      await start()
+      expect(events.onDebug).toHaveBeenCalledOnce()
+      expect(events.onDebug.mock.lastCall?.[0]).toMatchObject({
+        loopFrames: 0,
+        frames: 0,
+        layer: 'webgl',
+        framebuffer: '1080×2316',
+        features: 'hit-test, dom-overlay',
+        blendMode: 'alpha-blend',
+        depthRange: '0.01–100',
+        uncaught: null,
+      })
+    })
+
+    it('reports what the session sees and draws', async () => {
+      const { events, frame, start } = setup({ debug: true })
+      await start()
+      frame(new Vector3(0, 0.4, -0.75))
+      vi.advanceTimersByTime(250)
+      expect(events.onDebug.mock.lastCall?.[0]).toMatchObject({
+        loopFrames: 1,
+        tracking: true,
+        hit: true,
+        found: true,
+        ringDistance: 1.25,
+        ringDrop: 1,
+        firstRingMs: 0,
+        reticleVisible: true,
+        modelVisible: false,
+        frames: 1,
+        calls: 2,
+        error: null,
+      })
+    })
+
+    it('keeps reporting a few times per second without frames', async () => {
+      const { events, start } = setup({ debug: true })
+      await start()
+      vi.advanceTimersByTime(1000)
+      expect(events.onDebug).toHaveBeenCalledTimes(5)
+    })
+
+    it('shows uncaught errors, e.g. from inside Three.js', async () => {
+      const { events, start } = setup({ debug: true })
+      await start()
+      window.dispatchEvent(
+        Object.assign(new Event('error'), {
+          message: 'getViewSubImage failed',
+          filename: 'https://example.com/ar-ceramic-designer/assets/index.js',
+          lineno: 12,
+        }),
+      )
+      vi.advanceTimersByTime(250)
+      expect(events.onDebug.mock.lastCall?.[0].uncaught).toBe(
+        'getViewSubImage failed @ index.js:12',
+      )
+    })
+
+    it('keeps the loop running when a frame fails to render', async () => {
+      const { events, frame, renderer, start } = setup({ debug: true })
+      await start()
+      vi.mocked(renderer.render).mockImplementationOnce(() => {
+        throw new Error('render failed')
+      })
+      for (let i = 0; i < 17; i++) frame(new Vector3(0, 0, -1))
+      vi.advanceTimersByTime(250)
+      const info = events.onDebug.mock.lastCall?.[0]
+      expect(info.error).toBe('render failed')
+      expect(info.loopFrames).toBe(17)
+      expect(info.frames).toBe(16)
+    })
+
+    it('stops reporting when the session ends', async () => {
+      const { events, start } = setup({ debug: true })
+      const handle = await start()
+      handle.end()
+      await vi.waitFor(() => expect(events.onEnd).toHaveBeenCalledOnce())
+      const calls = events.onDebug.mock.calls.length
+      vi.advanceTimersByTime(1000)
+      expect(events.onDebug).toHaveBeenCalledTimes(calls)
+    })
+  })
+
+  describe('WebXR Layers', () => {
+    /** A browser with WebXR Layers; records what Three.js would see. */
+    function withLayers(renderer: WebGLRenderer) {
+      class XRWebGLBinding {
+        createProjectionLayer() {}
+      }
+      vi.stubGlobal('XRWebGLBinding', XRWebGLBinding)
+      let layersDuringStart: boolean | undefined
+      vi.mocked(renderer.xr.setSession).mockImplementation(async () => {
+        layersDuringStart = 'createProjectionLayer' in XRWebGLBinding.prototype
+      })
+      return {
+        layersDuringStart: () => layersDuringStart,
+        layersAfter: () => 'createProjectionLayer' in XRWebGLBinding.prototype,
+      }
+    }
+
+    it('hides projection layers only while the session starts', async () => {
+      const { renderer, start } = setup()
+      const layers = withLayers(renderer)
+      await start()
+      expect(layers.layersDuringStart()).toBe(false)
+      expect(layers.layersAfter()).toBe(true)
+    })
+
+    it('offers projection layers with ?camada=projection', async () => {
+      const { renderer, start } = setup({ projectionLayer: true })
+      const layers = withLayers(renderer)
+      await start()
+      expect(layers.layersDuringStart()).toBe(true)
+    })
+  })
+
+  it('shows a test cube in front of the phone until the session ends', async () => {
+    const { events, scene, model, start } = setup({ testCube: true })
+    const handle = await start()
+    const cube = scene.children.find(
+      (child) => child !== model && child.position.z === -0.5,
+    )
+    expect(cube).toBeDefined()
+    expect(cube?.frustumCulled).toBe(false)
+    handle.end()
+    await vi.waitFor(() => expect(events.onEnd).toHaveBeenCalledOnce())
+    expect(scene.children).not.toContain(cube)
   })
 })

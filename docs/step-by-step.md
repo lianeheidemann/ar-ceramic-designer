@@ -125,6 +125,10 @@ Define typed metadata for each model: `id`, `name`, `url`, `dimensionsMm`, `scal
 ## ✅ 7. Implement augmented reality (WebXR)
 
 > **Implemented** in `app/src/ar/` (support check, hit-test placement session) and the **Ver em AR** button of the viewer. Support detection, the fallback message and error handling (e.g. camera permission denied) were tested with a simulated WebXR; placement on a real surface still has to be confirmed on the Galaxy S23 Ultra (item 8).
+>
+> **Known issue (S23 Ultra, Chrome):** Three.js renders into a WebXR Layers projection layer whenever the browser offers `XRWebGLBinding.createProjectionLayer`. In Chrome's AR on the S23 Ultra nothing drawn into it showed over the camera (draw calls went through, the screen stayed empty), so the AR session always uses a classic `XRWebGLLayer` (`hideProjectionLayers()` in `app/src/ar/arSession.ts`).
+>
+> **Testing on the phone:** `?debug=1` shows a diagnostics panel during AR (tracking, hits, ring distance, frames, draw calls, XR framebuffer, WebGL errors); `?cubo=1` adds a magenta test cube 50 cm in front of the starting position, to tell a rendering problem apart from a placement problem. `?camada=projection` lets Three.js render into a WebXR Layers projection layer, to reproduce the problem below. `npm run test:e2e` runs the AR flow in Chromium with a fake WebXR device (`app/e2e/`).
 
 1. Detect support using `navigator.xr?.isSessionSupported('immersive-ar')` in a secure context.
 2. Show **View in AR** only when supported; otherwise explain the limitation and keep the standard 3D viewer available.
@@ -139,7 +143,9 @@ Define typed metadata for each model: `id`, `name`, `url`, `dimensionsMm`, `scal
 
 **Reference:** [Three.js WebXR AR Cones](https://threejs.org/examples/?q=webxr#webxr_ar_cones).
 
-## 8. Save and export
+## ✅ 8. Save and export
+
+> **Implemented** in `app/src/utils/config.ts` (versioned schema `ar-ceramic-designer/config`, version 1, with validation), `app/src/components/ConfigControls.tsx` (**Exportar (.json)** / **Importar** in the side panel) and `CeramicViewer.captureImage()` (camera button in each 3D viewer, transparent PNG). The JSON stores the model id, its dimensions, the A material and, while comparing, the B material; dimensions and preset names are informative and ignored on import. Screenshots are disabled during AR.
 
 1. Define a versioned JSON schema for model ID, material preset, color and dimensions/scale.
 2. Add **Export configuration (.json)** and **Import configuration** actions.

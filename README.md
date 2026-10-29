@@ -24,6 +24,14 @@ Interface web interativa, publicada no GitHub Pages, para explorar modelos de ce
   <img width="50%" src="assets/interface/interface-ar-ceramic-designer-v3.webp">
 </p>
 
+## Funcionalidades
+
+- Visualizador 3D com vaso, tigela e prato (girar, aproximar, reiniciar vista).
+- Personalização do material: acabamentos (fosco, brilhante, vitrificado), cor, rugosidade e metalicidade.
+- Comparação lado a lado de duas variantes (A/B).
+- Realidade aumentada (WebXR) em Android compatível.
+- Exportar e importar a configuração em `.json` e salvar uma imagem PNG da vista 3D.
+
 ## Requisitos
 
 - **Visualizador 3D:** navegador com suporte a WebGL 2 — Chrome 56+, Edge 79+, Firefox 51+ ou Safari 15+ (iOS/macOS), no computador ou no celular.
@@ -39,6 +47,7 @@ Interface web interativa, publicada no GitHub Pages, para explorar modelos de ce
 | [Three.js](https://threejs.org/) | Renderização e interação com os modelos 3D. |
 | [Vite](https://vite.dev/) | Ambiente de desenvolvimento e build. |
 | [Vitest](https://vitest.dev/) | Testes automatizados. |
+| [Playwright](https://playwright.dev/) | Testes de ponta a ponta do AR com WebXR simulado. |
 | [Oxlint](https://oxc.rs/docs/guide/usage/linter.html) | Análise estática do código. |
 | [GitHub Actions](https://github.com/features/actions) | Workflows de integração e deploy. |
 | [WebXR](https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API) | Recursos de realidade aumentada no navegador. |

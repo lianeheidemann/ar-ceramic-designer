@@ -173,6 +173,23 @@ select {
   cursor: pointer;
 }
 
+.viewer-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  padding: 0;
+}
+
+.viewer-icon svg {
+  width: 21px;
+  height: 21px;
+}
+
+.viewer-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .viewer-ar {
   color: var(--surface);
   background: var(--text);
@@ -229,6 +246,23 @@ select {
   background: rgb(0 0 0 / 0.6);
   border-radius: 1.5rem;
   line-height: 1.35;
+}
+
+/* Diagnostics for testing on a phone (?debug=1). */
+.ar-debug {
+  position: absolute;
+  right: 1rem;
+  bottom: 5rem;
+  left: 1rem;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  color: #fff;
+  background: rgb(0 0 0 / 0.6);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  pointer-events: none;
 }
 
 .ar-exit {
@@ -332,7 +366,8 @@ select {
 }
 
 .preset-option,
-.reset-material {
+.reset-material,
+.config-button {
   padding: 0.5rem;
   color: var(--text);
   background: transparent;
@@ -342,7 +377,8 @@ select {
 }
 
 .preset-option:hover,
-.reset-material:hover:not(:disabled) {
+.reset-material:hover:not(:disabled),
+.config-button:hover {
   background: var(--viewport-bg);
 }
 
@@ -368,6 +404,22 @@ select {
 .slider-field input[type='range'] {
   width: 100%;
   accent-color: var(--text);
+}
+
+.config-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.config-message {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+}
+
+.config-error {
+  color: var(--text);
+  font-weight: 600;
 }
 
 .reset-material:disabled {

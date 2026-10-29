@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CompareView } from './components/CompareView'
+import { ConfigControls } from './components/ConfigControls'
 import { MaterialControls } from './components/MaterialControls'
 import { ModelList } from './components/ModelList'
 import { Viewer } from './components/Viewer'
@@ -12,6 +13,7 @@ import {
   type VariantId,
 } from './materials/variants'
 import type { MaterialSettings } from './types/ceramic'
+import type { CeramicConfig } from './utils/config'
 
 type Overrides = Record<VariantId, Record<string, MaterialSettings>>
 
@@ -58,6 +60,19 @@ function App() {
       delete rest[selectedId]
       return { ...all, [editedVariant]: rest }
     })
+  }
+
+  /** Shows the imported model with its saved materials. */
+  function importConfig({ modelId, variants }: CeramicConfig) {
+    setOverrides((all) => {
+      const b = { ...all.B }
+      if (variants.B) b[modelId] = variants.B
+      else delete b[modelId]
+      return { A: { ...all.A, [modelId]: variants.A }, B: b }
+    })
+    setSelectedId(modelId)
+    setComparing(variants.B !== undefined)
+    setActiveVariant('A')
   }
 
   function toggleTheme() {
@@ -182,6 +197,19 @@ function App() {
               original={defaultVariantMaterial(selectedModel, editedVariant)}
               onChange={updateMaterial}
               onReset={resetMaterial}
+            />
+          </section>
+        )}
+        {selectedModel && material && (
+          <section className="controls-section">
+            <h2>Configuração</h2>
+            <ConfigControls
+              model={selectedModel}
+              variants={{
+                A: variantMaterial('A') ?? material,
+                B: comparing ? variantMaterial('B') : undefined,
+              }}
+              onImport={importConfig}
             />
           </section>
         )}

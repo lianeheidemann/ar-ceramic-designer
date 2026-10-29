@@ -17,7 +17,11 @@ import {
 } from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-import { startArSession, type ArSessionHandle } from '../ar/arSession'
+import {
+  startArSession,
+  type ArSessionHandle,
+  type ArSessionOptions,
+} from '../ar/arSession'
 import { createModelGeometry } from '../geometry/lathe'
 import type { CeramicModel, MaterialSettings } from '../types/ceramic'
 import { fitDistance } from './framing'
@@ -140,7 +144,9 @@ export class CeramicViewer {
       onNoSurface: () => void
       onSurfaceChange: (found: boolean) => void
       onEnd: () => void
+      onDebug?: ArSessionOptions['onDebug']
     },
+    options: Pick<ArSessionOptions, 'testCube' | 'projectionLayer'> = {},
   ): Promise<void> {
     if (!this.model || this.arSession) return
     this.controls.enabled = false
@@ -163,6 +169,8 @@ export class CeramicViewer {
         onMoveStart: events.onMoveStart,
         onNoSurface: events.onNoSurface,
         onSurfaceChange: events.onSurfaceChange,
+        onDebug: events.onDebug,
+        ...options,
         onEnd: () => {
           restore()
           events.onEnd()
@@ -181,6 +189,19 @@ export class CeramicViewer {
 
   endAr(): void {
     this.arSession?.end()
+  }
+
+  /**
+   * PNG of the current 3D view, or `null` if the browser cannot encode it.
+   * Not available in AR: the camera image is not part of the canvas.
+   */
+  captureImage(): Promise<Blob | null> {
+    if (this.renderer.xr.isPresenting) return Promise.resolve(null)
+    // Render and read in the same task: the drawing buffer is not kept.
+    this.renderer.render(this.scene, this.camera)
+    return new Promise((resolve) =>
+      this.renderer.domElement.toBlob(resolve, 'image/png'),
+    )
   }
 
   /** Calls `listener` whenever the camera moves. Returns an unsubscribe. */
