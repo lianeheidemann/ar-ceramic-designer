@@ -140,6 +140,12 @@ select {
   touch-action: none;
 }
 
+/* The canvas takes the keyboard (arrows, +/-, Home) when focused. */
+.viewer canvas:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -4px;
+}
+
 .viewer-status {
   position: absolute;
   inset: 0;
@@ -153,7 +159,37 @@ select {
 }
 
 .viewer-error {
+  align-content: center;
+  gap: 0.75rem;
   color: var(--text);
+  /* Its buttons must be tappable. */
+  pointer-events: auto;
+}
+
+.viewer-error p {
+  max-width: 28rem;
+  margin: 0;
+}
+
+.viewer-button:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+/* Rendering figures for testing on a phone (?debug=1). */
+.viewer-debug {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  color: #fff;
+  background: rgb(0 0 0 / 0.6);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  pointer-events: none;
 }
 
 .viewer-actions {

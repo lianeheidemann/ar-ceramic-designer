@@ -155,7 +155,16 @@ Define typed metadata for each model: `id`, `name`, `url`, `dimensionsMm`, `scal
 
 **Done when:** exported configurations can be reimported to reproduce the same model appearance.
 
-## 9. Mobile performance and accessibility
+## ✅ 9. Mobile performance and accessibility
+
+> **Implemented** in `app/src/viewers/CeramicViewer.ts` and `app/src/components/Viewer.tsx`:
+> - **On-demand rendering:** the 3D viewer draws only when the camera moves (or glides), the model, material or size changes; a still piece costs no GPU work or battery. Pixel ratio stays capped at 2 (the S23 Ultra reports more).
+> - **Profiling:** `?debug=1` shows frames per second, frames drawn, draw calls, triangles, GPU geometries/textures, pixel ratio and model build time. Measuring on the S23 Ultra is still to be done (item 1).
+> - **Keyboard and motion:** the canvas is focusable (visible focus ring, accessible name); arrows turn the camera, + and − zoom, Home resets. The camera glide is off with `prefers-reduced-motion`.
+> - **Failures:** a lost WebGL context shows a message, recovers by itself when the browser gives the context back, and offers **Recarregar visualizador**; a failed model load offers **Tentar novamente**.
+> - **Memory:** end-to-end tests switch models twelve times and check that GPU geometries and textures stay flat (`app/e2e/viewer.e2e.ts`).
+> - **Assets:** the sample models are generated in code (~10k triangles, no textures), so compressed GLB does not apply yet (item 3).
+> - **Contrast:** text colors meet WCAG AA (muted text 4.6:1 or more in both themes).
 
 1. Profile load time, frame rate and memory use on the S23 Ultra.
 2. Limit pixel ratio, texture resolution and unnecessary draw calls.
