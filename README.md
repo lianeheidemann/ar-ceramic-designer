@@ -21,7 +21,7 @@ Interface web interativa, publicada no GitHub Pages, para explorar modelos de ce
 > Realidade aumentada testada no Galaxy S23 Ultra (Chrome, Android 16). Em outros aparelhos, verifique a compatibilidade.
 
 <p align="center">
-  <img width="100%" src="assets/interface/interface-ar-ceramic-designer-v5.webp">
+  <img width="100%" src="assets/interface/interface-ar-ceramic-designer-v6.webp">
 </p>
 
 ## Funcionalidades
