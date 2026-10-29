@@ -10,6 +10,10 @@ const TEACUP = fileURLToPath(
 const importMessage = (page: Page) =>
   page.locator('.config-message[role=status]')
 
+/** Shows one tab of the controls panel. */
+const openTab = (page: Page, name: 'Modelos' | 'Material' | 'Configuração') =>
+  page.getByRole('tab', { name }).click()
+
 /** Picks `file` with the Importar button's file input. */
 const importFile = (page: Page, file: Parameters<Page['setInputFiles']>[1]) =>
   page.locator('input[type=file]').setInputFiles(file)
@@ -61,6 +65,7 @@ test('stops drawing while nothing changes', async ({ page }) => {
   expect(await stat(page, 'desenhados')).toBe(frames)
 
   // A material change draws again.
+  await openTab(page, 'Material')
   await page.getByRole('button', { name: 'Brilhante' }).click()
   await expect.poll(() => stat(page, 'desenhados')).toBeGreaterThan(frames)
 })
@@ -127,6 +132,7 @@ test('removes an imported model with its × button', async ({ page }) => {
 
 test('rejects a broken .glb and keeps the list', async ({ page }) => {
   const models = await page.locator('.model-option').count()
+  await openTab(page, 'Configuração')
   await importFile(page, {
     name: 'quebrado.glb',
     mimeType: 'model/gltf-binary',
@@ -198,6 +204,7 @@ test('recovers when the GPU context is lost', async ({ page }) => {
 test('rebuilds the viewer on request after a context loss', async ({
   page,
 }) => {
+  await openTab(page, 'Material')
   await page.getByRole('button', { name: 'Brilhante' }).click()
   await loseContext(page, 'loseContext')
   await page.getByRole('button', { name: 'Recarregar visualizador' }).click()
