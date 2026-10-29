@@ -1,6 +1,6 @@
 # AR Ceramic Designer — Step-by-Step Implementation Guide
 
-> **Status:** in progress — sections marked ✅ are implemented in `app/`.
+> **Status:** in progress — sections 0–9 (✅) are implemented in `app/`; AR placement was confirmed on the Galaxy S23 Ultra on 2026-10-29. Next: section 10 (testing and delivery).
 >
 > **Goal:** build a responsive web application for viewing and customizing ceramic objects in 3D, then placing them in augmented reality (AR) on supported Android devices.
 >
@@ -124,11 +124,11 @@ Define typed metadata for each model: `id`, `name`, `url`, `dimensionsMm`, `scal
 
 ## ✅ 7. Implement augmented reality (WebXR)
 
-> **Implemented** in `app/src/ar/` (support check, hit-test placement session) and the **Ver em AR** button of the viewer. Support detection, the fallback message and error handling (e.g. camera permission denied) were tested with a simulated WebXR; placement on a real surface still has to be confirmed on the Galaxy S23 Ultra (item 8).
+> **Implemented** in `app/src/ar/` (support check, hit-test placement session) and the **Ver em AR** button of the viewer. Support detection, the fallback message and error handling (e.g. camera permission denied) are covered by end-to-end tests with a simulated WebXR device. **Placement on a real surface was confirmed on the Galaxy S23 Ultra (Chrome, Android 16) on 2026-10-29** (item 8), after the layer fix below.
 >
-> **Known issue (S23 Ultra, Chrome):** Three.js renders into a WebXR Layers projection layer whenever the browser offers `XRWebGLBinding.createProjectionLayer`. In Chrome's AR on the S23 Ultra nothing drawn into it showed over the camera (draw calls went through, the screen stayed empty), so the AR session always uses a classic `XRWebGLLayer` (`hideProjectionLayers()` in `app/src/ar/arSession.ts`).
+> **Fixed issue (S23 Ultra, Chrome):** Three.js renders into a WebXR Layers projection layer whenever the browser offers `XRWebGLBinding.createProjectionLayer`. In Chrome's AR on the S23 Ultra nothing drawn into it showed over the camera (draw calls went through, the screen stayed empty), so the AR session always uses a classic `XRWebGLLayer` (`hideProjectionLayers()` in `app/src/ar/arSession.ts`).
 >
-> **Testing on the phone:** `?debug=1` shows a diagnostics panel during AR (tracking, hits, ring distance, frames, draw calls, XR framebuffer, WebGL errors); `?cubo=1` adds a magenta test cube 50 cm in front of the starting position, to tell a rendering problem apart from a placement problem. `?camada=projection` lets Three.js render into a WebXR Layers projection layer, to reproduce the problem below. `npm run test:e2e` runs the AR flow in Chromium with a fake WebXR device (`app/e2e/`).
+> **Testing on the phone:** `?debug=1` shows a diagnostics panel during AR (tracking, hits, ring distance, frames, draw calls, XR framebuffer, WebGL errors); `?cubo=1` adds a magenta test cube 50 cm in front of the starting position, to tell a rendering problem apart from a placement problem. `?camada=projection` lets Three.js render into a WebXR Layers projection layer, to reproduce the problem above. `npm run test:e2e` runs the AR flow in Chromium with a fake WebXR device (`app/e2e/`).
 
 1. Detect support using `navigator.xr?.isSessionSupported('immersive-ar')` in a secure context.
 2. Show **View in AR** only when supported; otherwise explain the limitation and keep the standard 3D viewer available.
@@ -176,23 +176,23 @@ Define typed metadata for each model: `id`, `name`, `url`, `dimensionsMm`, `scal
 
 ## 10. Testing and delivery
 
-**Manual test checklist**
-- [ ] Development server and production build succeed.
-- [ ] Two or more GLB models load correctly.
-- [ ] Camera controls work with mouse and touch.
-- [ ] Material changes and reset work.
-- [ ] Comparison works on desktop and mobile.
-- [ ] Export/import JSON reproduces settings.
-- [ ] AR capability detection and fallback work.
-- [ ] AR placement is tested on a compatible Android browser.
-- [ ] AR session can be exited without breaking the viewer.
-- [ ] Errors and loading states are visible and understandable.
+**Manual test checklist** (status on 2026-10-29)
+- [x] Development server and production build succeed (also in CI on every push).
+- [ ] Two or more GLB models load correctly. *The three sample models (vase, bowl, plate) are generated in code and load; the GLB loading path exists but no GLB asset ships yet.*
+- [ ] Camera controls work with mouse and touch. *Mouse and keyboard verified on desktop (keyboard covered by `app/e2e/viewer.e2e.ts`); touch still to be recorded on the phone.*
+- [x] Material changes and reset work (unit tests in `app/src/materials/`).
+- [ ] Comparison works on desktop and mobile. *Desktop verified; the compact (A/B switch) layout still to be recorded on the phone.*
+- [x] Export/import JSON reproduces settings (round trip checked in Chromium; validation in `app/src/utils/config.test.ts`).
+- [x] AR capability detection and fallback work (end-to-end tests; desktop shows the explanation instead of **Ver em AR**).
+- [x] AR placement is tested on a compatible Android browser (Galaxy S23 Ultra, Chrome, 2026-10-29).
+- [x] AR session can be exited without breaking the viewer (end-to-end test; used on the S23 Ultra).
+- [x] Errors and loading states are visible and understandable (loading, model failure with retry, WebGL context loss, AR errors and hints).
 
 **Delivery**
-1. Document local setup, commands, supported browsers, and asset licenses in the root README.
-2. Add screenshots and, if available, a short demonstration video.
-3. Deploy to an HTTPS host (for example, GitHub Pages with a correctly configured Vite base path).
-4. Record known limitations and measured performance rather than claiming industrial validation.
+1. Document local setup, commands, supported browsers, and asset licenses in the root README. *Requirements and features are in the root README, commands and structure in `app/README.md`; asset licenses still to add.*
+2. Add screenshots and, if available, a short demonstration video. *Interface screenshot in the README; AR screenshots/video still to add.*
+3. ✅ Deploy to an HTTPS host: GitHub Pages, Vite base `/ar-ceramic-designer/` (`.github/workflows/deploy.yml`).
+4. Record known limitations and measured performance rather than claiming industrial validation. *Known limitations are in the root README; performance numbers on the S23 Ultra (`?debug=1`) still to measure.
 
 ## 11. Package the app with Capacitor (Android and iOS)
 
