@@ -14,6 +14,8 @@ interface CompareViewProps {
   compact: boolean
   /** AR is offered only in the compact (single viewer) layout. */
   arSupported: boolean
+  /** Uniform scale of the piece (real size of imported models). */
+  scale?: number
 }
 
 function VariantSummary({
@@ -43,6 +45,7 @@ export function CompareView({
   onActiveChange,
   compact,
   arSupported,
+  scale,
 }: CompareViewProps) {
   const [cameraSync] = useState(() => new CameraSync())
 
@@ -54,6 +57,7 @@ export function CompareView({
           material={materials[active]}
           label={`Variante ${active}`}
           arSupported={arSupported}
+          scale={scale}
         />
         <div className="variant-switch" role="group" aria-label="Variante">
           {variantIds.map((variant) => (
@@ -85,6 +89,7 @@ export function CompareView({
             material={materials[variant]}
             cameraSync={cameraSync}
             label={`Variante ${variant}`}
+            scale={scale}
           />
           <button
             type="button"

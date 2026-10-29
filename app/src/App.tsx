@@ -3,6 +3,7 @@ import { CompareView } from './components/CompareView'
 import { ConfigControls } from './components/ConfigControls'
 import { MaterialControls } from './components/MaterialControls'
 import { ModelList } from './components/ModelList'
+import { RealSizeControl } from './components/RealSizeControl'
 import { Tabs } from './components/Tabs'
 import { Viewer } from './components/Viewer'
 import { catalog, defaultModelId } from './data/catalog'
@@ -32,6 +33,8 @@ function App() {
   const [overrides, setOverrides] = useState<Overrides>({ A: {}, B: {} })
   /** Models opened from .glb files; they last until the page reloads. */
   const [importedModels, setImportedModels] = useState<CeramicModel[]>([])
+  /** Real height (mm) the user gave each imported model, by id. */
+  const [realHeights, setRealHeights] = useState<Record<string, number>>({})
   const [tab, setTab] = useState<'models' | 'material' | 'config'>('models')
   const [comparing, setComparing] = useState(false)
   const [activeVariant, setActiveVariant] = useState<VariantId>('A')
@@ -40,6 +43,29 @@ function App() {
   const arSupported = arSupport.kind === 'supported'
   const models = [...catalog, ...importedModels]
   const selectedModel = models.find((model) => model.id === selectedId)
+  const selectedImported = importedModels.some(
+    (model) => model.id === selectedId,
+  )
+  /** Scale that gives a model its real height (1 = size in the file). */
+  const scaleOf = (model: CeramicModel) =>
+    realHeights[model.id]
+      ? realHeights[model.id] / model.dimensionsMm.height
+      : 1
+  // The list shows real sizes; the viewer keeps the original objects so a
+  // size change does not reload the file.
+  const listedModels = models.map((model) => {
+    const scale = scaleOf(model)
+    if (scale === 1) return model
+    const { width, height, depth } = model.dimensionsMm
+    return {
+      ...model,
+      dimensionsMm: {
+        width: Math.round(width * scale),
+        height: Math.round(height * scale),
+        depth: Math.round(depth * scale),
+      },
+    }
+  })
   const editedVariant = comparing ? activeVariant : 'A'
 
   function variantMaterial(variant: VariantId): MaterialSettings | undefined {
@@ -84,6 +110,11 @@ function App() {
       delete a[id]
       delete b[id]
       return { A: a, B: b }
+    })
+    setRealHeights((all) => {
+      const rest = { ...all }
+      delete rest[id]
+      return rest
     })
     if (selectedId === id) setSelectedId(defaultModelId)
   }
@@ -167,12 +198,14 @@ function App() {
             onActiveChange={setActiveVariant}
             compact={compact}
             arSupported={arSupported}
+            scale={scaleOf(selectedModel)}
           />
         ) : selectedModel && material ? (
           <Viewer
             model={selectedModel}
             material={material}
             arSupported={arSupported}
+            scale={scaleOf(selectedModel)}
           />
         ) : (
           <p className="viewport-placeholder">Nenhum modelo selecionado</p>
@@ -191,7 +224,7 @@ function App() {
               content: (
                 <>
                   <ModelList
-                    models={models}
+                    models={listedModels}
                     selectedId={selectedId}
                     onSelect={setSelectedId}
                     removableIds={
@@ -199,6 +232,22 @@ function App() {
                     }
                     onRemove={removeImportedModel}
                   />
+                  {selectedModel && selectedImported && (
+                    <RealSizeControl
+                      key={selectedModel.id}
+                      fileDimensionsMm={selectedModel.dimensionsMm}
+                      heightMm={
+                        realHeights[selectedModel.id] ??
+                        selectedModel.dimensionsMm.height
+                      }
+                      onChange={(heightMm) =>
+                        setRealHeights((all) => ({
+                          ...all,
+                          [selectedModel.id]: heightMm,
+                        }))
+                      }
+                    />
+                  )}
                   {arSupport.kind === 'unavailable' && (
                     // Only explains why there is no "Ver em AR" button.
                     <section className="controls-section">
