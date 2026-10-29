@@ -39,6 +39,17 @@ npm run format        # Prettier
 
 AR needs HTTPS.
 
+## Accepted files
+
+**Import** (Settings tab) tells the two formats apart by their first bytes.
+
+| Format                   | Must have                                                                                                                                                                             | Notes                                                                                                                                                                                                                                                          |
+| :----------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.glb` (binary glTF 2.0) | One file with the `glTF` header; geometry in meters; textures embedded as PNG, JPEG or WebP                                                                                           | Meshopt is decoded; Draco and KTX2 are rejected with a message (`viewers/gltfLoader.ts`). Over 300k triangles: simplified on load (`viewers/simplify.ts`). Outside 1–60 cm: a warning to set the real height (`utils/importModel.ts`). Kept only until reload. |
+| `.json` (settings)       | `schema: "ar-ceramic-designer/config"`, `version: 1`, a known `modelId`, `variants.A` (and optional `B`) with `color` `#rrggbb` and `roughness`, `metalness`, `clearcoat` from 0 to 1 | Made by **Export (.json)**; validated in `utils/config.ts`. Settings for an imported model need that `.glb` imported first.                                                                                                                                    |
+
+Not accepted: `.gltf` with separate files, `.obj`, `.fbx`, `.stl`.
+
 ## Test switches
 
 Add to the URL:
