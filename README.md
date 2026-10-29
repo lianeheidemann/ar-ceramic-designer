@@ -30,7 +30,6 @@ A web app, live on GitHub Pages, to view ceramic pieces in 3D, change their fini
 - Import your own `.glb` model (**Settings → Import**); **×** removes it from the list.
 - Finishes (matte, glossy, glazed), color, roughness and metalness; A/B comparison.
 - AR (WebXR): a ring marks the surface, a tap places the piece at real size, another tap moves it; **−** / **+** change its height by 1 cm.
-- **Real size** (Models tab) sets any piece's height.
 - Export/import settings as `.json`; save a PNG of the 3D view.
 - Keyboard camera (arrows, `+`/`−`, Home), visible focus, reduced motion, on-demand rendering.
 
@@ -56,16 +55,6 @@ A web app, live on GitHub Pages, to view ceramic pieces in 3D, change their fini
 - A `.json` saved for an imported model opens only after the same `.glb` is imported again.
 - PNG capture covers the 3D view only, not the AR camera.
 - Performance on the phone is not measured yet (open the app with `?debug=1`).
-
-## Development
-
-```bash
-cd app
-npm install
-npm run dev
-```
-
-Commands, structure and test switches: [`app/README.md`](app/README.md).
 
 ## License
 
