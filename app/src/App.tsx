@@ -33,7 +33,7 @@ function App() {
   const [overrides, setOverrides] = useState<Overrides>({ A: {}, B: {} })
   /** Models opened from .glb files; they last until the page reloads. */
   const [importedModels, setImportedModels] = useState<CeramicModel[]>([])
-  /** Real height (mm) the user gave each imported model, by id. */
+  /** Real height (mm) the user gave each model, by id. */
   const [realHeights, setRealHeights] = useState<Record<string, number>>({})
   const [tab, setTab] = useState<'models' | 'material' | 'config'>('models')
   const [comparing, setComparing] = useState(false)
@@ -43,14 +43,16 @@ function App() {
   const arSupported = arSupport.kind === 'supported'
   const models = [...catalog, ...importedModels]
   const selectedModel = models.find((model) => model.id === selectedId)
-  const selectedImported = importedModels.some(
-    (model) => model.id === selectedId,
-  )
-  /** Scale that gives a model its real height (1 = size in the file). */
+  /** Height (mm) the model is shown at, in the viewer and in AR. */
+  const heightOf = (model: CeramicModel) =>
+    realHeights[model.id] ?? model.dimensionsMm.height
+  /** Scale that gives a model its real height (1 = original size). */
   const scaleOf = (model: CeramicModel) =>
-    realHeights[model.id]
-      ? realHeights[model.id] / model.dimensionsMm.height
-      : 1
+    heightOf(model) / model.dimensionsMm.height
+
+  function setHeight(id: string, heightMm: number) {
+    setRealHeights((all) => ({ ...all, [id]: heightMm }))
+  }
   // The list shows real sizes; the viewer keeps the original objects so a
   // size change does not reload the file.
   const listedModels = models.map((model) => {
@@ -93,8 +95,9 @@ function App() {
     })
   }
 
-  function importModel(model: CeramicModel) {
+  function importModel(model: CeramicModel, realHeightMm?: number) {
     setImportedModels((list) => [...list, model])
+    if (realHeightMm !== undefined) setHeight(model.id, realHeightMm)
     setSelectedId(model.id)
   }
 
@@ -199,6 +202,8 @@ function App() {
             compact={compact}
             arSupported={arSupported}
             scale={scaleOf(selectedModel)}
+            heightMm={heightOf(selectedModel)}
+            onHeightChange={(heightMm) => setHeight(selectedModel.id, heightMm)}
           />
         ) : selectedModel && material ? (
           <Viewer
@@ -206,6 +211,8 @@ function App() {
             material={material}
             arSupported={arSupported}
             scale={scaleOf(selectedModel)}
+            heightMm={heightOf(selectedModel)}
+            onHeightChange={(heightMm) => setHeight(selectedModel.id, heightMm)}
           />
         ) : (
           <p className="viewport-placeholder">No model selected</p>
@@ -232,19 +239,13 @@ function App() {
                     }
                     onRemove={removeImportedModel}
                   />
-                  {selectedModel && selectedImported && (
+                  {selectedModel && (
                     <RealSizeControl
                       key={selectedModel.id}
-                      fileDimensionsMm={selectedModel.dimensionsMm}
-                      heightMm={
-                        realHeights[selectedModel.id] ??
-                        selectedModel.dimensionsMm.height
-                      }
+                      originalDimensionsMm={selectedModel.dimensionsMm}
+                      heightMm={heightOf(selectedModel)}
                       onChange={(heightMm) =>
-                        setRealHeights((all) => ({
-                          ...all,
-                          [selectedModel.id]: heightMm,
-                        }))
+                        setHeight(selectedModel.id, heightMm)
                       }
                     />
                   )}

@@ -159,32 +159,43 @@ test('imports a Meshopt-compressed .glb (gltfpack, Tripo)', async ({
   await expect.poll(() => stat(page, 'triangles')).toBe(12)
 })
 
-test('sets the real height of an imported piece', async ({ page }) => {
-  // Only imported models have a real-size field.
-  await expect(page.getByLabel('Height (cm)')).toHaveCount(0)
-
+test('starts an oversized import at 20 cm and sets its real height', async ({
+  page,
+}) => {
   await importFile(page, ONE_METER_BOX)
   await expect(importMessage(page)).toContainText(
-    'In the file the piece measures 1 m; set its real height in the Models tab.',
+    'In the file the piece measures 1 m; it is shown at 20 cm.',
   )
   const option = page.getByRole('button', { name: /^box-1m/ })
-  await expect(option).toContainText('⌀ 1000 × 1000 mm')
+  await expect(option).toContainText('⌀ 200 × 200 mm')
   await loaded(page)
 
   const height = page.getByLabel('Height (cm)')
-  await expect(height).toHaveValue('100')
+  await expect(height).toHaveValue('20')
   await height.fill('7')
   await expect(option).toContainText('⌀ 70 × 70 mm')
   await expect(page.getByText('Piece: ⌀ 70 × 70 mm')).toBeVisible()
 
   // The size stays with the model while others are shown.
   await page.getByRole('button', { name: /Vase/ }).click()
-  await expect(page.getByLabel('Height (cm)')).toHaveCount(0)
+  await expect(page.getByLabel('Height (cm)')).toHaveValue('20')
   await option.click()
   await expect(page.getByLabel('Height (cm)')).toHaveValue('7')
 
-  await page.getByRole('button', { name: 'Use the file size' }).click()
+  await page.getByRole('button', { name: 'Original size' }).click()
   await expect(option).toContainText('⌀ 1000 × 1000 mm')
+})
+
+test('resizes catalog pieces too', async ({ page }) => {
+  const vase = page.getByRole('button', { name: /Vase/ })
+  await expect(vase).toContainText('⌀ 120 × 200 mm')
+  await expect(page.getByRole('button', { name: 'Original size' })).toHaveCount(
+    0,
+  )
+  await page.getByLabel('Height (cm)').fill('30')
+  await expect(vase).toContainText('⌀ 180 × 300 mm')
+  await page.getByRole('button', { name: 'Original size' }).click()
+  await expect(vase).toContainText('⌀ 120 × 200 mm')
 })
 
 test('explains a .glb that uses Draco compression', async ({ page }) => {

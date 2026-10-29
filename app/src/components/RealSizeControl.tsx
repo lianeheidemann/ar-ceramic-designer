@@ -1,25 +1,25 @@
 import { useId, useState } from 'react'
 import type { DimensionsMm } from '../types/ceramic'
+import {
+  MAX_HEIGHT_CM as MAX_CM,
+  MIN_HEIGHT_CM as MIN_CM,
+  formatCm,
+} from '../utils/units'
 
 interface RealSizeControlProps {
-  /** Size as measured in the file. */
-  fileDimensionsMm: DimensionsMm
+  /** Size from the catalog or as measured in the file. */
+  originalDimensionsMm: DimensionsMm
   /** Height shown in the viewer and AR, in millimeters. */
   heightMm: number
   onChange: (heightMm: number) => void
 }
 
-const MIN_CM = 0.5
-const MAX_CM = 300
-
-const formatCm = (mm: number) => String(Math.round(mm) / 10)
-
 /**
- * Real height of an imported piece: files from AI generators come scaled
- * to about 1 m, so the user types the actual height and the piece follows.
+ * Real height of the piece: files from AI generators come scaled to about
+ * 1 m, and any piece can be tried at another size; the piece follows.
  */
 export function RealSizeControl({
-  fileDimensionsMm,
+  originalDimensionsMm,
   heightMm,
   onChange,
 }: RealSizeControlProps) {
@@ -38,9 +38,9 @@ export function RealSizeControl({
     if (valid) onChange(cm * 10)
   }
 
-  const ratio = heightMm / fileDimensionsMm.height
-  const width = Math.round(fileDimensionsMm.width * ratio)
-  const changed = Math.abs(heightMm - fileDimensionsMm.height) >= 1
+  const ratio = heightMm / originalDimensionsMm.height
+  const width = Math.round(originalDimensionsMm.width * ratio)
+  const changed = Math.abs(heightMm - originalDimensionsMm.height) >= 1
 
   return (
     <section className="controls-section">
@@ -60,16 +60,16 @@ export function RealSizeControl({
         />
       </label>
       <p className="controls-note">
-        Piece: ⌀ {width} × {Math.round(heightMm)} mm. In the file: ⌀{' '}
-        {fileDimensionsMm.width} × {fileDimensionsMm.height} mm.
+        Piece: ⌀ {width} × {Math.round(heightMm)} mm. Original: ⌀{' '}
+        {originalDimensionsMm.width} × {originalDimensionsMm.height} mm.
       </p>
       {changed && (
         <button
           type="button"
           className="reset-material"
-          onClick={() => onChange(fileDimensionsMm.height)}
+          onClick={() => onChange(originalDimensionsMm.height)}
         >
-          Use the file size
+          Original size
         </button>
       )}
     </section>

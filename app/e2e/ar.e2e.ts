@@ -51,6 +51,33 @@ test('guides from opening AR to placing and moving the piece', async ({
   await expect(hint(page)).toHaveText(/Piece placed/)
 })
 
+test('changes the piece size with − and + without moving it', async ({
+  page,
+}) => {
+  await page.getByRole('button', { name: 'View in AR' }).click()
+  await setXr(page, { tracking: true, plane: [0, 0, -1] })
+  await tapScreen(page)
+  await expect(hint(page)).toHaveText(/Piece placed/)
+
+  const size = page.locator('.ar-size [role=status]')
+  await expect(size).toHaveText('20 cm')
+  await page.getByRole('button', { name: 'Larger' }).click()
+  await expect(size).toHaveText('21 cm')
+  // The tap stays on the button: the piece is not picked up to move.
+  await expect(hint(page)).toHaveText(/Piece placed/)
+
+  await page.getByRole('button', { name: 'Smaller' }).click()
+  await page.getByRole('button', { name: 'Smaller' }).click()
+  await expect(size).toHaveText('19 cm')
+  await expect(hint(page)).toHaveText(/Piece placed/)
+
+  // The new size stays after AR.
+  await page.getByRole('button', { name: 'Exit AR' }).click()
+  await expect(page.getByRole('button', { name: /Vase/ })).toContainText(
+    '× 190 mm',
+  )
+})
+
 test('warns when tapping before a surface is found', async ({ page }) => {
   await page.getByRole('button', { name: 'View in AR' }).click()
   await setXr(page, { tracking: true })

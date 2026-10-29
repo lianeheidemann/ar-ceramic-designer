@@ -23,7 +23,7 @@
 - **AR layer fix:** Three.js renders into a WebXR Layers projection layer when the browser offers one. On the S23 Ultra nothing drawn there showed over the camera, so the session always uses a classic `XRWebGLLayer` (`hideProjectionLayers()` in `src/ar/arSession.ts`).
 - **Test switches:** `?debug=1` (diagnostics), `?cube=1` (test cube), `?layer=projection` (reproduces the layer bug). `npm run test:e2e` runs the AR flow with a fake WebXR device.
 - **Settings JSON:** schema `ar-ceramic-designer/config` v1 with model id, dimensions and materials A/B; validated on import.
-- **`.glb` import:** detected by its first bytes; parsed once to check and measure it, then kept as an object URL for the session. Meshopt is decoded; Draco and KTX2 are named in the error. Pieces stand on their base at the origin; a **Real size** field sets the height; meshes over 300k triangles are simplified with meshoptimizer (borders locked, cached per file). Finish controls multiply the file's own values.
+- **`.glb` import:** detected by its first bytes; parsed once to check and measure it, then kept as an object URL for the session. Meshopt is decoded; Draco and KTX2 are named in the error. Pieces stand on their base at the origin; oversized pieces start at 20 cm; **Real size** (any model) and − / + in AR set the height; meshes over 300k triangles are simplified with meshoptimizer (borders locked, cached per file). Finish controls multiply the file's own values.
 - **Performance:** on-demand rendering, pixel ratio capped at 2, WebGL context-loss recovery, GPU memory checked flat over repeated model switches (e2e).
 
 ## 10. Testing and delivery

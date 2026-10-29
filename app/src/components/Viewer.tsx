@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type MouseEvent } from 'react'
 import WebGL from 'three/addons/capabilities/WebGL.js'
 import type { ArDebugInfo } from '../ar/arSession'
 import { arStatus, type ArState } from '../ar/arStatus'
 import { arErrorMessage } from '../ar/support'
 import type { CeramicModel, MaterialSettings } from '../types/ceramic'
 import { downloadBlob, downloadName } from '../utils/download'
+import { MAX_HEIGHT_CM, MIN_HEIGHT_CM, formatCm } from '../utils/units'
 import type { CameraSync } from '../viewers/CameraSync'
 import { ArStatusIcon } from './ArStatusIcon'
 import { CeramicViewer, type ViewerStats } from '../viewers/CeramicViewer'
@@ -63,6 +64,9 @@ interface ViewerProps {
   arSupported?: boolean
   /** Uniform scale, e.g. to give an imported piece its real size. */
   scale?: number
+  /** Height the piece is shown at; with `onHeightChange`, AR offers − / +. */
+  heightMm?: number
+  onHeightChange?: (heightMm: number) => void
 }
 
 /** Outcome of the latest finished load. */
@@ -78,10 +82,12 @@ export function Viewer({
   label,
   arSupported = false,
   scale = 1,
+  heightMm,
+  onHeightChange,
 }: ViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
-  const exitArRef = useRef<HTMLButtonElement>(null)
+  const arButtonsRef = useRef<HTMLDivElement>(null)
   const [ar, setAr] = useState<ArState>('off')
   const [arError, setArError] = useState<string | null>(null)
   const [noSurface, setNoSurface] = useState(false)
@@ -152,14 +158,24 @@ export function Viewer({
     return () => window.clearInterval(timer)
   }, [ar, instance])
 
-  // A tap on "Exit AR" must not also place the piece behind it.
+  // A tap on the AR buttons must not also place the piece behind them.
   useEffect(() => {
-    const button = exitArRef.current
-    if (!button) return
+    const buttons = arButtonsRef.current
+    if (!buttons) return
     const keepTap = (event: Event) => event.preventDefault()
-    button.addEventListener('beforexrselect', keepTap)
-    return () => button.removeEventListener('beforexrselect', keepTap)
+    buttons.addEventListener('beforexrselect', keepTap)
+    return () => buttons.removeEventListener('beforexrselect', keepTap)
   }, [])
+
+  /** Changes the height by whole centimeters, within the field's limits. */
+  function stepHeight(event: MouseEvent, cm: number) {
+    event.stopPropagation()
+    if (heightMm === undefined) return
+    const next = Math.round(heightMm / 10) + cm
+    onHeightChange?.(
+      Math.min(MAX_HEIGHT_CM, Math.max(MIN_HEIGHT_CM, next)) * 10,
+    )
+  }
 
   function showNoSurface() {
     setNoSurface(true)
@@ -366,17 +382,39 @@ export function Viewer({
         {AR_DEBUG && debugInfo && (
           <pre className="ar-debug">{debugLines(debugInfo).join('\n')}</pre>
         )}
-        <button
-          ref={exitArRef}
-          type="button"
-          className="ar-exit"
-          onClick={(event) => {
-            event.stopPropagation()
-            viewerRef.current?.endAr()
-          }}
-        >
-          Exit AR
-        </button>
+        <div className="ar-buttons" ref={arButtonsRef}>
+          {heightMm !== undefined && onHeightChange && (
+            <div className="ar-size" role="group" aria-label="Piece height">
+              <button
+                type="button"
+                aria-label="Smaller"
+                disabled={heightMm <= MIN_HEIGHT_CM * 10}
+                onClick={(event) => stepHeight(event, -1)}
+              >
+                −
+              </button>
+              <span role="status">{formatCm(heightMm)} cm</span>
+              <button
+                type="button"
+                aria-label="Larger"
+                disabled={heightMm >= MAX_HEIGHT_CM * 10}
+                onClick={(event) => stepHeight(event, 1)}
+              >
+                +
+              </button>
+            </div>
+          )}
+          <button
+            type="button"
+            className="ar-exit"
+            onClick={(event) => {
+              event.stopPropagation()
+              viewerRef.current?.endAr()
+            }}
+          >
+            Exit AR
+          </button>
+        </div>
       </div>
     </div>
   )

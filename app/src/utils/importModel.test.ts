@@ -2,6 +2,7 @@ import { Box3, Vector3 } from 'three'
 import { describe, expect, it } from 'vitest'
 import {
   dimensionsFromBox,
+  fittedHeightMm,
   formatLength,
   formatTriangles,
   isGlb,
@@ -32,6 +33,24 @@ describe('dimensionsFromBox', () => {
       height: 70,
       depth: 154,
     })
+  })
+})
+
+describe('fittedHeightMm', () => {
+  it('brings an oversized piece to a largest side of 20 cm', () => {
+    expect(fittedHeightMm({ width: 1000, height: 1000, depth: 1000 })).toBe(200)
+    // A wide plate keeps its proportions instead of growing to 20 cm tall.
+    expect(fittedHeightMm({ width: 1000, height: 100, depth: 1000 })).toBe(20)
+  })
+
+  it('scales tiny pieces up too', () => {
+    expect(fittedHeightMm({ width: 5, height: 8, depth: 5 })).toBe(200)
+  })
+
+  it('keeps plausible sizes', () => {
+    expect(fittedHeightMm({ width: 149, height: 70, depth: 154 })).toBe(
+      undefined,
+    )
   })
 })
 

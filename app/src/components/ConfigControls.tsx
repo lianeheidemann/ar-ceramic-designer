@@ -9,8 +9,8 @@ interface ConfigControlsProps {
   /** B is included only while comparing. */
   variants: { A: MaterialSettings; B?: MaterialSettings }
   onImport: (config: CeramicConfig) => void
-  /** A 3D model (.glb) opened with the same button. */
-  onImportModel: (model: CeramicModel) => void
+  /** A 3D model (.glb) opened with the same button, and its starting height. */
+  onImportModel: (model: CeramicModel, realHeightMm?: number) => void
 }
 
 type Message = { kind: 'done' | 'error'; text: string }
@@ -47,7 +47,7 @@ export function ConfigControls({
       setMessage({ kind: 'error', text: result.error })
       return
     }
-    onImportModel(result.model)
+    onImportModel(result.model, result.realHeightMm)
     setMessage({
       kind: 'done',
       text: [`Model "${result.model.name}" imported.`, result.warning]

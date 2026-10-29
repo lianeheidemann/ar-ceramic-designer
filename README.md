@@ -29,7 +29,8 @@ A web app, live on GitHub Pages, to view ceramic pieces in 3D, change their fini
 - 3D viewer with a vase, bowl and plate: turn, zoom, reset.
 - Import your own `.glb` model (**Settings → Import**); **×** removes it from the list.
 - Finishes (matte, glossy, glazed), color, roughness and metalness; A/B comparison.
-- AR (WebXR): a ring marks the surface, a tap places the piece at real size, another tap moves it.
+- AR (WebXR): a ring marks the surface, a tap places the piece at real size, another tap moves it; **−** / **+** change its height by 1 cm.
+- **Real size** (Models tab) sets any piece's height.
 - Export/import settings as `.json`; save a PNG of the 3D view.
 - Keyboard camera (arrows, `+`/`−`, Home), visible focus, reduced motion, on-demand rendering.
 
@@ -37,7 +38,7 @@ A web app, live on GitHub Pages, to view ceramic pieces in 3D, change their fini
 
 - A single binary **`.glb`** (glTF 2.0), optionally **Meshopt**-compressed (gltfpack, Tripo).
 - Textures embedded as PNG, JPEG or WebP.
-- Units in meters; set the true height in **Models → Real size** (AI generators export about 1 m).
+- Units in meters. Pieces outside 1–60 cm (AI generators export about 1 m) start with a largest side of 20 cm; adjust in **Models → Real size** or in AR.
 - Meshes over 300k triangles are simplified on load; the file is not changed.
 - Not accepted: `.gltf` with separate files, `.obj`/`.fbx`/`.stl`, Draco compression, KTX2 textures. The app says what is missing.
 - Imported models stay in the browser until the page reloads.
