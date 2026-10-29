@@ -28,7 +28,10 @@ describe('solidProfileMm', () => {
   })
 })
 
-describe.each(catalog)('$name geometry', (model) => {
+// GLB models are loaded by the viewer, not generated here.
+const generated = catalog.filter((model) => model.source.kind === 'lathe')
+
+describe.each(generated)('$name geometry', (model) => {
   const geometry = createModelGeometry(model)
   const box = new Box3().setFromObject(new Mesh(geometry))
 

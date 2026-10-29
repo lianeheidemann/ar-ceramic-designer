@@ -24,8 +24,9 @@ describe('material presets', () => {
     expect(findPreset(adjusted)).toBeUndefined()
   })
 
-  it('starts every catalog model on a preset', () => {
-    for (const model of catalog) {
+  // A GLB model starts on its own textures instead.
+  it('starts every generated catalog model on a preset', () => {
+    for (const model of catalog.filter((m) => m.source.kind === 'lathe')) {
       expect(findPreset(model.defaultMaterial)).toBeDefined()
     }
   })

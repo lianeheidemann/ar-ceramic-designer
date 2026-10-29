@@ -3,8 +3,9 @@ import { CompareView } from './components/CompareView'
 import { ConfigControls } from './components/ConfigControls'
 import { MaterialControls } from './components/MaterialControls'
 import { ModelList } from './components/ModelList'
+import { Tabs } from './components/Tabs'
 import { Viewer } from './components/Viewer'
-import { catalog, defaultModelId, getModelById } from './data/catalog'
+import { catalog, defaultModelId } from './data/catalog'
 import { useArSupport } from './hooks/useArSupport'
 import { useMediaQuery } from './hooks/useMediaQuery'
 import {
@@ -12,7 +13,7 @@ import {
   variantIds,
   type VariantId,
 } from './materials/variants'
-import type { MaterialSettings } from './types/ceramic'
+import type { CeramicModel, MaterialSettings } from './types/ceramic'
 import type { CeramicConfig } from './utils/config'
 
 type Overrides = Record<VariantId, Record<string, MaterialSettings>>
@@ -29,12 +30,16 @@ function App() {
   // Customized materials per variant and model id; the catalog defaults
   // stay untouched. Variant A is the regular (non-comparison) material.
   const [overrides, setOverrides] = useState<Overrides>({ A: {}, B: {} })
+  /** Models opened from .glb files; they last until the page reloads. */
+  const [importedModels, setImportedModels] = useState<CeramicModel[]>([])
+  const [tab, setTab] = useState<'models' | 'material' | 'config'>('models')
   const [comparing, setComparing] = useState(false)
   const [activeVariant, setActiveVariant] = useState<VariantId>('A')
   const compact = useMediaQuery('(max-width: 768px)')
   const arSupport = useArSupport()
   const arSupported = arSupport.kind === 'supported'
-  const selectedModel = getModelById(selectedId)
+  const models = [...catalog, ...importedModels]
+  const selectedModel = models.find((model) => model.id === selectedId)
   const editedVariant = comparing ? activeVariant : 'A'
 
   function variantMaterial(variant: VariantId): MaterialSettings | undefined {
@@ -60,6 +65,27 @@ function App() {
       delete rest[selectedId]
       return { ...all, [editedVariant]: rest }
     })
+  }
+
+  function importModel(model: CeramicModel) {
+    setImportedModels((list) => [...list, model])
+    setSelectedId(model.id)
+  }
+
+  /** Takes an imported model off the list and frees its file. */
+  function removeImportedModel(id: string) {
+    const model = importedModels.find((item) => item.id === id)
+    if (!model) return
+    setImportedModels((list) => list.filter((item) => item.id !== id))
+    if (model.source.kind === 'glb') URL.revokeObjectURL(model.source.url)
+    setOverrides((all) => {
+      const a = { ...all.A }
+      const b = { ...all.B }
+      delete a[id]
+      delete b[id]
+      return { A: a, B: b }
+    })
+    if (selectedId === id) setSelectedId(defaultModelId)
   }
 
   /** Shows the imported model with its saved materials. */
@@ -154,72 +180,98 @@ function App() {
       </main>
 
       <aside className="controls" aria-label="Controles">
-        <h2>Modelos</h2>
-        <ModelList
-          models={catalog}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
+        <Tabs
+          label="Controles"
+          active={tab}
+          onChange={setTab}
+          tabs={[
+            {
+              id: 'models',
+              label: 'Modelos',
+              content: (
+                <>
+                  <ModelList
+                    models={models}
+                    selectedId={selectedId}
+                    onSelect={setSelectedId}
+                    removableIds={
+                      new Set(importedModels.map((model) => model.id))
+                    }
+                    onRemove={removeImportedModel}
+                  />
+                  {arSupport.kind === 'unavailable' && (
+                    // Only explains why there is no "Ver em AR" button.
+                    <section className="controls-section">
+                      <h2>Realidade aumentada</h2>
+                      <p className="controls-note">{arSupport.reason}</p>
+                    </section>
+                  )}
+                </>
+              ),
+            },
+            {
+              id: 'material',
+              label: 'Material',
+              content: selectedModel && material && (
+                <>
+                  <div className="section-header">
+                    <button
+                      type="button"
+                      className="compare-toggle"
+                      aria-pressed={comparing}
+                      onClick={() => setComparing(!comparing)}
+                    >
+                      Comparar A/B
+                    </button>
+                  </div>
+                  {comparing && (
+                    <div
+                      className="variant-picker"
+                      role="group"
+                      aria-label="Variante em edição"
+                    >
+                      {variantIds.map((variant) => (
+                        <button
+                          key={variant}
+                          type="button"
+                          className="preset-option"
+                          aria-pressed={variant === activeVariant}
+                          onClick={() => setActiveVariant(variant)}
+                        >
+                          Editar {variant}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <MaterialControls
+                    material={material}
+                    original={defaultVariantMaterial(
+                      selectedModel,
+                      editedVariant,
+                    )}
+                    onChange={updateMaterial}
+                    onReset={resetMaterial}
+                  />
+                </>
+              ),
+            },
+            {
+              id: 'config',
+              label: 'Configuração',
+              content: selectedModel && material && (
+                <ConfigControls
+                  model={selectedModel}
+                  variants={{
+                    A: variantMaterial('A') ?? material,
+                    B: comparing ? variantMaterial('B') : undefined,
+                  }}
+                  onImport={importConfig}
+                  onImportModel={importModel}
+                />
+              ),
+            },
+          ]}
         />
-        {selectedModel && material && (
-          <section className="controls-section">
-            <div className="section-header">
-              <h2>Material</h2>
-              <button
-                type="button"
-                className="compare-toggle"
-                aria-pressed={comparing}
-                onClick={() => setComparing(!comparing)}
-              >
-                Comparar A/B
-              </button>
-            </div>
-            {comparing && (
-              <div
-                className="variant-picker"
-                role="group"
-                aria-label="Variante em edição"
-              >
-                {variantIds.map((variant) => (
-                  <button
-                    key={variant}
-                    type="button"
-                    className="preset-option"
-                    aria-pressed={variant === activeVariant}
-                    onClick={() => setActiveVariant(variant)}
-                  >
-                    Editar {variant}
-                  </button>
-                ))}
-              </div>
-            )}
-            <MaterialControls
-              material={material}
-              original={defaultVariantMaterial(selectedModel, editedVariant)}
-              onChange={updateMaterial}
-              onReset={resetMaterial}
-            />
-          </section>
-        )}
-        {selectedModel && material && (
-          <section className="controls-section">
-            <h2>Configuração</h2>
-            <ConfigControls
-              model={selectedModel}
-              variants={{
-                A: variantMaterial('A') ?? material,
-                B: comparing ? variantMaterial('B') : undefined,
-              }}
-              onImport={importConfig}
-            />
-          </section>
-        )}
-        {arSupport.kind === 'unavailable' && (
-          // Only explains why there is no "Ver em AR" button.
-          <section className="controls-section">
-            <h2>Realidade aumentada</h2>
-            <p className="controls-note">{arSupport.reason}</p>
-          </section>
-        )}
       </aside>
     </div>
   )

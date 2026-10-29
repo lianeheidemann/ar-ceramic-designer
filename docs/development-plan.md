@@ -20,11 +20,11 @@ Build a lightweight web app to view, customize and place 3D ceramic objects in a
 Details per step: [step-by-step guide](step-by-step.md).
 
 ## Acceptance criteria
-- ✅ At least two optimized sample ceramic models (three, generated in code, ~10k triangles each, no textures).
+- ✅ At least two optimized sample ceramic models (vase, bowl and plate generated in code, ~10k triangles each). Users can also import their own `.glb`; a CC0 porcelain teacup (681 KB) is offered as an example.
 - 🔄 Smooth interactive viewing on desktop and Galaxy S23 Ultra (desktop ✅; numbers on the phone to measure).
 - ✅ Material edits persist in exported JSON.
 - ✅ AR is tested on a compatible device (S23 Ultra), with a clear fallback where unavailable.
-- 🔄 README documents installation, running, screenshots and known limitations (asset licenses and AR media to add).
+- 🔄 README documents installation, running, screenshots, known limitations and asset licenses (AR media to add).
 
 ## Suggested structure
 ```text

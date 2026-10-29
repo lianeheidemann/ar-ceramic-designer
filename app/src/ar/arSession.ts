@@ -334,7 +334,8 @@ export async function startArSession({
         onSurfaceChange(surfaceFound)
       }
       reticle.visible = surfaceFound && mode !== 'placed'
-      if (onDebug) {
+      // Only XR frames say anything about tracking and hits.
+      if (onDebug && frame) {
         debug.hit = Boolean(pose)
         if (found) debug.firstRingMs ??= Math.round(time - firstFrameTime)
         const viewer =

@@ -2,12 +2,15 @@ import { useRef, useState } from 'react'
 import type { CeramicModel, MaterialSettings } from '../types/ceramic'
 import { createConfig, parseConfig, type CeramicConfig } from '../utils/config'
 import { downloadBlob, downloadName } from '../utils/download'
+import { importGlb, isGlb } from '../utils/importModel'
 
 interface ConfigControlsProps {
   model: CeramicModel
   /** B is included only while comparing. */
   variants: { A: MaterialSettings; B?: MaterialSettings }
   onImport: (config: CeramicConfig) => void
+  /** A 3D model (.glb) opened with the same button. */
+  onImportModel: (model: CeramicModel) => void
 }
 
 type Message = { kind: 'done' | 'error'; text: string }
@@ -16,6 +19,7 @@ export function ConfigControls({
   model,
   variants,
   onImport,
+  onImportModel,
 }: ConfigControlsProps) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [message, setMessage] = useState<Message | null>(null)
@@ -27,6 +31,29 @@ export function ConfigControls({
       downloadName([model.id], 'json'),
     )
     setMessage(null)
+  }
+
+  /** Tells a .glb model from a .json configuration by its first bytes. */
+  async function importFile(file: File) {
+    const header = await file.slice(0, 4).arrayBuffer()
+    if (isGlb(header)) await importModel(file)
+    else await importConfig(file)
+  }
+
+  async function importModel(file: File) {
+    setMessage({ kind: 'done', text: `Lendo o modelo "${file.name}"…` })
+    const result = await importGlb(file)
+    if (!result.ok) {
+      setMessage({ kind: 'error', text: result.error })
+      return
+    }
+    onImportModel(result.model)
+    setMessage({
+      kind: 'done',
+      text: [`Modelo "${result.model.name}" importado.`, result.warning]
+        .filter(Boolean)
+        .join(' '),
+    })
   }
 
   async function importConfig(file: File) {
@@ -59,15 +86,18 @@ export function ConfigControls({
       <input
         ref={fileRef}
         type="file"
-        accept="application/json,.json"
+        accept="application/json,.json,model/gltf-binary,.glb"
         hidden
         onChange={(event) => {
           const file = event.target.files?.[0]
           // Clear so choosing the same file again still fires `change`.
           event.target.value = ''
-          if (file) void importConfig(file)
+          if (file) void importFile(file)
         }}
       />
+      <p className="config-message controls-note">
+        Importar aceita uma configuração (.json) ou um modelo 3D (.glb).
+      </p>
       {message && (
         <p
           className={`config-message ${message.kind === 'error' ? 'config-error' : 'controls-note'}`}

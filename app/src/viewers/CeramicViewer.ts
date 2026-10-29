@@ -1,6 +1,8 @@
 import {
   Box3,
+  Color,
   DirectionalLight,
+  Group,
   HemisphereLight,
   Material,
   Mesh,
@@ -369,7 +371,8 @@ export class CeramicViewer {
     if (model.source.kind === 'glb') {
       const gltf = await this.gltfLoader.loadAsync(model.source.url)
       cloneMaterials(gltf.scene)
-      return gltf.scene
+      keepFileMaterials(gltf.scene)
+      return standOnOrigin(gltf.scene)
     }
     return new Mesh(
       createModelGeometry(model),
@@ -456,14 +459,59 @@ function cloneMaterials(root: Object3D): void {
   })
 }
 
+/** A GLB material's own values, kept so edits can be undone. */
+interface FileMaterial {
+  color: Color
+  roughness: number
+  metalness: number
+}
+
+/** Remembers each GLB material's own color, roughness and metalness. */
+function keepFileMaterials(root: Object3D): void {
+  root.traverse((node) => {
+    if (!(node instanceof Mesh)) return
+    for (const material of meshMaterials(node)) {
+      if (!(material instanceof MeshStandardMaterial)) continue
+      const original: FileMaterial = {
+        color: material.color.clone(),
+        roughness: material.roughness,
+        metalness: material.metalness,
+      }
+      material.userData.original = original
+    }
+  })
+}
+
+/**
+ * Wraps a loaded scene so its base sits on the origin, centered: AR places
+ * the origin on the surface, whatever origin the file was made with.
+ */
+function standOnOrigin(scene: Object3D): Object3D {
+  const box = new Box3().setFromObject(scene)
+  const center = box.getCenter(new Vector3())
+  scene.position.sub(new Vector3(center.x, box.min.y, center.z))
+  return new Group().add(scene)
+}
+
+/**
+ * Sets a model's finish. Generated models take the values as they are; on
+ * GLB models they scale the file's own values, as glTF factors do, so the
+ * defaults (white, 1, 1) leave the file's look untouched.
+ */
 function applyMaterial(root: Object3D, settings: MaterialSettings): void {
   root.traverse((node) => {
     if (!(node instanceof Mesh)) return
     for (const material of meshMaterials(node)) {
       if (!(material instanceof MeshStandardMaterial)) continue
+      const original = material.userData.original as FileMaterial | undefined
       material.color.set(settings.color)
       material.roughness = settings.roughness
       material.metalness = settings.metalness
+      if (original) {
+        material.color.multiply(original.color)
+        material.roughness *= original.roughness
+        material.metalness *= original.metalness
+      }
       if (material instanceof MeshPhysicalMaterial) {
         material.clearcoat = settings.clearcoat
       }
@@ -472,7 +520,7 @@ function applyMaterial(root: Object3D, settings: MaterialSettings): void {
 }
 
 /** Frees the GPU resources (geometries, materials, textures) of `root`. */
-function disposeObject(root: Object3D): void {
+export function disposeObject(root: Object3D): void {
   root.traverse((node) => {
     if (!(node instanceof Mesh)) return
     node.geometry.dispose()

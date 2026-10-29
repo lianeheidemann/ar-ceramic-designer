@@ -312,7 +312,8 @@ select {
 
 .controls {
   grid-area: controls;
-  padding: 1rem;
+  /* The tab list takes the top edge. */
+  padding: 0 1rem 1rem;
   background: var(--surface);
   border-left: 1px solid var(--border);
   overflow-y: auto;
@@ -321,6 +322,45 @@ select {
 .controls h2 {
   margin: 0 0 0.5rem;
   font-size: 1rem;
+}
+
+/* Stays at the top while the panel scrolls. */
+.tabs-list {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 0 -1rem 1rem;
+  padding: 0 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  padding: 0.75rem 0.25rem;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  /* Sits on the list's bottom line. */
+  margin-bottom: -1px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tab[aria-selected='true'] {
+  color: var(--text);
+  border-bottom-color: var(--text);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
 }
 
 .model-list {
@@ -360,6 +400,56 @@ select {
   color: var(--muted);
   font-size: 0.875rem;
   font-weight: 400;
+}
+
+.model-list li {
+  position: relative;
+}
+
+/* Room for the "×" of imported models. */
+.model-option-removable {
+  padding-right: 2.75rem;
+}
+
+.model-remove {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  display: grid;
+  place-items: center;
+  /* Small mark, finger-sized target. */
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.model-remove span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+/* Highlight a circle inside the target, clear of the item's border. */
+.model-remove:hover span {
+  color: var(--text);
+  background: var(--border);
+}
+
+.model-remove:focus-visible {
+  outline: none;
+}
+
+.model-remove:focus-visible span {
+  outline: 2px solid var(--text);
 }
 
 .controls-section {

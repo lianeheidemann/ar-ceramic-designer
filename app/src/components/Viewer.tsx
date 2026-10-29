@@ -265,23 +265,6 @@ export function Viewer({
         </p>
       ) : (
         <div className="viewer-actions">
-          {arSupported && (
-            <button
-              type="button"
-              className="viewer-button viewer-ar"
-              disabled={ar !== 'off'}
-              onClick={startAr}
-            >
-              {ar === 'off' ? (
-                'Ver em AR'
-              ) : (
-                <>
-                  <span className="spinner" aria-hidden="true" />
-                  Abrindo AR…
-                </>
-              )}
-            </button>
-          )}
           <button
             type="button"
             className="viewer-button viewer-icon"
@@ -305,11 +288,42 @@ export function Viewer({
           </button>
           <button
             type="button"
-            className="viewer-button viewer-reset"
+            className="viewer-button viewer-icon"
             onClick={() => viewerRef.current?.resetView()}
+            aria-label="Reiniciar vista"
+            title="Reiniciar vista"
           >
-            Reiniciar vista
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M3 12a9 9 0 1 0 3-6.7" />
+              <path d="M3 3v5h5" />
+            </svg>
           </button>
+          {/* Last: by the right edge, where the thumb rests. */}
+          {arSupported && (
+            <button
+              type="button"
+              className="viewer-button viewer-ar"
+              disabled={ar !== 'off'}
+              onClick={startAr}
+            >
+              {ar === 'off' ? (
+                'Ver em AR'
+              ) : (
+                <>
+                  <span className="spinner" aria-hidden="true" />
+                  Abrindo AR…
+                </>
+              )}
+            </button>
+          )}
         </div>
       )}
       {AR_DEBUG && stats && ar === 'off' && (
