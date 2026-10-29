@@ -79,26 +79,6 @@ export const catalog: readonly CeramicModel[] = [
     ],
     defaultMaterial: presetMaterial('glossy', '#f4f1ea'),
   }),
-  {
-    id: 'teacup',
-    name: 'Xícara com pires',
-    source: {
-      kind: 'glb',
-      url: `${import.meta.env.BASE_URL}models/xicara-porcelana.glb`,
-    },
-    // Measured from the file (meters, base at the origin).
-    dimensionsMm: { width: 149, height: 70, depth: 154 },
-    // The factors multiply the file's textures (floral print, gold rim):
-    // white and 1 keep its original look.
-    defaultMaterial: {
-      color: '#ffffff',
-      roughness: 1,
-      metalness: 1,
-      clearcoat: 0,
-    },
-    license:
-      'CC0 — Poly Haven e Eric Chadwick, via glTF Sample Assets (Khronos); texturas reduzidas para 1024 px em WebP',
-  },
 ]
 
 export const defaultModelId = catalog[0].id

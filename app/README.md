@@ -21,7 +21,7 @@ app/
     ├── data/                # catálogo de modelos
     ├── hooks/               # suporte a RA e media queries
     ├── types/               # tipos compartilhados
-    └── utils/               # mm ↔ m, configuração JSON e downloads
+    └── utils/               # mm ↔ m, configuração JSON, importação .glb e downloads
 ```
 
 Os testes (`*.test.ts`) ficam ao lado do código que testam.

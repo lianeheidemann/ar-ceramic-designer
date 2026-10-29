@@ -4,7 +4,7 @@ import { ConfigControls } from './components/ConfigControls'
 import { MaterialControls } from './components/MaterialControls'
 import { ModelList } from './components/ModelList'
 import { Viewer } from './components/Viewer'
-import { catalog, defaultModelId, getModelById } from './data/catalog'
+import { catalog, defaultModelId } from './data/catalog'
 import { useArSupport } from './hooks/useArSupport'
 import { useMediaQuery } from './hooks/useMediaQuery'
 import {
@@ -12,7 +12,7 @@ import {
   variantIds,
   type VariantId,
 } from './materials/variants'
-import type { MaterialSettings } from './types/ceramic'
+import type { CeramicModel, MaterialSettings } from './types/ceramic'
 import type { CeramicConfig } from './utils/config'
 
 type Overrides = Record<VariantId, Record<string, MaterialSettings>>
@@ -29,12 +29,15 @@ function App() {
   // Customized materials per variant and model id; the catalog defaults
   // stay untouched. Variant A is the regular (non-comparison) material.
   const [overrides, setOverrides] = useState<Overrides>({ A: {}, B: {} })
+  /** Models opened from .glb files; they last until the page reloads. */
+  const [importedModels, setImportedModels] = useState<CeramicModel[]>([])
   const [comparing, setComparing] = useState(false)
   const [activeVariant, setActiveVariant] = useState<VariantId>('A')
   const compact = useMediaQuery('(max-width: 768px)')
   const arSupport = useArSupport()
   const arSupported = arSupport.kind === 'supported'
-  const selectedModel = getModelById(selectedId)
+  const models = [...catalog, ...importedModels]
+  const selectedModel = models.find((model) => model.id === selectedId)
   const editedVariant = comparing ? activeVariant : 'A'
 
   function variantMaterial(variant: VariantId): MaterialSettings | undefined {
@@ -60,6 +63,11 @@ function App() {
       delete rest[selectedId]
       return { ...all, [editedVariant]: rest }
     })
+  }
+
+  function importModel(model: CeramicModel) {
+    setImportedModels((list) => [...list, model])
+    setSelectedId(model.id)
   }
 
   /** Shows the imported model with its saved materials. */
@@ -156,7 +164,7 @@ function App() {
       <aside className="controls" aria-label="Controles">
         <h2>Modelos</h2>
         <ModelList
-          models={catalog}
+          models={models}
           selectedId={selectedId}
           onSelect={setSelectedId}
         />
@@ -210,6 +218,7 @@ function App() {
                 B: comparing ? variantMaterial('B') : undefined,
               }}
               onImport={importConfig}
+              onImportModel={importModel}
             />
           </section>
         )}

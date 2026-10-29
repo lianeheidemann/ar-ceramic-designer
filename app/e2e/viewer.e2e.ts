@@ -1,4 +1,18 @@
 import { expect, test, type Page } from '@playwright/test'
+import { fileURLToPath } from 'node:url'
+
+/** The sample model offered for download, imported like a user would. */
+const TEACUP = fileURLToPath(
+  new URL('../public/models/xicara-porcelana.glb', import.meta.url),
+)
+
+/** The message the Importar button shows after reading a file. */
+const importMessage = (page: Page) =>
+  page.locator('.config-message[role=status]')
+
+/** Picks `file` with the Importar button's file input. */
+const importFile = (page: Page, file: Parameters<Page['setInputFiles']>[1]) =>
+  page.locator('input[type=file]').setInputFiles(file)
 
 const panel = (page: Page) => page.locator('.viewer-debug')
 
@@ -54,9 +68,11 @@ test('stops drawing while nothing changes', async ({ page }) => {
 test('keeps GPU memory flat when switching models', async ({ page }) => {
   const geometries = await stat(page, 'geometrias')
   const textures = await stat(page, 'texturas')
+  // An imported GLB with textures; they must be freed too.
+  await importFile(page, TEACUP)
+  await loaded(page)
   for (let i = 0; i < 4; i++) {
-    // The teacup is a GLB with textures; they must be freed too.
-    for (const name of [/Tigela/, /Xícara/, /Prato/, /Vaso/]) {
+    for (const name of [/Tigela/, /xicara-porcelana/, /Prato/, /Vaso/]) {
       await page.getByRole('button', { name }).click()
       await loaded(page)
     }
@@ -65,13 +81,58 @@ test('keeps GPU memory flat when switching models', async ({ page }) => {
   expect(await stat(page, 'texturas')).toBe(textures)
 })
 
-test('loads the teacup GLB with its textures', async ({ page }) => {
+test('imports a .glb model and shows it with its textures', async ({
+  page,
+}) => {
   const textures = await stat(page, 'texturas')
-  await page.getByRole('button', { name: /Xícara/ }).click()
+  await importFile(page, TEACUP)
+  await expect(importMessage(page)).toContainText(
+    'Modelo "xicara-porcelana" importado.',
+  )
+  const option = page.getByRole('button', { name: /xicara-porcelana/ })
+  await expect(option).toContainText('⌀ 149 × 70 mm')
+  await expect(option).toHaveAttribute('aria-pressed', 'true')
   await loaded(page)
   await expect.poll(() => stat(page, 'geometrias')).toBe(2)
   expect(await stat(page, 'texturas')).toBeGreaterThan(textures)
   await expect(page.getByRole('alert')).toBeHidden()
+})
+
+test('rejects a broken .glb and keeps the list', async ({ page }) => {
+  const models = await page.locator('.model-option').count()
+  await importFile(page, {
+    name: 'quebrado.glb',
+    mimeType: 'model/gltf-binary',
+    buffer: Buffer.from('glTF\x02\x00\x00\x00 not really a model'),
+  })
+  await expect(page.getByRole('alert')).toContainText(
+    'Não foi possível ler o modelo "quebrado.glb".',
+  )
+  expect(await page.locator('.model-option').count()).toBe(models)
+})
+
+test('still imports .json configurations', async ({ page }) => {
+  await importFile(page, {
+    name: 'prato.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(
+      JSON.stringify({
+        schema: 'ar-ceramic-designer/config',
+        version: 1,
+        modelId: 'plate',
+        variants: {
+          A: { color: '#2a5c8a', roughness: 0.5, metalness: 0, clearcoat: 0 },
+        },
+      }),
+    ),
+  })
+  await expect(importMessage(page)).toContainText(
+    'Configuração "prato.json" aplicada.',
+  )
+  await expect(page.getByRole('button', { name: /Prato/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
 })
 
 test('turns, zooms and resets the view with the keyboard', async ({ page }) => {
