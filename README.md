@@ -27,7 +27,7 @@ Interface web interativa, publicada no GitHub Pages, para explorar modelos de ce
 ## Funcionalidades
 
 - Visualizador 3D com vaso, tigela e prato (girar, aproximar, reiniciar vista).
-- Importar um modelo 3D próprio (`.glb`) pelo botão **Importar**: ele entra na lista de modelos, com as medidas lidas do arquivo, e funciona no visualizador, na comparação A/B e no AR. Exemplo para baixar e testar: [xícara de porcelana com pires](https://lianeheidemann.github.io/ar-ceramic-designer/models/xicara-porcelana.glb).
+- Importar um modelo 3D próprio (`.glb`) pelo botão **Importar**: ele entra na lista de modelos, com as medidas lidas do arquivo, e funciona no visualizador, na comparação A/B e no AR. O **×** ao lado do modelo importado tira ele da lista. Exemplo para baixar e testar: [xícara de porcelana com pires](https://lianeheidemann.github.io/ar-ceramic-designer/models/xicara-porcelana.glb).
 - Personalização do material: acabamentos (fosco, brilhante, vitrificado), cor, rugosidade e metalicidade.
 - Comparação lado a lado de duas variantes (A/B).
 - Realidade aumentada (WebXR) em Android compatível: um anel mostra a superfície detectada e um toque posiciona a peça em tamanho real; outro toque permite movê-la.

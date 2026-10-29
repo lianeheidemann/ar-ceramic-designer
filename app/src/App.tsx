@@ -70,6 +70,22 @@ function App() {
     setSelectedId(model.id)
   }
 
+  /** Takes an imported model off the list and frees its file. */
+  function removeImportedModel(id: string) {
+    const model = importedModels.find((item) => item.id === id)
+    if (!model) return
+    setImportedModels((list) => list.filter((item) => item.id !== id))
+    if (model.source.kind === 'glb') URL.revokeObjectURL(model.source.url)
+    setOverrides((all) => {
+      const a = { ...all.A }
+      const b = { ...all.B }
+      delete a[id]
+      delete b[id]
+      return { A: a, B: b }
+    })
+    if (selectedId === id) setSelectedId(defaultModelId)
+  }
+
   /** Shows the imported model with its saved materials. */
   function importConfig({ modelId, variants }: CeramicConfig) {
     setOverrides((all) => {
@@ -167,6 +183,8 @@ function App() {
           models={models}
           selectedId={selectedId}
           onSelect={setSelectedId}
+          removableIds={new Set(importedModels.map((model) => model.id))}
+          onRemove={removeImportedModel}
         />
         {selectedModel && material && (
           <section className="controls-section">

@@ -72,7 +72,7 @@ test('keeps GPU memory flat when switching models', async ({ page }) => {
   await importFile(page, TEACUP)
   await loaded(page)
   for (let i = 0; i < 4; i++) {
-    for (const name of [/Tigela/, /xicara-porcelana/, /Prato/, /Vaso/]) {
+    for (const name of [/Tigela/, /^xicara-porcelana/, /Prato/, /Vaso/]) {
       await page.getByRole('button', { name }).click()
       await loaded(page)
     }
@@ -89,13 +89,40 @@ test('imports a .glb model and shows it with its textures', async ({
   await expect(importMessage(page)).toContainText(
     'Modelo "xicara-porcelana" importado.',
   )
-  const option = page.getByRole('button', { name: /xicara-porcelana/ })
+  const option = page.getByRole('button', { name: /^xicara-porcelana/ })
   await expect(option).toContainText('⌀ 149 × 70 mm')
   await expect(option).toHaveAttribute('aria-pressed', 'true')
   await loaded(page)
   await expect.poll(() => stat(page, 'geometrias')).toBe(2)
   expect(await stat(page, 'texturas')).toBeGreaterThan(textures)
   await expect(page.getByRole('alert')).toBeHidden()
+})
+
+test('removes an imported model with its × button', async ({ page }) => {
+  // Catalog models cannot be removed.
+  await expect(page.getByRole('button', { name: /^Remover/ })).toHaveCount(0)
+
+  await importFile(page, TEACUP)
+  await loaded(page)
+  const remove = page.getByRole('button', { name: 'Remover xicara-porcelana' })
+  await expect(remove).toBeVisible()
+  await remove.click()
+
+  await expect(
+    page.getByRole('button', { name: /^xicara-porcelana/ }),
+  ).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /Vaso/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await loaded(page)
+  await expect(page.getByRole('alert')).toBeHidden()
+
+  // It can be imported again.
+  await importFile(page, TEACUP)
+  await expect(
+    page.getByRole('button', { name: /^xicara-porcelana/ }),
+  ).toHaveAttribute('aria-pressed', 'true')
 })
 
 test('rejects a broken .glb and keeps the list', async ({ page }) => {
