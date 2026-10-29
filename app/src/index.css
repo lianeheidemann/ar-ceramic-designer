@@ -196,21 +196,8 @@ select {
   position: absolute;
   right: 0.75rem;
   bottom: 0.75rem;
-  left: 0.75rem;
   display: flex;
-  justify-content: flex-end;
   gap: 0.5rem;
-  /* Spans the width: let drags on the gaps reach the canvas. */
-  pointer-events: none;
-}
-
-.viewer-actions > * {
-  pointer-events: auto;
-}
-
-/* "Ver em AR" by the left edge, the icon buttons by the right one. */
-.viewer-actions .viewer-ar {
-  margin-right: auto;
 }
 
 .viewer-button {

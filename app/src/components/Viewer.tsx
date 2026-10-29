@@ -265,23 +265,6 @@ export function Viewer({
         </p>
       ) : (
         <div className="viewer-actions">
-          {arSupported && (
-            <button
-              type="button"
-              className="viewer-button viewer-ar"
-              disabled={ar !== 'off'}
-              onClick={startAr}
-            >
-              {ar === 'off' ? (
-                'Ver em AR'
-              ) : (
-                <>
-                  <span className="spinner" aria-hidden="true" />
-                  Abrindo AR…
-                </>
-              )}
-            </button>
-          )}
           <button
             type="button"
             className="viewer-button viewer-icon"
@@ -323,6 +306,24 @@ export function Viewer({
               <path d="M3 3v5h5" />
             </svg>
           </button>
+          {/* Last: by the right edge, where the thumb rests. */}
+          {arSupported && (
+            <button
+              type="button"
+              className="viewer-button viewer-ar"
+              disabled={ar !== 'off'}
+              onClick={startAr}
+            >
+              {ar === 'off' ? (
+                'Ver em AR'
+              ) : (
+                <>
+                  <span className="spinner" aria-hidden="true" />
+                  Abrindo AR…
+                </>
+              )}
+            </button>
+          )}
         </div>
       )}
       {AR_DEBUG && stats && ar === 'off' && (
