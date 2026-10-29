@@ -40,12 +40,4 @@ npm run format    # Prettier
 
 A realidade aumentada exige HTTPS.
 
-## Parâmetros de teste
 
-Para testar no celular, acrescente à URL:
-
-| Parâmetro            | Efeito                                                                                                     |
-| :------------------- | :--------------------------------------------------------------------------------------------------------- |
-| `?debug=1`           | Painel com quadros por segundo, draw calls, memória da GPU (visualizador 3D) e diagnóstico da sessão (AR). |
-| `?cubo=1`            | Cubo de teste no AR, 50 cm à frente da posição inicial.                                                    |
-| `?camada=projection` | Usa a camada de projeção do WebXR Layers, para reproduzir o problema do S23 Ultra.                         |
