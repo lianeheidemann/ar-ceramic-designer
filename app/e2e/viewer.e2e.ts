@@ -1,9 +1,18 @@
 import { expect, test, type Page } from '@playwright/test'
 import { fileURLToPath } from 'node:url'
 
-/** The sample model offered for download, imported like a user would. */
+/**
+ * A textured GLB (the CC0 Diffuse Transmission Teacup, textures shrunk to
+ * 128 px), imported like a user would. Kept with the tests, apart from the
+ * models published in public/.
+ */
 const TEACUP = fileURLToPath(
-  new URL('../public/models/xicara-porcelana.glb', import.meta.url),
+  new URL('./fixtures/xicara-porcelana.glb', import.meta.url),
+)
+
+/** A 10 cm box compressed with Meshopt, like gltfpack and Tripo output. */
+const MESHOPT_BOX = fileURLToPath(
+  new URL('./fixtures/caixa-meshopt.glb', import.meta.url),
 )
 
 /** The message the Importar button shows after reading a file. */
@@ -128,6 +137,44 @@ test('removes an imported model with its × button', async ({ page }) => {
   await expect(
     page.getByRole('button', { name: /^xicara-porcelana/ }),
   ).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('imports a Meshopt-compressed .glb (gltfpack, Tripo)', async ({
+  page,
+}) => {
+  await importFile(page, MESHOPT_BOX)
+  await expect(importMessage(page)).toContainText(
+    'Modelo "caixa-meshopt" importado.',
+  )
+  await expect(
+    page.getByRole('button', { name: /^caixa-meshopt/ }),
+  ).toContainText('⌀ 100 × 100 mm')
+  await loaded(page)
+  await expect(page.getByRole('alert')).toBeHidden()
+  await expect.poll(() => stat(page, 'triângulos')).toBe(12)
+})
+
+test('explains a .glb that uses Draco compression', async ({ page }) => {
+  await openTab(page, 'Configuração')
+  const json = JSON.stringify({
+    asset: { version: '2.0' },
+    extensionsUsed: ['KHR_draco_mesh_compression'],
+    extensionsRequired: ['KHR_draco_mesh_compression'],
+  }).padEnd(84, ' ')
+  const header = Buffer.alloc(20)
+  header.write('glTF', 0)
+  header.writeUInt32LE(2, 4)
+  header.writeUInt32LE(20 + json.length, 8)
+  header.writeUInt32LE(json.length, 12)
+  header.write('JSON', 16)
+  await importFile(page, {
+    name: 'draco.glb',
+    mimeType: 'model/gltf-binary',
+    buffer: Buffer.concat([header, Buffer.from(json)]),
+  })
+  await expect(page.getByRole('alert')).toContainText(
+    'usa compressão Draco, que o app ainda não abre',
+  )
 })
 
 test('rejects a broken .glb and keeps the list', async ({ page }) => {

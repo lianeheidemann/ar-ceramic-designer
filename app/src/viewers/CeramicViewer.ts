@@ -19,7 +19,6 @@ import {
   WebGLRenderer,
 } from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import {
   startArSession,
   type ArSessionHandle,
@@ -28,6 +27,7 @@ import {
 import { createModelGeometry } from '../geometry/lathe'
 import type { CeramicModel, MaterialSettings } from '../types/ceramic'
 import { fitDistance, stepOrbit } from './framing'
+import { createGltfLoader } from './gltfLoader'
 
 const FOV_DEG = 35
 /** Camera elevation above the horizon when framing, in radians. */
@@ -73,7 +73,7 @@ export class CeramicViewer {
   private readonly camera = new PerspectiveCamera(FOV_DEG, 1, 0.01, 10)
   private readonly controls: OrbitControls
   private readonly resizeObserver: ResizeObserver
-  private readonly gltfLoader = new GLTFLoader()
+  private readonly gltfLoader = createGltfLoader()
   private readonly container: HTMLElement
   private model: Object3D | null = null
   /** Applied to every loaded model; `null` uses the model's default. */

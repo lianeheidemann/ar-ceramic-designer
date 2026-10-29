@@ -44,7 +44,7 @@ Interface web interativa, publicada no GitHub Pages, para explorar modelos de ce
 ## Limitações conhecidas
 
 - **WebXR Layers no Chrome:** o AR sempre desenha numa `XRWebGLLayer` clássica, porque no AR do Chrome (S23 Ultra) nada desenhado numa camada de projeção aparecia sobre a câmera.
-- **Modelos importados (`.glb`):** ficam só até recarregar a página e não são enviados a nenhum servidor. O arquivo precisa estar em metros (padrão do glTF); o app avisa se o tamanho parecer fora de escala e apoia a base da peça na superfície do AR. Só arquivo único `.glb`: `.gltf` com arquivos separados, `.obj` e compressão Draco/Meshopt não são aceitos.
+- **Modelos importados (`.glb`):** ficam só até recarregar a página e não são enviados a nenhum servidor. O arquivo precisa estar em metros (padrão do glTF); o app avisa se o tamanho parecer fora de escala e apoia a base da peça na superfície do AR. Só arquivo único `.glb`, com ou sem compressão Meshopt (a usada pelo gltfpack e por geradores como a Tripo). Não são aceitos `.gltf` com arquivos separados, `.obj`, compressão Draco e texturas KTX2; nesses casos o app diz qual recurso falta.
 - **Material de modelos importados:** cor, rugosidade e metalicidade multiplicam os valores do próprio arquivo, então a cor tinge as texturas, e o acabamento vitrificado não muda o brilho.
 - **Configuração de modelo importado:** o `.json` exportado só volta a abrir depois de importar o mesmo `.glb` de novo.
 - **Captura no AR:** a imagem PNG é só da vista 3D; a câmera do AR não entra na captura.

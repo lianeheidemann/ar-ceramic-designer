@@ -1,7 +1,7 @@
 import { Box3, Vector3 } from 'three'
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import type { CeramicModel, DimensionsMm } from '../types/ceramic'
 import { disposeObject } from '../viewers/CeramicViewer'
+import { createGltfLoader, unsupportedFeatures } from '../viewers/gltfLoader'
 import { mToMm } from './units'
 
 /** Pieces outside this size (largest side, in meters) are probably not in meters. */
@@ -47,9 +47,16 @@ export async function importGlb(file: File): Promise<ImportResult> {
   if (!isGlb(bytes)) {
     return { ok: false, error: `"${file.name}" não é um arquivo .glb.` }
   }
+  const unsupported = unsupportedFeatures(bytes)
+  if (unsupported.length) {
+    return {
+      ok: false,
+      error: `O modelo "${file.name}" usa ${unsupported.join(' e ')}, que o app ainda não abre. Exporte de novo sem essa compressão.`,
+    }
+  }
   let box: Box3
   try {
-    const gltf = await new GLTFLoader().parseAsync(bytes, '')
+    const gltf = await createGltfLoader().parseAsync(bytes, '')
     box = new Box3().setFromObject(gltf.scene)
     disposeObject(gltf.scene)
   } catch {
