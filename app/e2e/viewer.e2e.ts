@@ -55,13 +55,23 @@ test('keeps GPU memory flat when switching models', async ({ page }) => {
   const geometries = await stat(page, 'geometrias')
   const textures = await stat(page, 'texturas')
   for (let i = 0; i < 4; i++) {
-    for (const name of [/Tigela/, /Prato/, /Vaso/]) {
+    // The teacup is a GLB with textures; they must be freed too.
+    for (const name of [/Tigela/, /Xícara/, /Prato/, /Vaso/]) {
       await page.getByRole('button', { name }).click()
       await loaded(page)
     }
   }
   await expect.poll(() => stat(page, 'geometrias')).toBe(geometries)
   expect(await stat(page, 'texturas')).toBe(textures)
+})
+
+test('loads the teacup GLB with its textures', async ({ page }) => {
+  const textures = await stat(page, 'texturas')
+  await page.getByRole('button', { name: /Xícara/ }).click()
+  await loaded(page)
+  await expect.poll(() => stat(page, 'geometrias')).toBe(2)
+  expect(await stat(page, 'texturas')).toBeGreaterThan(textures)
+  await expect(page.getByRole('alert')).toBeHidden()
 })
 
 test('turns, zooms and resets the view with the keyboard', async ({ page }) => {

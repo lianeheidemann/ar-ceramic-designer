@@ -26,7 +26,7 @@ Interface web interativa, publicada no GitHub Pages, para explorar modelos de ce
 
 ## Funcionalidades
 
-- Visualizador 3D com vaso, tigela e prato (girar, aproximar, reiniciar vista).
+- Visualizador 3D com vaso, tigela, prato e uma xícara de porcelana com pires (girar, aproximar, reiniciar vista).
 - Personalização do material: acabamentos (fosco, brilhante, vitrificado), cor, rugosidade e metalicidade.
 - Comparação lado a lado de duas variantes (A/B).
 - Realidade aumentada (WebXR) em Android compatível: um anel mostra a superfície detectada e um toque posiciona a peça em tamanho real; outro toque permite movê-la.
@@ -43,9 +43,16 @@ Interface web interativa, publicada no GitHub Pages, para explorar modelos de ce
 ## Limitações conhecidas
 
 - **WebXR Layers no Chrome:** o AR sempre desenha numa `XRWebGLLayer` clássica, porque no AR do Chrome (S23 Ultra) nada desenhado numa camada de projeção aparecia sobre a câmera.
-- **Modelos:** as três peças de exemplo são geradas em código. O carregamento de GLB existe, mas ainda não há modelos do Blender no projeto.
+- **Modelos:** vaso, tigela e prato são gerados em código; a xícara é um GLB com texturas. Na xícara, a cor escolhida tinge a estampa original, e o acabamento vitrificado não muda o brilho (o material do GLB não tem a camada de verniz).
 - **Captura no AR:** a imagem PNG é só da vista 3D; a câmera do AR não entra na captura.
 - **Desempenho:** ainda não foi medido no aparelho. Para medir, abra a aplicação com `?debug=1`.
+
+## Licenças dos modelos
+
+| Modelo | Origem | Licença |
+| :--- | :--- | :--- |
+| Vaso, tigela e prato | Gerados por código neste projeto | MIT |
+| Xícara com pires (`app/public/models/xicara-porcelana.glb`) | [Poly Haven](https://polyhaven.com/) e Eric Chadwick, via [glTF Sample Assets](https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/DiffuseTransmissionTeacup) (Khronos); texturas reduzidas para 1024 px em WebP | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) |
 
 ## Tecnologias
 
