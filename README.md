@@ -50,7 +50,6 @@ A web app, live on GitHub Pages, to view ceramic pieces in 3D, change their fini
 
 ## Known limitations
 
-- AR always draws into a classic `XRWebGLLayer`: on the S23 Ultra a WebXR Layers projection layer showed nothing.
 - On imported models, color, roughness and metalness multiply the file's own values (color tints textures).
 - A `.json` saved for an imported model opens only after the same `.glb` is imported again.
 - PNG capture covers the 3D view only, not the AR camera.
