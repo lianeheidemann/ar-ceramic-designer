@@ -28,6 +28,7 @@ import { createModelGeometry } from '../geometry/lathe'
 import type { CeramicModel, MaterialSettings } from '../types/ceramic'
 import { fitDistance, stepOrbit } from './framing'
 import { createGltfLoader } from './gltfLoader'
+import { simplifyHeavyMeshes } from './simplify'
 
 const FOV_DEG = 35
 /** Camera elevation above the horizon when framing, in radians. */
@@ -78,6 +79,8 @@ export class CeramicViewer {
   private model: Object3D | null = null
   /** Applied to every loaded model; `null` uses the model's default. */
   private material: MaterialSettings | null = null
+  /** Uniform scale of the model (real size of imported pieces). */
+  private scale = 1
   /** Increments on every load so stale results can be discarded. */
   private loadId = 0
   /** The running AR session, if any. */
@@ -142,9 +145,22 @@ export class CeramicViewer {
     }
     this.clearModel()
     applyMaterial(object, this.material ?? model.defaultMaterial)
+    object.scale.setScalar(this.scale)
     this.model = object
     this.scene.add(object)
     this.loadMs = Math.round(performance.now() - started)
+    this.resetView()
+  }
+
+  /**
+   * Scales the model uniformly (it grows from its base) and frames it
+   * again; kept for later loads. AR places it at this size.
+   */
+  setScale(scale: number): void {
+    if (scale === this.scale) return
+    this.scale = scale
+    if (!this.model) return
+    this.model.scale.setScalar(scale)
     this.resetView()
   }
 
@@ -372,6 +388,7 @@ export class CeramicViewer {
       const gltf = await this.gltfLoader.loadAsync(model.source.url)
       cloneMaterials(gltf.scene)
       keepFileMaterials(gltf.scene)
+      await simplifyHeavyMeshes(gltf.scene, model.source.url)
       return standOnOrigin(gltf.scene)
     }
     return new Mesh(

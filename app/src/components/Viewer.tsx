@@ -61,6 +61,8 @@ interface ViewerProps {
   label?: string
   /** Shows the "Ver em AR" button (the browser supports immersive AR). */
   arSupported?: boolean
+  /** Uniform scale, e.g. to give an imported piece its real size. */
+  scale?: number
 }
 
 /** Outcome of the latest finished load. */
@@ -75,6 +77,7 @@ export function Viewer({
   cameraSync,
   label,
   arSupported = false,
+  scale = 1,
 }: ViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
@@ -135,6 +138,10 @@ export function Viewer({
   useEffect(() => {
     viewerRef.current?.setMaterial(material)
   }, [material, instance])
+
+  useEffect(() => {
+    viewerRef.current?.setScale(scale)
+  }, [scale, instance])
 
   useEffect(() => {
     if (!AR_DEBUG || ar !== 'off') return

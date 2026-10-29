@@ -15,6 +15,11 @@ const MESHOPT_BOX = fileURLToPath(
   new URL('./fixtures/caixa-meshopt.glb', import.meta.url),
 )
 
+/** A 1 m box: AI generators such as Tripo scale pieces to about 1 m. */
+const ONE_METER_BOX = fileURLToPath(
+  new URL('./fixtures/caixa-1m.glb', import.meta.url),
+)
+
 /** The message the Importar button shows after reading a file. */
 const importMessage = (page: Page) =>
   page.locator('.config-message[role=status]')
@@ -152,6 +157,34 @@ test('imports a Meshopt-compressed .glb (gltfpack, Tripo)', async ({
   await loaded(page)
   await expect(page.getByRole('alert')).toBeHidden()
   await expect.poll(() => stat(page, 'triângulos')).toBe(12)
+})
+
+test('sets the real height of an imported piece', async ({ page }) => {
+  // Only imported models have a real-size field.
+  await expect(page.getByLabel('Altura (cm)')).toHaveCount(0)
+
+  await importFile(page, ONE_METER_BOX)
+  await expect(importMessage(page)).toContainText(
+    'No arquivo a peça mede 1 m; ajuste a altura real na aba Modelos.',
+  )
+  const option = page.getByRole('button', { name: /^caixa-1m/ })
+  await expect(option).toContainText('⌀ 1000 × 1000 mm')
+  await loaded(page)
+
+  const height = page.getByLabel('Altura (cm)')
+  await expect(height).toHaveValue('100')
+  await height.fill('7')
+  await expect(option).toContainText('⌀ 70 × 70 mm')
+  await expect(page.getByText('Peça: ⌀ 70 × 70 mm')).toBeVisible()
+
+  // The size stays with the model while others are shown.
+  await page.getByRole('button', { name: /Vaso/ }).click()
+  await expect(page.getByLabel('Altura (cm)')).toHaveCount(0)
+  await option.click()
+  await expect(page.getByLabel('Altura (cm)')).toHaveValue('7')
+
+  await page.getByRole('button', { name: 'Usar o tamanho do arquivo' }).click()
+  await expect(option).toContainText('⌀ 1000 × 1000 mm')
 })
 
 test('explains a .glb that uses Draco compression', async ({ page }) => {
