@@ -22,7 +22,19 @@ app/
     └── shared/         # types, units, tabs, media queries, shared styles
 ```
 
-Each feature keeps its components, hooks, logic, styles and unit tests (`*.test.ts`) together.
+Each feature keeps its components, hooks, logic, styles and unit tests (`*.test.ts`) together. Features may import each other; `shared/` imports no feature. `index.css` only `@import`s the stylesheets, in cascade order.
+
+## Modules
+
+| Folder               | Main files                                                                                                                                                                                                                                      |
+| :------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/`               | `App.tsx` (layout, tabs, selection), `AppHeader.tsx`, `useTheme.ts`                                                                                                                                                                             |
+| `features/viewer/`   | `CeramicViewer.ts` (scene, camera, on-demand rendering), `modelMaterials.ts`, `sceneObjects.ts`, `framing.ts`, `gltfLoader.ts`, `simplify.ts`, `CameraSync.ts`; UI: `Viewer.tsx`, `ViewerActions.tsx`, `CompareView.tsx`, `viewerDebug.ts`      |
+| `features/ar/`       | `arSession.ts` (hit-test placement), `projectionLayers.ts` (S23 layer fix), `arDebug.ts`, `testSwitches.ts`, `arStatus.ts`, `support.ts`; UI: `useArSession.ts`, `useArSupport.ts`, `ArOverlay.tsx` (hints, − / +, Exit AR), `ArStatusIcon.tsx` |
+| `features/models/`   | `catalog.ts`, `lathe.ts`, `importModel.ts`, `useModels.ts` (imported models, real heights); UI: `ModelList.tsx`, `RealSizeControl.tsx`                                                                                                          |
+| `features/material/` | `presets.ts`, `variants.ts`, `useMaterials.ts` (edited materials per variant); UI: `MaterialPanel.tsx`, `MaterialControls.tsx`                                                                                                                  |
+| `features/settings/` | `config.ts` (JSON schema v1), `download.ts`; UI: `ConfigControls.tsx` (Export / Import)                                                                                                                                                         |
+| `shared/`            | `types.ts`, `units.ts`, `useMediaQuery.ts`, `Tabs.tsx`, `controls.css`, `tabs.css`                                                                                                                                                              |
 
 ## Commands
 

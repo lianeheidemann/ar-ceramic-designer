@@ -44,6 +44,8 @@ src/shared/              # types, units, tabs
 docs/
 ```
 
+Each feature keeps its components, hooks, logic, styles and tests together; file-by-file map in [`app/README.md`](../app/README.md#modules).
+
 ## Out of scope for MVP
 
 User accounts, backend, AI generation, industrial manufacturing validation and native ARCore integration.

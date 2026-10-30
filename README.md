@@ -61,4 +61,4 @@ MIT. The vase, bowl and plate are generated in code by this project.
 
 ## Docs
 
-[Step-by-step guide](docs/step-by-step.md) · [Development plan](docs/development-plan.md) · [References](docs/references.md) · [Live demo](https://lianeheidemann.github.io/ar-ceramic-designer/)
+[Step-by-step guide](docs/step-by-step.md) · [Code structure](app/README.md) · [Development plan](docs/development-plan.md) · [References](docs/references.md) · [Live demo](https://lianeheidemann.github.io/ar-ceramic-designer/)
