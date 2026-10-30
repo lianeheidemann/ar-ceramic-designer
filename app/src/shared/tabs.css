@@ -1,4 +1,4 @@
-/* Stays at the top while the panel scrolls. */
+/* A segmented control; stays at the top while the panel scrolls. */
 .tabs-list {
   position: sticky;
   top: 0;
@@ -6,20 +6,32 @@
   display: grid;
   grid-auto-columns: 1fr;
   grid-auto-flow: column;
-  margin: 0 -1rem 1rem;
-  padding: 0 1rem;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  gap: 0.25rem;
+  margin: 0.75rem 0 1rem;
+  padding: 0.25rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  /* Hides the content scrolling under the gap above. */
+  box-shadow: 0 -0.75rem 0 var(--surface);
+}
+
+@media (max-width: 768px) {
+  .tabs-list {
+    box-shadow: 0 -0.75rem 0 var(--bg);
+  }
 }
 
 .tab {
-  padding: 0.75rem 0.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  padding: 0.5rem;
   color: var(--muted);
   background: transparent;
   border: none;
-  border-bottom: 2px solid transparent;
-  /* Sits on the list's bottom line. */
-  margin-bottom: -1px;
+  border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -29,11 +41,12 @@
 }
 
 .tab[aria-selected='true'] {
-  color: var(--text);
-  border-bottom-color: var(--text);
+  color: var(--accent-ink);
+  background: var(--accent);
+  box-shadow: 0 4px 14px rgb(180 114 64 / 0.3);
 }
 
 .tab:focus-visible {
-  outline: 2px solid var(--text);
-  outline-offset: -2px;
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
 }

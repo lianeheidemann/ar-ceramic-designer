@@ -1,11 +1,27 @@
 :root {
-  --bg: #f6f3ef;
-  --surface: #ffffff;
+  /* Light theme: copper on cream. */
+  --bg: #f4eee6;
+  --surface: #f9f5ef;
+  --card: #ffffff;
+  --card-hover: #f6efe6;
+  --thumb-bg: #efe7dc;
+  --border: #e3d8cb;
   --text: #2b2622;
-  --muted: #6d645c;
-  --border: #e2dbd3;
-  --viewport-bg: #ebe5de;
-  --panel-width: 320px;
+  --muted: #74685d;
+  --accent-1: #d9a273;
+  --accent-2: #b47240;
+  --accent: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  --accent-ink: #ffffff;
+  --accent-text: #a5612c;
+  --accent-soft: rgb(196 128 76 / 0.1);
+  --studio: radial-gradient(
+    ellipse 75% 65% at 50% 45%,
+    #ffffff 0%,
+    #efe7dc 60%,
+    var(--bg) 100%
+  );
+  --radius: 14px;
+  --panel-width: 360px;
 
   font-family:
     system-ui,
@@ -53,13 +69,24 @@ select {
   color-scheme: light;
 }
 
+/* Dark theme: a warm photo studio, as in the reference design. */
 .app[data-theme='dark'] {
-  --bg: #1c1a18;
-  --surface: #262320;
-  --text: #f1ece6;
-  --muted: #a99f95;
-  --border: #3a3531;
-  --viewport-bg: #2f2b28;
+  --bg: #13110f;
+  --surface: #16130f;
+  --card: #1f1b17;
+  --card-hover: #27221d;
+  --thumb-bg: #15120f;
+  --border: #352e27;
+  --text: #f3ece4;
+  --muted: #a89d91;
+  --accent-text: #e2ad7d;
+  --accent-soft: rgb(211 155 106 / 0.12);
+  --studio: radial-gradient(
+    ellipse 75% 65% at 50% 42%,
+    #4a4038 0%,
+    #251f1b 55%,
+    var(--bg) 100%
+  );
   color-scheme: dark;
 }
 
@@ -67,24 +94,23 @@ select {
   grid-area: header;
   display: flex;
   align-items: center;
-  gap: 0.625rem;
+  gap: 0.75rem;
   padding: 0.75rem 1rem;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
 }
 
 .app-logo {
   display: block;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   flex: none;
   object-fit: contain;
 }
 
 .app-header h1 {
   margin: 0;
-  font-size: 1.125rem;
+  font-size: 1.1875rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .theme-toggle {
@@ -95,18 +121,18 @@ select {
   margin-left: auto;
   padding: 0;
   color: var(--text);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 50%;
   cursor: pointer;
 }
 
 .theme-toggle:hover {
-  background: var(--viewport-bg);
+  background: var(--card-hover);
 }
 
 .theme-toggle:focus-visible {
-  outline: 2px solid var(--text);
+  outline: 2px solid var(--accent-text);
   outline-offset: 2px;
 }
 
@@ -121,7 +147,7 @@ select {
   min-height: 0;
   display: grid;
   place-items: center;
-  background: var(--viewport-bg);
+  background: var(--studio);
   overflow: hidden;
 }
 
@@ -131,15 +157,14 @@ select {
 
 .controls {
   grid-area: controls;
-  /* The tab list takes the top edge. */
-  padding: 0 1rem 1rem;
+  padding: 0 1rem 1.25rem;
   background: var(--surface);
   border-left: 1px solid var(--border);
   overflow-y: auto;
 }
 
 .controls h2 {
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.75rem;
   font-size: 1rem;
 }
 
@@ -154,8 +179,8 @@ select {
   }
 
   .controls {
-    max-height: 40dvh;
+    max-height: 45dvh;
+    background: var(--bg);
     border-left: none;
-    border-top: 1px solid var(--border);
   }
 }

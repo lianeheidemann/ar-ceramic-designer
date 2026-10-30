@@ -36,7 +36,7 @@ Each feature keeps its components, hooks, logic, styles and unit tests together.
 
 ## Default models
 
-The `.glb` files in [`src/features/models/defaults/`](src/features/models/defaults/README.md) are the models the app opens with, named after their files. If the folder is empty, the app falls back to a vase, bowl and plate generated in code. End-to-end tests always use the generated models (`VITE_MODELS=generated`).
+The `.glb` files in [`src/features/models/defaults/`](src/features/models/defaults/README.md) are the models the app opens with, named after their files, with an optional thumbnail image of the same name. If the folder is empty, the app falls back to a vase, bowl and plate generated in code. End-to-end tests always use the generated models (`VITE_MODELS=generated`).
 
 ## Accepted files
 

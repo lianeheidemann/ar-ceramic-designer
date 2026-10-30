@@ -189,13 +189,28 @@ test('starts an oversized import at 20 cm and sets its real height', async ({
 test('resizes catalog pieces too', async ({ page }) => {
   const vase = page.getByRole('button', { name: /Vase/ })
   await expect(vase).toContainText('⌀ 120 × 200 mm')
-  await expect(page.getByRole('button', { name: 'Original size' })).toHaveCount(
-    0,
-  )
+  const original = page.getByRole('button', { name: 'Original size' })
+  await expect(original).toBeDisabled()
   await page.getByLabel('Height (cm)').fill('30')
   await expect(vase).toContainText('⌀ 180 × 300 mm')
-  await page.getByRole('button', { name: 'Original size' }).click()
+  await original.click()
   await expect(vase).toContainText('⌀ 120 × 200 mm')
+  await expect(original).toBeDisabled()
+
+  // The arrows step whole centimeters.
+  await page.getByRole('button', { name: '1 cm taller' }).click()
+  await expect(vase).toContainText('⌀ 126 × 210 mm')
+  await page.getByRole('button', { name: '1 cm shorter' }).click()
+  await expect(vase).toContainText('⌀ 120 × 200 mm')
+})
+
+test('shows a thumbnail once a model has been shown', async ({ page }) => {
+  const thumb = (name: RegExp) =>
+    page.getByRole('button', { name }).locator('.model-thumb img')
+  await expect(thumb(/Vase/)).toHaveAttribute('src', /^data:image\//)
+  await expect(thumb(/Bowl/)).toHaveCount(0)
+  await page.getByRole('button', { name: /Bowl/ }).click()
+  await expect(thumb(/Bowl/)).toHaveAttribute('src', /^data:image\//)
 })
 
 test('shows file and mesh details, collapsed', async ({ page }) => {

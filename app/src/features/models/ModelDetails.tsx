@@ -1,3 +1,4 @@
+import { ChevronDownIcon, DocumentIcon } from '../../shared/icons'
 import type { CeramicModel } from '../../shared/types'
 import type { ModelInfo } from '../viewer/modelInfo'
 import { formatBytes, formatTriangles } from './importModel'
@@ -19,34 +20,38 @@ export function ModelDetails({ model, imported, info }: ModelDetailsProps) {
         ? 'Imported (until the page reloads)'
         : 'Default model'
   const simplified = info && info.triangles < info.fileTriangles
+  const mesh = info
+    ? simplified
+      ? `${formatTriangles(info.fileTriangles)}, shown with ${formatTriangles(info.triangles)}`
+      : formatTriangles(info.triangles)
+    : '…'
+  const textures = info
+    ? info.textures
+      ? `${info.textures} · up to ${info.maxTextureSize} px`
+      : 'None'
+    : '…'
+  const rows: [string, string][] = [
+    ['Source', source],
+    ...(model.fileBytes !== undefined
+      ? [['File', formatBytes(model.fileBytes)] as [string, string]]
+      : []),
+    ['Mesh', mesh],
+    ['Textures', textures],
+  ]
   return (
     <details className="controls-section model-details">
-      <summary>Details</summary>
-      <dl>
-        <dt>Source</dt>
-        <dd>{source}</dd>
-        {model.fileBytes !== undefined && (
-          <>
-            <dt>File</dt>
-            <dd>{formatBytes(model.fileBytes)}</dd>
-          </>
-        )}
-        <dt>Mesh</dt>
-        <dd>
-          {info
-            ? simplified
-              ? `${formatTriangles(info.fileTriangles)}, shown with ${formatTriangles(info.triangles)}`
-              : formatTriangles(info.triangles)
-            : '…'}
-        </dd>
-        <dt>Textures</dt>
-        <dd>
-          {info
-            ? info.textures
-              ? `${info.textures} · up to ${info.maxTextureSize} px`
-              : 'None'
-            : '…'}
-        </dd>
+      <summary className="section-title">
+        <DocumentIcon />
+        Details
+        <ChevronDownIcon className="details-chevron" />
+      </summary>
+      <dl className="details-card">
+        {rows.map(([term, value]) => (
+          <div key={term}>
+            <dt>{term}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
       </dl>
     </details>
   )

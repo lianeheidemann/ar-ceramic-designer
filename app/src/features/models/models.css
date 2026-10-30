@@ -1,55 +1,113 @@
 .model-list {
   display: grid;
-  gap: 0.5rem;
+  gap: 0.625rem;
   margin: 0;
   padding: 0;
   list-style: none;
-}
-
-.model-option {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  color: var(--text);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  cursor: pointer;
-  text-align: left;
-}
-
-.model-option:hover {
-  background: var(--viewport-bg);
-}
-
-.model-option[aria-pressed='true'] {
-  border-color: var(--text);
-  background: var(--viewport-bg);
-  font-weight: 600;
-}
-
-.model-size {
-  color: var(--muted);
-  font-size: 0.875rem;
-  font-weight: 400;
 }
 
 .model-list li {
   position: relative;
 }
 
-/* Room for the "×" of imported models. */
+/* A card: thumbnail, name and size, and a round mark when selected. */
+.model-option {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr auto;
+  align-items: center;
+  gap: 0.875rem;
+  width: 100%;
+  padding: 0.5rem 0.875rem 0.5rem 0.5rem;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-align: left;
+  cursor: pointer;
+}
+
+.model-option:hover {
+  background: var(--card-hover);
+}
+
+.model-option[aria-pressed='true'] {
+  background: var(--accent-soft);
+  border-color: var(--accent-text);
+}
+
+.model-option:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+.model-thumb {
+  display: grid;
+  place-items: center;
+  width: 4.5rem;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  color: var(--muted);
+  background: var(--thumb-bg);
+  border-radius: 10px;
+}
+
+.model-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.model-text {
+  display: grid;
+  min-width: 0;
+}
+
+.model-name {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.model-size {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.model-mark {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1.5px solid var(--muted);
+  border-radius: 50%;
+}
+
+.model-option[aria-pressed='true'] .model-mark {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: transparent;
+}
+
+.model-mark svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.4;
+}
+
+/* Room for the "×" of imported models, left of the mark. */
 .model-option-removable {
-  padding-right: 2.75rem;
+  padding-right: 3.75rem;
+}
+
+.model-option-removable .model-mark {
+  margin-right: -2.875rem;
 }
 
 .model-remove {
   position: absolute;
   top: 50%;
-  right: 0;
+  right: 2.75rem;
   display: grid;
   place-items: center;
   /* Small mark, finger-sized target. */
@@ -84,27 +142,59 @@
 }
 
 .model-remove:focus-visible span {
-  outline: 2px solid var(--text);
+  outline: 2px solid var(--accent-text);
 }
 
-.size-input {
-  width: 6rem;
-  padding: 0 0.75rem;
-  color: var(--text);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  text-align: right;
-}
-
-.size-input:focus-visible {
-  outline: 2px solid var(--text);
-  outline-offset: 1px;
-}
-
+/* "Import .glb": a dashed card under the list. */
 .model-import {
   display: grid;
-  margin-top: 0.75rem;
+  margin-top: 0.625rem;
+}
+
+.import-card {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr auto;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.875rem 0.875rem 0.875rem 0.5rem;
+  color: var(--text);
+  background: transparent;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius);
+  text-align: left;
+  cursor: pointer;
+}
+
+.import-card:hover {
+  background: var(--card-hover);
+}
+
+.import-card:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+.import-icon {
+  justify-self: center;
+  width: 30px;
+  height: 30px;
+}
+
+.import-text {
+  display: grid;
+}
+
+.import-title {
+  font-weight: 600;
+}
+
+.import-hint,
+.import-chevron {
+  color: var(--muted);
+}
+
+.import-hint {
+  font-size: 0.875rem;
 }
 
 .import-message {
@@ -117,25 +207,152 @@
   font-weight: 600;
 }
 
-/* Collapsed by default: file and mesh facts of the selected model. */
-.model-details summary {
-  font-weight: 600;
+/* Real size: label and note, then the field and "Original size". */
+.size-row {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.size-label {
+  display: grid;
+  gap: 0.125rem;
+}
+
+.size-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.size-field {
+  position: relative;
+  flex: 1;
+  max-width: 9rem;
+}
+
+.size-input {
+  width: 100%;
+  height: 48px;
+  padding: 0 2.5rem 0 0.875rem;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-variant-numeric: tabular-nums;
+  appearance: textfield;
+}
+
+.size-input::-webkit-inner-spin-button,
+.size-input::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.size-input:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 1px;
+}
+
+.size-steppers {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  bottom: 2px;
+  display: grid;
+  width: 2.25rem;
+}
+
+.size-steppers button {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding: 0;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
 }
 
-.model-details dl {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.25rem 1rem;
-  margin: 0.5rem 0 0;
-  font-size: 0.875rem;
+.size-steppers button:hover:not(:disabled) {
+  color: var(--text);
+  background: var(--card-hover);
 }
 
-.model-details dt {
-  color: var(--muted);
+.size-steppers button:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
-.model-details dd {
+.size-steppers svg {
+  width: 16px;
+  height: 16px;
+}
+
+.size-actions .accent-outline {
+  height: 48px;
+}
+
+/* Details: collapsed by default; a card of facts in columns. */
+.model-details summary {
   margin: 0;
+  list-style: none;
+  cursor: pointer;
+}
+
+.model-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.model-details summary:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.model-details .details-chevron {
+  margin-left: auto;
+  transition: transform 0.2s;
+}
+
+.model-details[open] .details-chevron {
+  transform: rotate(180deg);
+}
+
+.details-card {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  /* The gaps show the border color: dividers between cells. */
+  gap: 1px;
+  margin: 0.75rem 0 0;
+  overflow: hidden;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.details-card div {
+  padding: 0.75rem 1rem;
+  background: var(--card);
+}
+
+/* An odd last fact takes the whole row, so no empty cell shows. */
+.details-card div:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.details-card dt {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+.details-card dd {
+  margin: 0;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .model-details .details-chevron {
+    transition: none;
+  }
 }

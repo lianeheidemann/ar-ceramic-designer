@@ -7,6 +7,8 @@ export interface DefaultModelFile {
   id: string
   name: string
   url: string
+  /** An image with the same name, e.g. `Red Panther.webp`. */
+  thumbnailUrl?: string
 }
 
 /** A measured default model and the height it starts at, if fitted. */
@@ -20,14 +22,22 @@ export interface DefaultModel {
  * to the build and gives its URL. `VITE_MODELS=generated` ignores them (the
  * end-to-end tests run on the generated models).
  */
-const bundledFiles: Record<string, string> =
-  import.meta.env.VITE_MODELS === 'generated'
-    ? {}
-    : import.meta.glob('./defaults/*.{glb,GLB}', {
-        query: '?url',
-        import: 'default',
-        eager: true,
-      })
+const useFolder = import.meta.env.VITE_MODELS !== 'generated'
+const bundledFiles: Record<string, string> = useFolder
+  ? import.meta.glob('./defaults/*.{glb,GLB}', {
+      query: '?url',
+      import: 'default',
+      eager: true,
+    })
+  : {}
+/** Thumbnails for the default models, matched by file name. */
+const bundledImages: Record<string, string> = useFolder
+  ? import.meta.glob('./defaults/*.{webp,png,jpg,jpeg}', {
+      query: '?url',
+      import: 'default',
+      eager: true,
+    })
+  : {}
 
 /**
  * Default model entries from file paths and URLs, in file name order. The
@@ -35,8 +45,15 @@ const bundledFiles: Record<string, string> =
  */
 export function defaultModelFiles(
   files: Record<string, string>,
+  images: Record<string, string> = {},
 ): DefaultModelFile[] {
   const used = new Set<string>()
+  const imageByName = new Map(
+    Object.entries(images).map(([path, url]) => [
+      path.replace(/\.[^./]+$/, '').toLowerCase(),
+      url,
+    ]),
+  )
   return Object.entries(files)
     .filter(([path]) => /\.glb$/i.test(path))
     .sort(([a], [b]) => a.localeCompare(b))
@@ -52,12 +69,15 @@ export function defaultModelFiles(
       let id = slug
       for (let n = 2; used.has(id); n++) id = `${slug}-${n}`
       used.add(id)
-      return { id, name, url }
+      const thumbnailUrl = imageByName.get(
+        path.replace(/\.glb$/i, '').toLowerCase(),
+      )
+      return { id, name, url, thumbnailUrl }
     })
 }
 
 /** The default .glb files bundled with the app (empty: use the catalog). */
-export const defaultFiles = defaultModelFiles(bundledFiles)
+export const defaultFiles = defaultModelFiles(bundledFiles, bundledImages)
 
 /**
  * Measures the default models from their JSON chunk only (a few KB each;
@@ -68,28 +88,31 @@ export async function loadDefaultModels(
   files: readonly DefaultModelFile[] = defaultFiles,
 ): Promise<DefaultModel[]> {
   const loaded = await Promise.all(
-    files.map(async ({ id, name, url }): Promise<DefaultModel | null> => {
-      try {
-        const { json, fileBytes } = await readGlbJson(url)
-        const dimensionsMm = glbBoundsMm(json)
-        if (!dimensionsMm) throw new Error('No geometry')
-        return {
-          model: {
-            id,
-            name,
-            source: { kind: 'glb', url },
-            dimensionsMm,
-            defaultMaterial: { ...FILE_MATERIAL },
-            license: 'Default model',
-            fileBytes,
-          },
-          realHeightMm: fittedHeightMm(dimensionsMm),
+    files.map(
+      async ({ id, name, url, thumbnailUrl }): Promise<DefaultModel | null> => {
+        try {
+          const { json, fileBytes } = await readGlbJson(url)
+          const dimensionsMm = glbBoundsMm(json)
+          if (!dimensionsMm) throw new Error('No geometry')
+          return {
+            model: {
+              id,
+              name,
+              source: { kind: 'glb', url },
+              dimensionsMm,
+              defaultMaterial: { ...FILE_MATERIAL },
+              license: 'Default model',
+              fileBytes,
+              thumbnailUrl,
+            },
+            realHeightMm: fittedHeightMm(dimensionsMm),
+          }
+        } catch (error) {
+          console.warn(`Default model "${name}" left out:`, error)
+          return null
         }
-      } catch (error) {
-        console.warn(`Default model "${name}" left out:`, error)
-        return null
-      }
-    }),
+      },
+    ),
   )
   return loaded.filter((entry) => entry !== null)
 }

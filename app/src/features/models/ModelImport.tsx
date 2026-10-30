@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { ChevronRightIcon, UploadIcon } from '../../shared/icons'
 import type { CeramicModel } from '../../shared/types'
 import { importGlb } from './importModel'
 
@@ -34,10 +35,15 @@ export function ModelImport({ onImport }: ModelImportProps) {
     <div className="model-import">
       <button
         type="button"
-        className="import-button"
+        className="import-card"
         onClick={() => fileRef.current?.click()}
       >
-        Import .glb
+        <UploadIcon className="import-icon" />
+        <span className="import-text">
+          <span className="import-title">Import .glb</span>
+          <span className="import-hint">Load your own 3D model</span>
+        </span>
+        <ChevronRightIcon className="import-chevron" />
       </button>
       <input
         ref={fileRef}

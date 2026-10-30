@@ -21,6 +21,7 @@ interface CompareViewProps {
   heightMm?: number
   onHeightChange?: (heightMm: number) => void
   onInfo?: (modelId: string, info: ModelInfo) => void
+  onThumbnail?: (modelId: string, url: string) => void
 }
 
 function VariantSummary({
@@ -53,6 +54,7 @@ export function CompareView({
   heightMm,
   onHeightChange,
   onInfo,
+  onThumbnail,
 }: CompareViewProps) {
   const [cameraSync] = useState(() => new CameraSync())
   const viewers = useRef<Partial<Record<VariantId, ViewerHandle | null>>>({})
@@ -84,6 +86,7 @@ export function CompareView({
               heightMm={heightMm}
               onHeightChange={onHeightChange}
               onInfo={onInfo}
+              onThumbnail={onThumbnail}
               hideActions
               onArStateChange={variant === active ? setAr : undefined}
             />

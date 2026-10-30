@@ -48,4 +48,6 @@ export interface CeramicModel {
   license: string
   /** Size of the .glb file in bytes (models loaded from a file). */
   fileBytes?: number
+  /** Picture for the model list. */
+  thumbnailUrl?: string
 }

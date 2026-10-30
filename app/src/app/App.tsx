@@ -12,6 +12,7 @@ import { CompareView } from '../features/viewer/CompareView'
 import type { ModelInfo } from '../features/viewer/modelInfo'
 import { Viewer } from '../features/viewer/Viewer'
 import type { CeramicModel } from '../shared/types'
+import { CubeIcon, PaletteIcon } from '../shared/icons'
 import { Tabs } from '../shared/Tabs'
 import { AppHeader } from './AppHeader'
 import { useTheme } from './useTheme'
@@ -25,6 +26,8 @@ function App() {
   const [activeVariant, setActiveVariant] = useState<VariantId>('A')
   /** What each loaded model is made of, by id (from the viewer). */
   const [infoById, setInfoById] = useState<Record<string, ModelInfo>>({})
+  /** Pictures taken by the viewer for models without one, by id. */
+  const [thumbnails, setThumbnails] = useState<Record<string, string>>({})
   const arSupport = useArSupport()
   const arSupported = arSupport.kind === 'supported'
   const models = useModels()
@@ -52,6 +55,8 @@ function App() {
       models.setHeight(selectedModel.id, heightMm),
     onInfo: (modelId: string, info: ModelInfo) =>
       setInfoById((all) => ({ ...all, [modelId]: info })),
+    onThumbnail: (modelId: string, url: string) =>
+      setThumbnails((all) => (all[modelId] ? all : { ...all, [modelId]: url })),
   }
 
   return (
@@ -94,12 +99,14 @@ function App() {
             {
               id: 'models',
               label: 'Models',
+              icon: <CubeIcon />,
               content: (
                 <>
                   <ModelList
                     models={models.listedModels}
                     selectedId={selectedId}
                     onSelect={setSelectedId}
+                    thumbnails={thumbnails}
                     removableIds={models.importedIds}
                     onRemove={removeImportedModel}
                   />
@@ -134,6 +141,7 @@ function App() {
             {
               id: 'material',
               label: 'Material',
+              icon: <PaletteIcon />,
               content: selectedModel && material && (
                 <MaterialPanel
                   model={selectedModel}
