@@ -113,7 +113,7 @@ Define typed metadata for each model: `id`, `name`, `url`, `dimensionsMm`, `scal
 
 ## ✅ 5. Add ceramic customization
 
-> **Implemented** in `app/src/features/material/`: presets in `presets.ts`, per-variant defaults in `variants.ts`, edited materials kept by `useMaterials.ts`, UI in `MaterialPanel.tsx` and `MaterialControls.tsx` (**Restore original**).
+> **Implemented** in `app/src/features/material/`: presets in `presets.ts`, per-variant defaults in `variants.ts`, edited materials kept by `useMaterials.ts`, UI in `MaterialPanel.tsx`, `MaterialControls.tsx` (**Restore original**) and `ColorPicker.tsx` (glaze swatches, hue/saturation/lightness sliders, hex field; the browser's color dialog cannot be styled).
 
 1. Create a small catalog of material presets: matte, glossy and glazed.
 2. Allow color, roughness and (where appropriate) metalness adjustments using physically based materials.

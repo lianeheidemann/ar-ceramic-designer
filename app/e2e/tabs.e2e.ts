@@ -49,3 +49,23 @@ test('keeps a panel state while another tab is open', async ({ page }) => {
     'true',
   )
 })
+
+test("picks a color in the app's own panel", async ({ page }) => {
+  await page.getByRole('tab', { name: 'Material' }).click()
+  const current = page.getByRole('button', { name: /^Color/ })
+  await expect(current).toHaveAttribute('aria-expanded', 'false')
+  await current.click()
+  await expect(current).toHaveAttribute('aria-expanded', 'true')
+
+  await page.getByRole('button', { name: 'Cobalt' }).click()
+  await expect(current).toContainText('Cobalt')
+  await expect(page.getByLabel('Hex')).toHaveValue('#2f4f8f')
+  await expect(page.getByText('Custom', { exact: true })).toHaveCount(0)
+
+  await page.getByLabel('Hex').fill('#336699')
+  await expect(current).toContainText('#336699')
+  await expect(page.getByLabel('Hue')).toHaveValue('210')
+
+  await page.getByRole('button', { name: 'Restore original' }).click()
+  await expect(current).toContainText('Sand')
+})
