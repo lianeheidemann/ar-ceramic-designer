@@ -24,7 +24,7 @@ Details per step: [step-by-step guide](step-by-step.md).
 
 ## Acceptance criteria
 
-- ✅ At least two optimized sample ceramic models (vase, bowl and plate generated in code, ~10k triangles each). Users can also import their own `.glb` (tested on the S23 Ultra).
+- ✅ At least two optimized sample ceramic models (vase, bowl and plate generated in code, ~10k triangles each). Users can also import their own `.glb` (tested on the S23 Ultra), and `.glb` files in `app/src/features/models/defaults/` become the default models.
 - 🔄 Smooth interactive viewing on desktop and Galaxy S23 Ultra (desktop ✅; numbers on the phone to measure).
 - ✅ Material edits persist in exported JSON.
 - ✅ AR is tested on a compatible device (S23 Ultra), with a clear fallback where unavailable.

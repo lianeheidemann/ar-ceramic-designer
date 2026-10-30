@@ -3,7 +3,6 @@ import { useArSupport } from '../features/ar/useArSupport'
 import { MaterialPanel } from '../features/material/MaterialPanel'
 import { useMaterials } from '../features/material/useMaterials'
 import type { VariantId } from '../features/material/variants'
-import { defaultModelId } from '../features/models/catalog'
 import { ModelList } from '../features/models/ModelList'
 import { RealSizeControl } from '../features/models/RealSizeControl'
 import { useModels } from '../features/models/useModels'
@@ -19,7 +18,8 @@ import { useTheme } from './useTheme'
 
 function App() {
   const [theme, toggleTheme] = useTheme()
-  const [selectedId, setSelectedId] = useState(defaultModelId)
+  /** `null`: the first default model. */
+  const [chosenId, setSelectedId] = useState<string | null>(null)
   const [tab, setTab] = useState<'models' | 'material' | 'config'>('models')
   const [comparing, setComparing] = useState(false)
   const [activeVariant, setActiveVariant] = useState<VariantId>('A')
@@ -27,6 +27,7 @@ function App() {
   const arSupport = useArSupport()
   const arSupported = arSupport.kind === 'supported'
   const models = useModels()
+  const selectedId = chosenId ?? models.defaultId ?? ''
   const selectedModel = models.models.find((model) => model.id === selectedId)
   const editedVariant = comparing ? activeVariant : 'A'
   const materials = useMaterials(selectedModel, editedVariant)
@@ -40,7 +41,7 @@ function App() {
   function removeImportedModel(id: string) {
     if (!models.removeImported(id)) return
     materials.forget(id)
-    if (selectedId === id) setSelectedId(defaultModelId)
+    if (selectedId === id) setSelectedId(null)
   }
 
   /** Shows the model with the imported settings' materials. */
@@ -84,7 +85,9 @@ function App() {
             {...sizeProps}
           />
         ) : (
-          <p className="viewport-placeholder">No model selected</p>
+          <p className="viewport-placeholder">
+            {models.ready ? 'No model selected' : 'Loading models…'}
+          </p>
         )}
       </main>
 
@@ -153,6 +156,7 @@ function App() {
                     B: comparing ? variantMaterial('B') : undefined,
                   }}
                   onImport={importConfig}
+                  getModel={models.getModel}
                   onImportModel={importModel}
                 />
               ),

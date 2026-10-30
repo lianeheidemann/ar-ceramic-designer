@@ -26,7 +26,7 @@ A web app, live on GitHub Pages, to view ceramic pieces in 3D, change their fini
 
 ## Features
 
-- 3D viewer with a vase, bowl and plate: turn, zoom, reset.
+- 3D viewer with the default models (the `.glb` files in [`app/src/features/models/defaults/`](app/src/features/models/defaults/README.md); a generated vase, bowl and plate while it is empty): turn, zoom, reset.
 - Import your own `.glb` model (**Settings → Import**); **×** removes it from the list.
 - Finishes (matte, glossy, glazed), color, roughness and metalness; A/B comparison.
 - AR (WebXR): a ring marks the surface, a tap places the piece at real size, another tap moves it; **−** / **+** change its height by 1 cm.
@@ -57,7 +57,7 @@ A web app, live on GitHub Pages, to view ceramic pieces in 3D, change their fini
 
 ## License
 
-MIT. The vase, bowl and plate are generated in code by this project.
+MIT. The vase, bowl and plate are generated in code by this project. Default `.glb` models: list each file's source and license here.
 
 ## Docs
 

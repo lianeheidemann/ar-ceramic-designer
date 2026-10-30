@@ -4,6 +4,7 @@ import { presetMaterial, sameMaterial } from '../material/presets'
 import { CONFIG_SCHEMA, createConfig, parseConfig } from './config'
 
 const model = catalog[0]
+const getModel = (id: string) => catalog.find((item) => item.id === id)
 const a = { color: '#336699', roughness: 0.6, metalness: 0.1, clearcoat: 0 }
 const b = presetMaterial('glazed', '#aa5533')
 
@@ -15,13 +16,13 @@ function exported(overrides: Record<string, unknown> = {}) {
 }
 
 function errorOf(text: string) {
-  const result = parseConfig(text)
+  const result = parseConfig(text, getModel)
   return result.ok ? undefined : result.error
 }
 
 describe('configuration export', () => {
   it('reimports the same model and materials', () => {
-    const result = parseConfig(exported())
+    const result = parseConfig(exported(), getModel)
     expect(result.ok).toBe(true)
     if (!result.ok) return
     expect(result.config.modelId).toBe(model.id)
@@ -38,7 +39,10 @@ describe('configuration export', () => {
   })
 
   it('leaves B out when there is no comparison', () => {
-    const result = parseConfig(JSON.stringify(createConfig(model, { A: a })))
+    const result = parseConfig(
+      JSON.stringify(createConfig(model, { A: a })),
+      getModel,
+    )
     expect(result.ok && result.config.variants.B).toBeUndefined()
   })
 })

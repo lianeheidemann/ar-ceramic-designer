@@ -26,15 +26,15 @@ Each feature keeps its components, hooks, logic, styles and unit tests (`*.test.
 
 ## Modules
 
-| Folder               | Main files                                                                                                                                                                                                                                      |
-| :------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `app/`               | `App.tsx` (layout, tabs, selection), `AppHeader.tsx`, `useTheme.ts`                                                                                                                                                                             |
-| `features/viewer/`   | `CeramicViewer.ts` (scene, camera, on-demand rendering), `modelMaterials.ts`, `sceneObjects.ts`, `framing.ts`, `gltfLoader.ts`, `simplify.ts`, `CameraSync.ts`; UI: `Viewer.tsx`, `ViewerActions.tsx`, `CompareView.tsx`, `viewerDebug.ts`      |
-| `features/ar/`       | `arSession.ts` (hit-test placement), `projectionLayers.ts` (S23 layer fix), `arDebug.ts`, `testSwitches.ts`, `arStatus.ts`, `support.ts`; UI: `useArSession.ts`, `useArSupport.ts`, `ArOverlay.tsx` (hints, − / +, Exit AR), `ArStatusIcon.tsx` |
-| `features/models/`   | `catalog.ts`, `lathe.ts`, `importModel.ts`, `useModels.ts` (imported models, real heights); UI: `ModelList.tsx`, `RealSizeControl.tsx`                                                                                                          |
-| `features/material/` | `presets.ts`, `variants.ts`, `useMaterials.ts` (edited materials per variant); UI: `MaterialPanel.tsx`, `MaterialControls.tsx`                                                                                                                  |
-| `features/settings/` | `config.ts` (JSON schema v1), `download.ts`; UI: `ConfigControls.tsx` (Export / Import)                                                                                                                                                         |
-| `shared/`            | `types.ts`, `units.ts`, `useMediaQuery.ts`, `Tabs.tsx`, `controls.css`, `tabs.css`                                                                                                                                                              |
+| Folder               | Main files                                                                                                                                                                                                                                                                                        |
+| :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `app/`               | `App.tsx` (layout, tabs, selection), `AppHeader.tsx`, `useTheme.ts`                                                                                                                                                                                                                               |
+| `features/viewer/`   | `CeramicViewer.ts` (scene, camera, on-demand rendering), `modelMaterials.ts`, `sceneObjects.ts`, `framing.ts`, `gltfLoader.ts`, `simplify.ts`, `CameraSync.ts`; UI: `Viewer.tsx`, `ViewerActions.tsx`, `CompareView.tsx`, `viewerDebug.ts`                                                        |
+| `features/ar/`       | `arSession.ts` (hit-test placement), `projectionLayers.ts` (S23 layer fix), `arDebug.ts`, `testSwitches.ts`, `arStatus.ts`, `support.ts`; UI: `useArSession.ts`, `useArSupport.ts`, `ArOverlay.tsx` (hints, − / +, Exit AR), `ArStatusIcon.tsx`                                                   |
+| `features/models/`   | `defaults/` (the default `.glb` files), `defaultModels.ts` (finds and measures them), `catalog.ts` + `lathe.ts` (generated vase, bowl, plate when `defaults/` is empty), `importModel.ts`, `useModels.ts` (default and imported models, real heights); UI: `ModelList.tsx`, `RealSizeControl.tsx` |
+| `features/material/` | `presets.ts`, `variants.ts`, `useMaterials.ts` (edited materials per variant); UI: `MaterialPanel.tsx`, `MaterialControls.tsx`                                                                                                                                                                    |
+| `features/settings/` | `config.ts` (JSON schema v1), `download.ts`; UI: `ConfigControls.tsx` (Export / Import)                                                                                                                                                                                                           |
+| `shared/`            | `types.ts`, `units.ts`, `useMediaQuery.ts`, `Tabs.tsx`, `controls.css`, `tabs.css`                                                                                                                                                                                                                |
 
 ## Commands
 
@@ -60,6 +60,10 @@ AR needs HTTPS.
 | `.json` (settings)       | `schema: "ar-ceramic-designer/config"`, `version: 1`, a known `modelId`, `variants.A` (and optional `B`) with `color` `#rrggbb` and `roughness`, `metalness`, `clearcoat` from 0 to 1 | Made by **Export (.json)**; validated in `features/settings/config.ts`. Settings for an imported model need that `.glb` imported first.                                                                                                                                                     |
 
 Not accepted: `.gltf` with separate files, `.obj`, `.fbx`, `.stl`.
+
+## Default models
+
+The `.glb` files in [`src/features/models/defaults/`](src/features/models/defaults/README.md) are the models the app opens with; their name comes from the file name and their size from the file (outside 1–60 cm they start at 20 cm). With the folder empty, the app shows the generated vase, bowl and plate. The end-to-end tests always run on the generated ones (`VITE_MODELS=generated`, set in `playwright.config.ts`).
 
 ## Test switches
 

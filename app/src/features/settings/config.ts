@@ -1,4 +1,3 @@
-import { getModelById } from '../models/catalog'
 import { findPreset } from '../material/presets'
 import type { VariantId } from '../material/variants'
 import type {
@@ -49,8 +48,14 @@ export function createConfig(
   }
 }
 
-/** Reads an exported configuration, rejecting anything it cannot reproduce. */
-export function parseConfig(text: string): ParseResult {
+/**
+ * Reads an exported configuration, rejecting anything it cannot reproduce.
+ * `getModel` finds a model among the ones the app shows now.
+ */
+export function parseConfig(
+  text: string,
+  getModel: (id: string) => CeramicModel | undefined,
+): ParseResult {
   let data: unknown
   try {
     data = JSON.parse(text)
@@ -64,7 +69,7 @@ export function parseConfig(text: string): ParseResult {
     return fail(`Unsupported settings version: ${String(data.version)}.`)
   }
   const model =
-    typeof data.modelId === 'string' ? getModelById(data.modelId) : undefined
+    typeof data.modelId === 'string' ? getModel(data.modelId) : undefined
   if (!model) {
     return fail(`Unknown model: ${String(data.modelId)}.`)
   }

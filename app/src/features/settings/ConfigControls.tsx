@@ -9,6 +9,8 @@ interface ConfigControlsProps {
   /** B is included only while comparing. */
   variants: { A: MaterialSettings; B?: MaterialSettings }
   onImport: (config: CeramicConfig) => void
+  /** Finds a model the app shows now, to check imported settings. */
+  getModel: (id: string) => CeramicModel | undefined
   /** A 3D model (.glb) opened with the same button, and its starting height. */
   onImportModel: (model: CeramicModel, realHeightMm?: number) => void
 }
@@ -19,6 +21,7 @@ export function ConfigControls({
   model,
   variants,
   onImport,
+  getModel,
   onImportModel,
 }: ConfigControlsProps) {
   const fileRef = useRef<HTMLInputElement>(null)
@@ -57,7 +60,7 @@ export function ConfigControls({
   }
 
   async function importConfig(file: File) {
-    const result = parseConfig(await file.text())
+    const result = parseConfig(await file.text(), getModel)
     if (result.ok) {
       onImport(result.config)
       setMessage({

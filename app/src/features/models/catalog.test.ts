@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  catalog,
-  defaultModelId,
-  getModelById,
-  profileDimensionsMm,
-} from './catalog'
+import { catalog, profileDimensionsMm } from './catalog'
 
 describe('catalog', () => {
   it('has unique ids', () => {
@@ -18,11 +13,6 @@ describe('catalog', () => {
       expect(dimensionsMm.height).toBeGreaterThan(0)
       expect(dimensionsMm.depth).toBeGreaterThan(0)
     }
-  })
-
-  it('finds models by id', () => {
-    expect(getModelById(defaultModelId)?.id).toBe(defaultModelId)
-    expect(getModelById('missing')).toBeUndefined()
   })
 
   it('derives dimensions from a lathe profile', () => {

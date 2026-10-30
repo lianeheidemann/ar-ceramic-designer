@@ -80,9 +80,3 @@ export const catalog: readonly CeramicModel[] = [
     defaultMaterial: presetMaterial('glossy', '#f4f1ea'),
   }),
 ]
-
-export const defaultModelId = catalog[0].id
-
-export function getModelById(id: string): CeramicModel | undefined {
-  return catalog.find((model) => model.id === id)
-}

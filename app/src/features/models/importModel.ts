@@ -64,23 +64,35 @@ export function modelNameFromFile(fileName: string): string {
   return base.replace(/\.glb$/i, '').trim() || 'Imported model'
 }
 
-let importCount = 0
+/** Size and weight of a GLB, as read by `measureGlb`. */
+export type GlbMeasure =
+  | {
+      ok: true
+      dimensionsMm: DimensionsMm
+      /** Height to show the piece at, when the file's size is unlikely. */
+      realHeightMm?: number
+      /** Notes for the user: unlikely size, simplified mesh. */
+      notes: string[]
+    }
+  | { ok: false; error: string }
 
 /**
- * Reads a .glb file picked by the user and turns it into a catalog entry
- * the viewer can load (and place in AR). glTF is in meters, so its size is
- * taken as real-world size. The file stays in the browser.
+ * Checks and measures a GLB (glTF is in meters): rejects other files and
+ * features the app cannot open, and notes an unlikely size or a mesh that
+ * will be simplified. Shared by imports and the default models.
  */
-export async function importGlb(file: File): Promise<ImportResult> {
-  const bytes = await file.arrayBuffer()
+export async function measureGlb(
+  bytes: ArrayBuffer,
+  fileName: string,
+): Promise<GlbMeasure> {
   if (!isGlb(bytes)) {
-    return { ok: false, error: `"${file.name}" is not a .glb file.` }
+    return { ok: false, error: `"${fileName}" is not a .glb file.` }
   }
   const unsupported = unsupportedFeatures(bytes)
   if (unsupported.length) {
     return {
       ok: false,
-      error: `The model "${file.name}" uses ${unsupported.join(' and ')}, which the app cannot open yet. Export it again without it.`,
+      error: `The model "${fileName}" uses ${unsupported.join(' and ')}, which the app cannot open yet. Export it again without it.`,
     }
   }
   let box: Box3
@@ -91,31 +103,14 @@ export async function importGlb(file: File): Promise<ImportResult> {
     triangles = countTriangles(gltf.scene)
     disposeObject(gltf.scene)
   } catch {
-    return {
-      ok: false,
-      error: `Could not read the model "${file.name}".`,
-    }
+    return { ok: false, error: `Could not read the model "${fileName}".` }
   }
   if (box.isEmpty()) {
-    return { ok: false, error: `The file "${file.name}" has no geometry.` }
+    return { ok: false, error: `The file "${fileName}" has no geometry.` }
   }
   const largest = Math.max(...box.getSize(new Vector3()).toArray())
   const dimensionsMm = dimensionsFromBox(box)
   const realHeightMm = fittedHeightMm(dimensionsMm)
-  const model: CeramicModel = {
-    id: `imported-${++importCount}`,
-    name: modelNameFromFile(file.name),
-    source: { kind: 'glb', url: URL.createObjectURL(file) },
-    dimensionsMm,
-    // Factors that keep the file's own look (see applyMaterial).
-    defaultMaterial: {
-      color: '#ffffff',
-      roughness: 1,
-      metalness: 1,
-      clearcoat: 0,
-    },
-    license: 'File imported by the user',
-  }
   const notes: string[] = []
   if (realHeightMm !== undefined) {
     notes.push(
@@ -127,8 +122,40 @@ export async function importGlb(file: File): Promise<ImportResult> {
       `It has ${formatTriangles(triangles)}; the app shows a simplified version with up to ${formatTriangles(MAX_TRIANGLES)} so it runs smoothly on phones.`,
     )
   }
-  const warning = notes.length ? notes.join(' ') : undefined
-  return { ok: true, model, realHeightMm, warning }
+  return { ok: true, dimensionsMm, realHeightMm, notes }
+}
+
+/** Material factors that keep a GLB's own look (see applyMaterial). */
+export const FILE_MATERIAL = {
+  color: '#ffffff',
+  roughness: 1,
+  metalness: 1,
+  clearcoat: 0,
+} as const
+
+let importCount = 0
+
+/**
+ * Reads a .glb file picked by the user and turns it into a catalog entry
+ * the viewer can load (and place in AR). The file stays in the browser.
+ */
+export async function importGlb(file: File): Promise<ImportResult> {
+  const measure = await measureGlb(await file.arrayBuffer(), file.name)
+  if (!measure.ok) return measure
+  const model: CeramicModel = {
+    id: `imported-${++importCount}`,
+    name: modelNameFromFile(file.name),
+    source: { kind: 'glb', url: URL.createObjectURL(file) },
+    dimensionsMm: measure.dimensionsMm,
+    defaultMaterial: { ...FILE_MATERIAL },
+    license: 'File imported by the user',
+  }
+  return {
+    ok: true,
+    model,
+    realHeightMm: measure.realHeightMm,
+    warning: measure.notes.length ? measure.notes.join(' ') : undefined,
+  }
 }
 
 /** "98 cm", "1.2 m" or "4 mm", for messages. */
