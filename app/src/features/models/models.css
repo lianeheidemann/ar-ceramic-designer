@@ -10,10 +10,10 @@
   position: relative;
 }
 
-/* A card: thumbnail, name and size, and a round mark when selected. */
+/* A card: thumbnail, name and size; the selected one is tinted. */
 .model-option {
   display: grid;
-  grid-template-columns: 4.5rem 1fr auto;
+  grid-template-columns: 4.5rem 1fr;
   align-items: center;
   gap: 0.875rem;
   width: 100%;
@@ -74,40 +74,15 @@
   font-size: 0.875rem;
 }
 
-.model-mark {
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border: 1.5px solid var(--muted);
-  border-radius: 50%;
-}
-
-.model-option[aria-pressed='true'] .model-mark {
-  color: var(--accent-ink);
-  background: var(--accent);
-  border-color: transparent;
-}
-
-.model-mark svg {
-  width: 16px;
-  height: 16px;
-  stroke-width: 2.4;
-}
-
-/* Room for the "×" of imported models, left of the mark. */
+/* Room for the "×" of imported models. */
 .model-option-removable {
-  padding-right: 3.75rem;
-}
-
-.model-option-removable .model-mark {
-  margin-right: -2.875rem;
+  padding-right: 3rem;
 }
 
 .model-remove {
   position: absolute;
   top: 50%;
-  right: 2.75rem;
+  right: 0.25rem;
   display: grid;
   place-items: center;
   /* Small mark, finger-sized target. */
