@@ -126,7 +126,7 @@ Define typed metadata for each model: `id`, `name`, `url`, `dimensionsMm`, `scal
 
 ## ✅ 6. Add a comparison view
 
-> **Implemented** in `app/src/features/viewer/CompareView.tsx` (side by side on wide screens, an A/B switch on phones) with `CameraSync.ts` keeping both cameras together; the **Compare A/B** toggle is in `MaterialPanel.tsx`.
+> **Implemented** in `app/src/features/viewer/CompareView.tsx` (A and B side by side on every screen, one shared button bar: images of both sides, **View in AR** for the variant being edited) with `CameraSync.ts` keeping both cameras together; the **Compare A/B** toggle is in `MaterialPanel.tsx`.
 
 1. Provide a side-by-side view of two configurations of the same ceramic object.
 2. Keep camera framing comparable; optionally synchronize camera movement.

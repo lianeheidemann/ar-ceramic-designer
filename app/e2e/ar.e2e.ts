@@ -12,8 +12,9 @@ function setXr(page: Page, values: Partial<FakeXrControl>) {
   return page.evaluate((v) => Object.assign(window.fakeXr, v), values)
 }
 
-const hint = (page: Page) => page.locator('.ar-hint')
-const overlay = (page: Page) => page.locator('.ar-overlay')
+// While comparing, each side has an overlay; only the one in AR is shown.
+const overlay = (page: Page) => page.locator('.ar-overlay:not([hidden])')
+const hint = (page: Page) => overlay(page).locator('.ar-hint')
 
 /** A tap on the camera image, away from the hint and the exit button. */
 const tapScreen = (page: Page) =>
@@ -99,6 +100,28 @@ test('turns the piece with ‹ and › without moving it', async ({ page }) => {
   await page.getByRole('button', { name: 'Exit AR' }).click()
   await page.getByRole('button', { name: 'View in AR' }).click()
   await expect(panel).toContainText('turn: 0°')
+})
+
+test('compares A and B side by side and opens AR for the edited one', async ({
+  page,
+}) => {
+  await page.getByRole('tab', { name: 'Material' }).click()
+  await page.getByRole('button', { name: 'Compare A/B' }).click()
+  await expect(page.locator('.compare-pane canvas')).toHaveCount(2)
+  // One shared set of buttons for both sides.
+  await expect(page.getByRole('button', { name: 'View in AR' })).toHaveCount(1)
+  await expect(page.getByRole('button', { name: 'Reset view' })).toHaveCount(1)
+
+  await page.getByRole('button', { name: /^B / }).click()
+  await expect(page.locator('.compare-pane[data-active=true]')).toContainText(
+    'B',
+  )
+  await page.getByRole('button', { name: 'View in AR' }).click()
+  await setXr(page, { tracking: true, plane: [0, 0, -1] })
+  await tapScreen(page)
+  await expect(hint(page)).toHaveText(/Piece placed/)
+  await page.getByRole('button', { name: 'Exit AR' }).click()
+  await expect(page.getByRole('button', { name: 'View in AR' })).toBeEnabled()
 })
 
 test('warns when tapping before a surface is found', async ({ page }) => {

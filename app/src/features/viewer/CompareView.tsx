@@ -1,19 +1,19 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { findPreset } from '../material/presets'
 import { variantIds, type VariantId } from '../material/variants'
 import type { CeramicModel, MaterialSettings } from '../../shared/types'
 import { CameraSync } from './CameraSync'
 import type { ModelInfo } from './modelInfo'
-import { Viewer } from './Viewer'
+import type { ArState } from '../ar/arStatus'
+import { Viewer, type ViewerHandle } from './Viewer'
+import { ViewerActions } from './ViewerActions'
 
 interface CompareViewProps {
   model: CeramicModel
   materials: Record<VariantId, MaterialSettings>
   active: VariantId
   onActiveChange: (variant: VariantId) => void
-  /** Narrow screens show one viewer with an A/B switch instead of two. */
-  compact: boolean
-  /** AR is offered only in the compact (single viewer) layout. */
+  /** Shows "View in AR" (for the variant being edited). */
   arSupported: boolean
   /** Uniform scale of the piece (its real size). */
   scale?: number
@@ -48,7 +48,6 @@ export function CompareView({
   materials,
   active,
   onActiveChange,
-  compact,
   arSupported,
   scale,
   heightMm,
@@ -56,62 +55,57 @@ export function CompareView({
   onInfo,
 }: CompareViewProps) {
   const [cameraSync] = useState(() => new CameraSync())
+  const viewers = useRef<Partial<Record<VariantId, ViewerHandle | null>>>({})
+  const [ar, setAr] = useState<ArState>('off')
+  const each = (action: (viewer: ViewerHandle) => void) =>
+    variantIds.forEach((variant) => {
+      const viewer = viewers.current[variant]
+      if (viewer) action(viewer)
+    })
 
-  if (compact) {
-    return (
-      <div className="compare compare-compact">
-        <Viewer
-          model={model}
-          material={materials[active]}
-          label={`Variant ${active}`}
-          arSupported={arSupported}
-          scale={scale}
-          heightMm={heightMm}
-          onHeightChange={onHeightChange}
-          onInfo={onInfo}
-        />
-        <div className="variant-switch" role="group" aria-label="Variant">
-          {variantIds.map((variant) => (
+  return (
+    <div className="compare">
+      <div className="compare-split">
+        {variantIds.map((variant) => (
+          <div
+            key={variant}
+            className="compare-pane"
+            data-active={variant === active}
+          >
+            <Viewer
+              ref={(viewer) => {
+                viewers.current[variant] = viewer
+              }}
+              model={model}
+              material={materials[variant]}
+              cameraSync={cameraSync}
+              label={`Variant ${variant}`}
+              scale={scale}
+              heightMm={heightMm}
+              onHeightChange={onHeightChange}
+              onInfo={onInfo}
+              hideActions
+              onArStateChange={variant === active ? setAr : undefined}
+            />
             <button
-              key={variant}
               type="button"
-              className="variant-tag"
+              className="variant-tag compare-pane-tag"
               aria-pressed={variant === active}
               onClick={() => onActiveChange(variant)}
             >
               <VariantSummary variant={variant} material={materials[variant]} />
             </button>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
-    )
-  }
-
-  return (
-    <div className="compare compare-split">
-      {variantIds.map((variant) => (
-        <div
-          key={variant}
-          className="compare-pane"
-          data-active={variant === active}
-        >
-          <Viewer
-            model={model}
-            material={materials[variant]}
-            cameraSync={cameraSync}
-            label={`Variant ${variant}`}
-            scale={scale}
-          />
-          <button
-            type="button"
-            className="variant-tag compare-pane-tag"
-            aria-pressed={variant === active}
-            onClick={() => onActiveChange(variant)}
-          >
-            <VariantSummary variant={variant} material={materials[variant]} />
-          </button>
-        </div>
-      ))}
+      {/* One set of buttons: images of both sides, AR of the edited one. */}
+      <ViewerActions
+        ar={ar}
+        arSupported={arSupported}
+        onSaveImage={() => each((viewer) => viewer.saveImage())}
+        onResetView={() => each((viewer) => viewer.resetView())}
+        onStartAr={() => viewers.current[active]?.startAr()}
+      />
     </div>
   )
 }
