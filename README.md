@@ -19,7 +19,7 @@
 Web app to view ceramic pieces in 3D, customize their finish, compare variants and place them at real size in augmented reality.
 
 <p align="center">
-  <img width="100%" src="assets/interface/interface-ar-ceramic-designer-v8.webp" alt="App interface">
+  <img width="100%" src="assets/interface/interface-ar-ceramic-designer-v9.webp" alt="App interface">
 </p>
 
 ## Features
