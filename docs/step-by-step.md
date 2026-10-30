@@ -2,7 +2,7 @@
 
 > **Status (2026-10-30):** sections 0–9 (✅) are implemented in `app/`; AR placement was confirmed on the Galaxy S23 Ultra on 2026-10-29. Section 10 is almost done: performance numbers and AR media are left.
 >
-> **Code map:** `app/src` is organized by feature (`features/viewer`, `ar`, `models`, `material`, `settings`, plus `app/` and `shared/`); see section 2 and [`app/README.md`](../app/README.md).
+> **Code map:** `app/src` is organized by feature (`features/viewer`, `ar`, `models`, `material`, plus `app/` and `shared/`); see section 2 and [`app/README.md`](../app/README.md).
 >
 > **Goal:** build a responsive web application for viewing and customizing ceramic objects in 3D, then placing them in augmented reality (AR) on supported Android devices.
 >
@@ -71,7 +71,6 @@ app/
       ar/             # WebXR session, AR overlay, diagnostics
       models/         # Catalog, lathe geometry, .glb import, real size
       material/       # Finishes, A/B variants, material controls
-      settings/       # JSON export/import, downloads
     shared/           # Types, units, tabs, shared styles
     main.tsx          # entry
     index.css         # imports the feature stylesheets in order
@@ -159,17 +158,15 @@ Define typed metadata for each model: `id`, `name`, `url`, `dimensionsMm`, `scal
 
 ## ✅ 8. Save and export
 
-> **Implemented** in `app/src/features/settings/config.ts` (versioned schema `ar-ceramic-designer/config`, version 1, with validation), `app/src/features/settings/ConfigControls.tsx` (**Export (.json)** / **Import** in the Settings tab) and `CeramicViewer.captureImage()` (camera button in each 3D viewer, transparent PNG). The JSON stores the model id, its dimensions, the A material and, while comparing, the B material; dimensions and preset names are informative and ignored on import. Screenshots are disabled during AR.
+> **Implemented** as a PNG of the 3D view (`CeramicViewer.captureImage()`, camera button in each viewer; disabled during AR) and **.glb import**. **JSON settings export/import was removed on 2026-10-30:** the app works only with `.glb` files.
 >
-> **Import also opens 3D models (`.glb`)**, told apart from a `.json` by the file's first bytes (`app/src/features/models/importModel.ts`). The model is parsed once to check it and measure it (glTF is in meters), then added to the model list for the session by `useModels.ts` (object URL, nothing is uploaded). Meshopt-compressed files (gltfpack, Tripo) are decoded (`app/src/features/viewer/gltfLoader.ts`); pieces outside 1–60 cm start with a largest side of 20 cm (files from AI generators come at about 1 m), and every model has a **Real size** height field (`RealSizeControl.tsx`) that the − / + buttons in AR also change; and meshes over 300k triangles are simplified on load with meshoptimizer, borders locked, cached per file (`app/src/features/viewer/simplify.ts`); Draco and KTX2 are named in the error message, since their decoders would have to be served apart. The viewer stands any GLB on its base at the origin, so AR places it upright, and the finish controls multiply the file's own color, roughness and metalness, so the defaults keep its look.
+> **Import .glb** (Models tab, `app/src/features/models/ModelImport.tsx` and `importModel.ts`) opens 3D models. The model is parsed once to check it and measure it (glTF is in meters), then added to the model list for the session by `useModels.ts` (object URL, nothing is uploaded). Meshopt-compressed files (gltfpack, Tripo) are decoded (`app/src/features/viewer/gltfLoader.ts`); pieces outside 1–60 cm start with a largest side of 20 cm (files from AI generators come at about 1 m), and every model has a **Real size** height field (`RealSizeControl.tsx`) that the − / + buttons in AR also change; and meshes over 300k triangles are simplified on load with meshoptimizer, borders locked, cached per file (`app/src/features/viewer/simplify.ts`); Draco and KTX2 are named in the error message, since their decoders would have to be served apart. The viewer stands any GLB on its base at the origin, so AR places it upright, and the finish controls multiply the file's own color, roughness and metalness, so the defaults keep its look.
 
-1. Define a versioned JSON schema for model ID, material preset, color and dimensions/scale.
-2. Add **Export configuration (.json)** and **Import configuration** actions.
-3. Validate imported JSON and reject unsupported model IDs or malformed values.
-4. Add screenshot export for the standard 3D viewer where browser support allows; do not promise AR camera screenshots.
-5. Ensure exporting does not silently overwrite original GLB assets.
+1. ~~Define a versioned JSON schema and **Export / Import configuration** actions.~~ Removed: `.glb` only.
+2. Add screenshot export for the standard 3D viewer where browser support allows; do not promise AR camera screenshots.
+3. Ensure importing does not change or upload the original GLB files.
 
-**Done when:** exported configurations can be reimported to reproduce the same model appearance.
+**Done when:** the 3D view can be saved as PNG and `.glb` files can be imported.
 
 ## ✅ 9. Mobile performance and accessibility
 
@@ -198,7 +195,6 @@ Define typed metadata for each model: `id`, `name`, `url`, `dimensionsMm`, `scal
 - [x] Camera with mouse, keyboard and touch.
 - [x] Material changes and reset.
 - [x] Piece size: **Real size** field and − / + in AR (tested on the S23 Ultra).
-- [x] JSON export/import round trip.
 - [x] AR detection and fallback.
 - [x] AR placement on a compatible Android browser.
 - [x] Exit AR without breaking the viewer.

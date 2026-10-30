@@ -17,7 +17,7 @@ Build a lightweight web app to view, customize and place 3D ceramic objects in a
 1. ✅ **3D viewer:** load sample models; orbit, zoom, reset and responsive UI.
 2. ✅ **Customization:** change ceramic colors, roughness and finishes; restore defaults.
 3. ✅ **AR mode:** place a correctly scaled object on a detected surface; handle unsupported browsers gracefully. _Confirmed on the S23 Ultra on 2026-10-29; size adjustable in AR (− / +), confirmed on the phone._
-4. ✅ **Comparison and export:** compare two variants; save configurations as JSON and screenshots when supported.
+4. ✅ **Comparison and export:** compare two variants; save screenshots (PNG). JSON settings were removed: the app works only with `.glb`.
 5. 🔄 **Validation:** test on S23 Ultra, optimize model sizes, measure loading time/FPS and document limitations. _AR, touch controls and `.glb` import tested on the phone; on-demand rendering, debug figures (`?debug=1`) and known limitations done; performance numbers still to measure._
 
 Details per step: [step-by-step guide](step-by-step.md).
@@ -26,7 +26,6 @@ Details per step: [step-by-step guide](step-by-step.md).
 
 - ✅ At least two optimized sample ceramic models (vase, bowl and plate generated in code, ~10k triangles each). Users can also import their own `.glb` (tested on the S23 Ultra), and `.glb` files in `app/src/features/models/defaults/` become the default models.
 - 🔄 Smooth interactive viewing on desktop and Galaxy S23 Ultra (desktop ✅; numbers on the phone to measure).
-- ✅ Material edits persist in exported JSON.
 - ✅ AR is tested on a compatible device (S23 Ultra), with a clear fallback where unavailable.
 - 🔄 README documents installation, running, screenshots, known limitations and asset licenses (AR media to add).
 
@@ -39,7 +38,6 @@ src/features/viewer/     # 3D viewer
 src/features/ar/         # WebXR session and overlay
 src/features/models/     # catalog, .glb import, real size
 src/features/material/   # finishes and A/B variants
-src/features/settings/   # JSON export/import
 src/shared/              # types, units, tabs
 docs/
 ```

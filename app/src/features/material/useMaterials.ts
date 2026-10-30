@@ -38,19 +38,6 @@ export function useMaterials(
     })
   }
 
-  /** Sets both variants of a model, e.g. from imported settings. */
-  function setVariants(
-    modelId: string,
-    variants: { A: MaterialSettings; B?: MaterialSettings },
-  ) {
-    setOverrides((all) => {
-      const b = { ...all.B }
-      if (variants.B) b[modelId] = variants.B
-      else delete b[modelId]
-      return { A: { ...all.A, [modelId]: variants.A }, B: b }
-    })
-  }
-
   /** Drops a model's materials, e.g. when it leaves the list. */
   function forget(modelId: string) {
     setOverrides((all) => {
@@ -67,7 +54,6 @@ export function useMaterials(
     variantMaterial,
     updateMaterial,
     resetMaterial,
-    setVariants,
     forget,
   }
 }

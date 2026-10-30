@@ -39,7 +39,7 @@
 
 .preset-option,
 .reset-material,
-.config-button {
+.import-button {
   padding: 0.5rem;
   color: var(--text);
   background: transparent;
@@ -50,7 +50,7 @@
 
 .preset-option:hover,
 .reset-material:hover:not(:disabled),
-.config-button:hover {
+.import-button:hover {
   background: var(--viewport-bg);
 }
 

@@ -7,28 +7,19 @@ test.beforeEach(async ({ page }) => {
 
 test('starts on Models and shows one panel at a time', async ({ page }) => {
   const tabs = page.getByRole('tablist', { name: 'Controls' })
-  await expect(tabs.getByRole('tab')).toHaveText([
-    'Models',
-    'Material',
-    'Settings',
-  ])
+  await expect(tabs.getByRole('tab')).toHaveText(['Models', 'Material'])
   await expect(page.getByRole('tab', { name: 'Models' })).toHaveAttribute(
     'aria-selected',
     'true',
   )
   await expect(page.getByRole('button', { name: /Vase/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Import .glb' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Glossy' })).toBeHidden()
 
   await page.getByRole('tab', { name: 'Material' }).click()
   await expect(page.getByRole('button', { name: 'Glossy' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Compare A/B' })).toBeVisible()
   await expect(page.getByRole('button', { name: /Vase/ })).toBeHidden()
-
-  await page.getByRole('tab', { name: 'Settings' }).click()
-  await expect(
-    page.getByRole('button', { name: 'Export (.json)' }),
-  ).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Import' })).toBeVisible()
 })
 
 test('moves between tabs with the arrow keys', async ({ page }) => {
@@ -38,8 +29,10 @@ test('moves between tabs with the arrow keys', async ({ page }) => {
   const material = page.getByRole('tab', { name: 'Material' })
   await expect(material).toBeFocused()
   await expect(material).toHaveAttribute('aria-selected', 'true')
+  await page.keyboard.press('Home')
+  await expect(models).toBeFocused()
   await page.keyboard.press('End')
-  await expect(page.getByRole('tab', { name: 'Settings' })).toBeFocused()
+  await expect(material).toBeFocused()
   // Wraps around.
   await page.keyboard.press('ArrowRight')
   await expect(models).toBeFocused()

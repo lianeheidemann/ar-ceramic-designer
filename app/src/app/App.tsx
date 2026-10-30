@@ -3,11 +3,10 @@ import { useArSupport } from '../features/ar/useArSupport'
 import { MaterialPanel } from '../features/material/MaterialPanel'
 import { useMaterials } from '../features/material/useMaterials'
 import type { VariantId } from '../features/material/variants'
+import { ModelImport } from '../features/models/ModelImport'
 import { ModelList } from '../features/models/ModelList'
 import { RealSizeControl } from '../features/models/RealSizeControl'
 import { useModels } from '../features/models/useModels'
-import type { CeramicConfig } from '../features/settings/config'
-import { ConfigControls } from '../features/settings/ConfigControls'
 import { CompareView } from '../features/viewer/CompareView'
 import { Viewer } from '../features/viewer/Viewer'
 import type { CeramicModel } from '../shared/types'
@@ -20,7 +19,7 @@ function App() {
   const [theme, toggleTheme] = useTheme()
   /** `null`: the first default model. */
   const [chosenId, setSelectedId] = useState<string | null>(null)
-  const [tab, setTab] = useState<'models' | 'material' | 'config'>('models')
+  const [tab, setTab] = useState<'models' | 'material'>('models')
   const [comparing, setComparing] = useState(false)
   const [activeVariant, setActiveVariant] = useState<VariantId>('A')
   const compact = useMediaQuery('(max-width: 768px)')
@@ -42,14 +41,6 @@ function App() {
     if (!models.removeImported(id)) return
     materials.forget(id)
     if (selectedId === id) setSelectedId(null)
-  }
-
-  /** Shows the model with the imported settings' materials. */
-  function importConfig({ modelId, variants }: CeramicConfig) {
-    materials.setVariants(modelId, variants)
-    setSelectedId(modelId)
-    setComparing(variants.B !== undefined)
-    setActiveVariant('A')
   }
 
   const sizeProps = selectedModel && {
@@ -109,6 +100,7 @@ function App() {
                     removableIds={models.importedIds}
                     onRemove={removeImportedModel}
                   />
+                  <ModelImport onImport={importModel} />
                   {selectedModel && (
                     <RealSizeControl
                       key={selectedModel.id}
@@ -142,22 +134,6 @@ function App() {
                   onActiveVariantChange={setActiveVariant}
                   onChange={materials.updateMaterial}
                   onReset={materials.resetMaterial}
-                />
-              ),
-            },
-            {
-              id: 'config',
-              label: 'Settings',
-              content: selectedModel && material && (
-                <ConfigControls
-                  model={selectedModel}
-                  variants={{
-                    A: variantMaterial('A') ?? material,
-                    B: comparing ? variantMaterial('B') : undefined,
-                  }}
-                  onImport={importConfig}
-                  getModel={models.getModel}
-                  onImportModel={importModel}
                 />
               ),
             },

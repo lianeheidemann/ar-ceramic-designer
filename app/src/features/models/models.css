@@ -101,3 +101,18 @@
   outline: 2px solid var(--text);
   outline-offset: 1px;
 }
+
+.model-import {
+  display: grid;
+  margin-top: 0.75rem;
+}
+
+.import-message {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+}
+
+.import-error {
+  color: var(--text);
+  font-weight: 600;
+}

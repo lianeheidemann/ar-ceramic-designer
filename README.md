@@ -28,7 +28,7 @@ Web app to view ceramic pieces in 3D, customize their finish, compare variants a
 - Finishes (matte, glossy, glazed), color, roughness and metalness, with A/B comparison.
 - Augmented reality (WebXR): place the piece on a detected surface, move it, turn it (‹ ›) and adjust its height (− +).
 - Import `.glb` models; set any piece's real size.
-- Export and import settings (`.json`); save a PNG of the 3D view.
+- Save a PNG of the 3D view.
 
 ## Requirements
 
