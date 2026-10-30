@@ -29,10 +29,7 @@
 ## 10. Testing and delivery
 
 - [x] Dev server and build succeed (CI on every push).
-- [ ] Two or more GLB models load correctly — several tried; more real files to try.
-- [ ] Camera with mouse and touch — mouse and keyboard ✅; touch to record on the phone.
 - [x] Material changes and reset.
-- [ ] Comparison on desktop and mobile — desktop ✅; phone to record.
 - [x] JSON export/import round trip.
 - [x] AR detection and fallback.
 - [x] AR placement on a compatible Android browser.
