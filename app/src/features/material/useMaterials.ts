@@ -38,6 +38,25 @@ export function useMaterials(
     })
   }
 
+  /** A variant's edited material for a model (`undefined`: the original). */
+  function overrideOf(variant: VariantId, modelId: string) {
+    return overrides[variant][modelId]
+  }
+
+  /** Sets or clears (`undefined`) an edited material, e.g. to undo. */
+  function setOverride(
+    variant: VariantId,
+    modelId: string,
+    material: MaterialSettings | undefined,
+  ) {
+    setOverrides((all) => {
+      const rest = { ...all[variant] }
+      if (material) rest[modelId] = material
+      else delete rest[modelId]
+      return { ...all, [variant]: rest }
+    })
+  }
+
   /** Drops a model's materials, e.g. when it leaves the list. */
   function forget(modelId: string) {
     setOverrides((all) => {
@@ -54,6 +73,8 @@ export function useMaterials(
     variantMaterial,
     updateMaterial,
     resetMaterial,
+    overrideOf,
+    setOverride,
     forget,
   }
 }

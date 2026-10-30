@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useArSupport } from '../features/ar/useArSupport'
 import { MaterialPanel } from '../features/material/MaterialPanel'
 import { useMaterials } from '../features/material/useMaterials'
@@ -11,10 +11,11 @@ import { useModels } from '../features/models/useModels'
 import { CompareView } from '../features/viewer/CompareView'
 import type { ModelInfo } from '../features/viewer/modelInfo'
 import { Viewer } from '../features/viewer/Viewer'
-import type { CeramicModel } from '../shared/types'
+import type { CeramicModel, MaterialSettings } from '../shared/types'
 import { CubeIcon, PaletteIcon } from '../shared/icons'
 import { Tabs } from '../shared/Tabs'
 import { AppHeader } from './AppHeader'
+import { useEditHistory } from './useEditHistory'
 import { useTheme } from './useTheme'
 
 function App() {
@@ -37,6 +38,65 @@ function App() {
   const materials = useMaterials(selectedModel, editedVariant)
   const { material, variantMaterial } = materials
 
+  // Undo and redo put the value back and show the piece it belongs to.
+  const history = useEditHistory((edit, direction) => {
+    if (edit.kind === 'material') {
+      const value = direction === 'undo' ? edit.before : edit.after
+      materials.setOverride(edit.variant, edit.modelId, value)
+      if (edit.variant === 'B') setComparing(true)
+      setActiveVariant(edit.variant)
+    } else {
+      models.setHeight(
+        edit.modelId,
+        direction === 'undo' ? edit.before : edit.after,
+      )
+    }
+    if (models.models.some((model) => model.id === edit.modelId)) {
+      setSelectedId(edit.modelId)
+    }
+  })
+
+  function editMaterial(next: MaterialSettings | undefined) {
+    if (!selectedModel) return
+    history.record({
+      kind: 'material',
+      modelId: selectedModel.id,
+      variant: editedVariant,
+      before: materials.overrideOf(editedVariant, selectedModel.id),
+      after: next,
+    })
+    if (next) materials.updateMaterial(next)
+    else materials.resetMaterial()
+  }
+
+  function editHeight(id: string, heightMm: number) {
+    history.record({
+      kind: 'height',
+      modelId: id,
+      before: models.heightOverride(id),
+      after: heightMm,
+    })
+    models.setHeight(id, heightMm)
+  }
+
+  // Ctrl+Z / Ctrl+Shift+Z (or Ctrl+Y); text fields keep their own undo.
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (!(event.ctrlKey || event.metaKey)) return
+      const target = event.target as HTMLElement
+      if (target.matches('input[type=text], input[type=number], textarea')) {
+        return
+      }
+      const key = event.key.toLowerCase()
+      if (key === 'z' && !event.shiftKey) history.undo()
+      else if (key === 'y' || (key === 'z' && event.shiftKey)) history.redo()
+      else return
+      event.preventDefault()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  })
+
   function importModel(model: CeramicModel, realHeightMm?: number) {
     models.addImported(model, realHeightMm)
     setSelectedId(model.id)
@@ -52,7 +112,7 @@ function App() {
     scale: models.scaleOf(selectedModel),
     heightMm: models.heightOf(selectedModel),
     onHeightChange: (heightMm: number) =>
-      models.setHeight(selectedModel.id, heightMm),
+      editHeight(selectedModel.id, heightMm),
     onInfo: (modelId: string, info: ModelInfo) =>
       setInfoById((all) => ({ ...all, [modelId]: info })),
     onThumbnail: (modelId: string, url: string) =>
@@ -61,7 +121,14 @@ function App() {
 
   return (
     <div className="app" data-theme={theme}>
-      <AppHeader theme={theme} onToggleTheme={toggleTheme} />
+      <AppHeader
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        canUndo={history.canUndo}
+        canRedo={history.canRedo}
+        onUndo={history.undo}
+        onRedo={history.redo}
+      />
 
       <main className="viewport" aria-label="3D viewer">
         {selectedModel && material && comparing ? (
@@ -117,7 +184,7 @@ function App() {
                       originalDimensionsMm={selectedModel.dimensionsMm}
                       heightMm={models.heightOf(selectedModel)}
                       onChange={(heightMm) =>
-                        models.setHeight(selectedModel.id, heightMm)
+                        editHeight(selectedModel.id, heightMm)
                       }
                     />
                   )}
@@ -150,8 +217,8 @@ function App() {
                   onComparingChange={setComparing}
                   activeVariant={activeVariant}
                   onActiveVariantChange={setActiveVariant}
-                  onChange={materials.updateMaterial}
-                  onReset={materials.resetMaterial}
+                  onChange={editMaterial}
+                  onReset={() => editMaterial(undefined)}
                 />
               ),
             },

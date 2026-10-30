@@ -46,8 +46,14 @@ export function useModels() {
   const scaleOf = (model: CeramicModel) =>
     heightOf(model) / model.dimensionsMm.height
 
-  function setHeight(id: string, heightMm: number) {
-    setRealHeights((all) => ({ ...all, [id]: heightMm }))
+  /** Sets or clears (`undefined`: original size) a model's height. */
+  function setHeight(id: string, heightMm: number | undefined) {
+    setRealHeights((all) => {
+      const next = { ...all }
+      if (heightMm === undefined) delete next[id]
+      else next[id] = heightMm
+      return next
+    })
   }
 
   // The list shows real sizes; the viewer keeps the original objects so a
@@ -94,6 +100,8 @@ export function useModels() {
     listedModels,
     importedIds: new Set(importedModels.map((model) => model.id)),
     heightOf,
+    /** The height the user set (`undefined`: the original). */
+    heightOverride: (id: string) => realHeights[id] as number | undefined,
     scaleOf,
     setHeight,
     addImported,

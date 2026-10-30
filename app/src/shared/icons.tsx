@@ -167,3 +167,21 @@ export function MoonIcon(props: IconProps) {
     </Svg>
   )
 }
+
+export function UndoIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M9 14 4 9l5-5" />
+      <path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11" />
+    </Svg>
+  )
+}
+
+export function RedoIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="m15 14 5-5-5-5" />
+      <path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13" />
+    </Svg>
+  )
+}
