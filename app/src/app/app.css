@@ -58,7 +58,7 @@ select {
 
 .app {
   display: grid;
-  grid-template-columns: 1fr var(--panel-width);
+  grid-template-columns: minmax(0, 1fr) var(--panel-width);
   grid-template-rows: auto 1fr;
   grid-template-areas:
     'header header'
@@ -107,18 +107,29 @@ select {
 }
 
 .app-header h1 {
+  min-width: 0;
+  overflow: hidden;
   margin: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 1.1875rem;
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
-.theme-toggle {
+/* Undo, redo and the theme toggle: round buttons at the right. */
+.history-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.header-button {
+  flex: none;
   display: grid;
   place-items: center;
   width: 44px;
   height: 44px;
-  margin-left: auto;
   padding: 0;
   color: var(--text);
   background: var(--card);
@@ -127,18 +138,29 @@ select {
   cursor: pointer;
 }
 
-.theme-toggle:hover {
+.header-button:hover:not(:disabled) {
   background: var(--card-hover);
 }
 
-.theme-toggle:focus-visible {
+.header-button:disabled {
+  color: var(--muted);
+  opacity: 0.45;
+  cursor: default;
+}
+
+.header-button:focus-visible {
   outline: 2px solid var(--accent-text);
   outline-offset: 2px;
 }
 
-.theme-toggle svg {
+.header-button svg {
   width: 21px;
   height: 21px;
+}
+
+/* A little apart from undo and redo. */
+.theme-toggle {
+  margin-left: 0.5rem;
 }
 
 .viewport {
@@ -168,9 +190,38 @@ select {
   font-size: 1rem;
 }
 
+/* Small phones: the title and three buttons share one line. */
+@media (max-width: 420px) {
+  .app-header {
+    gap: 0.5rem;
+  }
+
+  .app-logo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .app-header h1 {
+    font-size: 1.0625rem;
+  }
+
+  .history-actions {
+    gap: 0.375rem;
+  }
+
+  .header-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .theme-toggle {
+    margin-left: 0.25rem;
+  }
+}
+
 @media (max-width: 768px) {
   .app {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto 1fr auto;
     grid-template-areas:
       'header'
