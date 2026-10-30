@@ -42,6 +42,8 @@ const CLEARCOAT_ROUGHNESS = 0.05
 const KEY_ORBIT_STEP = (15 * Math.PI) / 180
 /** One +/- key press scales the camera distance by this much. */
 const KEY_ZOOM_STEP = 0.85
+/** Thumbnails show the piece turned this far from the front (35°). */
+const THUMBNAIL_TURN = (35 * Math.PI) / 180
 
 /** Rendering figures for the debug panel (`?debug=1`). */
 export interface ViewerStats {
@@ -352,6 +354,76 @@ export class CeramicViewer {
     return new Promise((resolve) =>
       this.renderer.domElement.toBlob(resolve, 'image/png'),
     )
+  }
+
+  /**
+   * A small picture of the model for the model list, as a WebP data URL
+   * (`null` in AR): seen from a three-quarter angle, cropped to the piece.
+   * The camera is put back afterwards.
+   */
+  captureThumbnail(width = 240, height = 180): string | null {
+    if (this.renderer.xr.isPresenting || !this.model) return null
+    const saved = this.camera.position.clone()
+    const offset = new Spherical().setFromVector3(
+      saved.clone().sub(this.controls.target),
+    )
+    offset.theta += THUMBNAIL_TURN
+    this.camera.position.setFromSpherical(offset).add(this.controls.target)
+    this.camera.lookAt(this.controls.target)
+    this.camera.updateMatrixWorld()
+    // Render and read in the same task: the drawing buffer is not kept.
+    this.renderer.render(this.scene, this.camera)
+    const source = this.renderer.domElement
+    const crop = this.screenBox(this.model, source.width, source.height)
+    this.camera.position.copy(saved)
+    this.camera.lookAt(this.controls.target)
+    this.invalidate()
+    if (!crop) return null
+    // Grow the piece's box to the picture's shape, with a margin.
+    const scale = Math.max(crop.width / width, crop.height / height) * 1.15
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    const context = canvas.getContext('2d')
+    if (!context || scale <= 0) return null
+    context.drawImage(
+      source,
+      crop.x + crop.width / 2 - (width * scale) / 2,
+      crop.y + crop.height / 2 - (height * scale) / 2,
+      width * scale,
+      height * scale,
+      0,
+      0,
+      width,
+      height,
+    )
+    return canvas.toDataURL('image/webp', 0.85)
+  }
+
+  /** The object's bounding box on screen, in canvas pixels. */
+  private screenBox(object: Object3D, width: number, height: number) {
+    const box = new Box3().setFromObject(object)
+    if (box.isEmpty()) return null
+    const screen = new Box3()
+    const corner = new Vector3()
+    for (let i = 0; i < 8; i++) {
+      corner
+        .set(
+          i & 1 ? box.max.x : box.min.x,
+          i & 2 ? box.max.y : box.min.y,
+          i & 4 ? box.max.z : box.min.z,
+        )
+        .project(this.camera)
+      screen.expandByPoint(
+        corner.set(
+          ((corner.x + 1) / 2) * width,
+          ((1 - corner.y) / 2) * height,
+          0,
+        ),
+      )
+    }
+    const size = screen.getSize(new Vector3())
+    return { x: screen.min.x, y: screen.min.y, width: size.x, height: size.y }
   }
 
   /** Calls `listener` whenever the camera moves. Returns an unsubscribe. */

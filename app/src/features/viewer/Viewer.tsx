@@ -41,6 +41,8 @@ interface ViewerProps {
   onHeightChange?: (heightMm: number) => void
   /** What the loaded model is made of (triangles, textures). */
   onInfo?: (modelId: string, info: ModelInfo) => void
+  /** A picture of the model, taken after its first load if it has none. */
+  onThumbnail?: (modelId: string, url: string) => void
   /** Hides the viewer's own buttons (a parent shows shared ones). */
   hideActions?: boolean
   /** Reports the AR state, e.g. to disable a parent's buttons. */
@@ -64,6 +66,7 @@ export function Viewer({
   heightMm,
   onHeightChange,
   onInfo,
+  onThumbnail,
   hideActions = false,
   onArStateChange,
   ref,
@@ -71,8 +74,10 @@ export function Viewer({
   const containerRef = useRef<HTMLDivElement>(null)
   // The latest callback, without reloading the model when it changes.
   const onInfoRef = useRef(onInfo)
+  const onThumbnailRef = useRef(onThumbnail)
   useEffect(() => {
     onInfoRef.current = onInfo
+    onThumbnailRef.current = onThumbnail
   })
   const viewerRef = useRef<CeramicViewer | null>(null)
   const { overlayRef, ar, arError, status, surfaceSeen, debugInfo, startAr } =
@@ -111,6 +116,11 @@ export function Viewer({
         if (cancelled) return
         setResult({ modelId: model.id })
         if (info) onInfoRef.current?.(model.id, info)
+        const thumbnail =
+          info && !model.thumbnailUrl && onThumbnailRef.current
+            ? viewer.captureThumbnail()
+            : null
+        if (thumbnail) onThumbnailRef.current?.(model.id, thumbnail)
       },
       () =>
         !cancelled &&

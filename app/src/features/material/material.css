@@ -3,7 +3,7 @@
   padding: 2px;
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
 }
 
@@ -13,7 +13,7 @@
 
 .slider-field input[type='range'] {
   width: 100%;
-  accent-color: var(--text);
+  accent-color: var(--accent-2);
 }
 
 .section-header {
@@ -29,18 +29,19 @@
 }
 
 .compare-toggle {
-  padding: 0 0.75rem;
+  padding: 0 1rem;
   color: var(--text);
-  background: transparent;
+  background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 12px;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .compare-toggle[aria-pressed='true'] {
-  border-color: var(--text);
-  background: var(--viewport-bg);
-  font-weight: 600;
+  color: var(--accent-text);
+  background: var(--accent-soft);
+  border-color: var(--accent-text);
 }
 
 .variant-picker {

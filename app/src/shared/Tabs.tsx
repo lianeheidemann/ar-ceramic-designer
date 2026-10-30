@@ -3,6 +3,8 @@ import { useId, useRef, type KeyboardEvent, type ReactNode } from 'react'
 export interface Tab<Id extends string> {
   id: Id
   label: string
+  /** Shown before the label. */
+  icon?: ReactNode
   content: ReactNode
 }
 
@@ -73,6 +75,7 @@ export function Tabs<Id extends string>({
             tabIndex={tab.id === active ? 0 : -1}
             onClick={() => onChange(tab.id)}
           >
+            {tab.icon}
             {tab.label}
           </button>
         ))}

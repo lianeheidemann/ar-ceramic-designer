@@ -22,7 +22,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  border: 2px solid var(--text);
+  border: 2px solid var(--accent-text);
   pointer-events: none;
 }
 
@@ -32,14 +32,14 @@
   gap: 0.5rem;
   padding: 0 0.75rem;
   color: var(--text);
-  background: var(--surface);
+  background: color-mix(in srgb, var(--card) 85%, transparent);
   border: 1px solid var(--border);
   border-radius: 999px;
   cursor: pointer;
 }
 
 .variant-tag[aria-pressed='true'] {
-  border-color: var(--text);
+  border-color: var(--accent-text);
   font-weight: 600;
 }
 
