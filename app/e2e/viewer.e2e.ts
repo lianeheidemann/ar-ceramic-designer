@@ -20,15 +20,15 @@ const ONE_METER_BOX = fileURLToPath(
   new URL('./fixtures/box-1m.glb', import.meta.url),
 )
 
-/** The message the Import button shows after reading a file. */
+/** The message the Import .glb button shows after reading a file. */
 const importMessage = (page: Page) =>
-  page.locator('.config-message[role=status]')
+  page.locator('.import-message[role=status]')
 
 /** Shows one tab of the controls panel. */
-const openTab = (page: Page, name: 'Models' | 'Material' | 'Settings') =>
+const openTab = (page: Page, name: 'Models' | 'Material') =>
   page.getByRole('tab', { name }).click()
 
-/** Picks `file` with the Import button's file input. */
+/** Picks `file` with the Import .glb button's file input. */
 const importFile = (page: Page, file: Parameters<Page['setInputFiles']>[1]) =>
   page.locator('input[type=file]').setInputFiles(file)
 
@@ -198,8 +198,26 @@ test('resizes catalog pieces too', async ({ page }) => {
   await expect(vase).toContainText('⌀ 120 × 200 mm')
 })
 
+test('shows file and mesh details, collapsed', async ({ page }) => {
+  const details = page.locator('.model-details')
+  await expect(details).not.toHaveAttribute('open')
+  await details.getByText('Details').click()
+  await expect(details).toContainText('SourceGenerated in code')
+  await expect(details).toContainText('TexturesNone')
+
+  await importFile(page, MESHOPT_BOX)
+  await loaded(page)
+  await expect(details).toContainText('Imported (until the page reloads)')
+  await expect(details).toContainText('File1 KB')
+  await expect(details).toContainText('Mesh12 triangles')
+
+  await importFile(page, TEACUP)
+  await loaded(page)
+  await expect(details).toContainText('File466 KB')
+  await expect(details).toContainText(/Textures\d+ · up to 128 px/)
+})
+
 test('explains a .glb that uses Draco compression', async ({ page }) => {
-  await openTab(page, 'Settings')
   const json = JSON.stringify({
     asset: { version: '2.0' },
     extensionsUsed: ['KHR_draco_mesh_compression'],
@@ -223,7 +241,6 @@ test('explains a .glb that uses Draco compression', async ({ page }) => {
 
 test('rejects a broken .glb and keeps the list', async ({ page }) => {
   const models = await page.locator('.model-option').count()
-  await openTab(page, 'Settings')
   await importFile(page, {
     name: 'broken.glb',
     mimeType: 'model/gltf-binary',
@@ -235,28 +252,17 @@ test('rejects a broken .glb and keeps the list', async ({ page }) => {
   expect(await page.locator('.model-option').count()).toBe(models)
 })
 
-test('still imports .json configurations', async ({ page }) => {
+test('accepts only .glb files', async ({ page }) => {
+  const models = await page.locator('.model-option').count()
   await importFile(page, {
     name: 'plate.json',
     mimeType: 'application/json',
-    buffer: Buffer.from(
-      JSON.stringify({
-        schema: 'ar-ceramic-designer/config',
-        version: 1,
-        modelId: 'plate',
-        variants: {
-          A: { color: '#2a5c8a', roughness: 0.5, metalness: 0, clearcoat: 0 },
-        },
-      }),
-    ),
+    buffer: Buffer.from('{"schema": "ar-ceramic-designer/config"}'),
   })
-  await expect(importMessage(page)).toContainText(
-    'Settings "plate.json" applied.',
+  await expect(page.getByRole('alert')).toContainText(
+    '"plate.json" is not a .glb file.',
   )
-  await expect(page.getByRole('button', { name: /Plate/ })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  )
+  expect(await page.locator('.model-option').count()).toBe(models)
 })
 
 test('turns, zooms and resets the view with the keyboard', async ({ page }) => {

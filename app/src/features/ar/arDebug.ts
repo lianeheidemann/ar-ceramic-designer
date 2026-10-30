@@ -27,6 +27,8 @@ export interface ArDebugInfo {
   firstRingMs: number | null
   reticleVisible: boolean
   modelVisible: boolean
+  /** How far the piece was turned in this session, in degrees. */
+  turnDeg: number
   /** XR frames rendered by this module so far. */
   frames: number
   /** Draw calls and triangles of the last frame. */
@@ -61,6 +63,7 @@ export function emptyDebugInfo(): ArDebugInfo {
     firstRingMs: null,
     reticleVisible: false,
     modelVisible: false,
+    turnDeg: 0,
     frames: 0,
     calls: 0,
     triangles: 0,
@@ -138,6 +141,7 @@ export function debugLines(info: ArDebugInfo, testCube: boolean): string[] {
     `ring: ${meters(info.ringDistance)} from the phone, ${meters(info.ringDrop)} below`,
     `first ring: ${info.firstRingMs === null ? '—' : `${info.firstRingMs} ms`}`,
     `visible: ring ${yesNo(info.reticleVisible)} · piece ${yesNo(info.modelVisible)} · cube ${yesNo(testCube)}`,
+    `turn: ${info.turnDeg}°`,
     `draw calls: ${info.calls} · triangles: ${info.triangles}`,
     `framebuffer: ${info.framebuffer ?? '—'} · mode: ${info.blendMode ?? '—'}`,
     `depth: ${info.depthRange ?? '—'}`,

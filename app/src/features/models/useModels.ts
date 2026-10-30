@@ -91,7 +91,6 @@ export function useModels() {
     models,
     /** The model shown first. */
     defaultId: models[0]?.id,
-    getModel: (id: string) => models.find((model) => model.id === id),
     listedModels,
     importedIds: new Set(importedModels.map((model) => model.id)),
     heightOf,

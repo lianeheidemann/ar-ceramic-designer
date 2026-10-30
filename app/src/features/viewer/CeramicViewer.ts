@@ -29,7 +29,8 @@ import {
   keepFileMaterials,
 } from './modelMaterials'
 import { disposeObject, standOnOrigin } from './sceneObjects'
-import { simplifyHeavyMeshes } from './simplify'
+import { modelInfo, type ModelInfo } from './modelInfo'
+import { countTriangles, simplifyHeavyMeshes } from './simplify'
 
 const FOV_DEG = 35
 /** Camera elevation above the horizon when framing, in radians. */
@@ -136,13 +137,14 @@ export class CeramicViewer {
   }
 
   /** Shows `model`, replacing the current one. Rejects if loading fails. */
-  async setModel(model: CeramicModel): Promise<void> {
+  /** Loads `model`; resolves with what it is made of (`null` if replaced). */
+  async setModel(model: CeramicModel): Promise<ModelInfo | null> {
     const id = ++this.loadId
     const started = performance.now()
-    const object = await this.loadObject(model)
+    const { object, info } = await this.loadObject(model)
     if (id !== this.loadId) {
       disposeObject(object)
-      return
+      return null
     }
     this.clearModel()
     applyMaterial(object, this.material ?? model.defaultMaterial)
@@ -151,6 +153,7 @@ export class CeramicViewer {
     this.scene.add(object)
     this.loadMs = Math.round(performance.now() - started)
     this.resetView()
+    return info
   }
 
   /**
@@ -329,6 +332,11 @@ export class CeramicViewer {
     this.arSession?.tapOverlay()
   }
 
+  /** Turns the model in AR around its vertical axis. */
+  rotateAr(radians: number): void {
+    this.arSession?.rotate(radians)
+  }
+
   endAr(): void {
     this.arSession?.end()
   }
@@ -384,18 +392,23 @@ export class CeramicViewer {
     this.renderer.domElement.remove()
   }
 
-  private async loadObject(model: CeramicModel): Promise<Object3D> {
+  private async loadObject(
+    model: CeramicModel,
+  ): Promise<{ object: Object3D; info: ModelInfo }> {
     if (model.source.kind === 'glb') {
       const gltf = await this.gltfLoader.loadAsync(model.source.url)
       cloneMaterials(gltf.scene)
       keepFileMaterials(gltf.scene)
+      const fileTriangles = countTriangles(gltf.scene)
       await simplifyHeavyMeshes(gltf.scene, model.source.url)
-      return standOnOrigin(gltf.scene)
+      const info = modelInfo(gltf.scene, fileTriangles)
+      return { object: standOnOrigin(gltf.scene), info }
     }
-    return new Mesh(
+    const object = new Mesh(
       createModelGeometry(model),
       new MeshPhysicalMaterial({ clearcoatRoughness: CLEARCOAT_ROUGHNESS }),
     )
+    return { object, info: modelInfo(object) }
   }
 
   /**

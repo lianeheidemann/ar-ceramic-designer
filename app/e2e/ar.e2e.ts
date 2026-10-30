@@ -78,6 +78,29 @@ test('changes the piece size with − and + without moving it', async ({
   )
 })
 
+test('turns the piece with ‹ and › without moving it', async ({ page }) => {
+  await page.goto('./?debug=1')
+  await page.getByRole('button', { name: 'View in AR' }).click()
+  await setXr(page, { tracking: true, plane: [0, 0, -1] })
+  await tapScreen(page)
+  await expect(hint(page)).toHaveText(/Piece placed/)
+
+  const panel = page.locator('.ar-debug')
+  await expect(panel).toContainText('turn: 0°')
+  await page.getByRole('button', { name: 'Turn right' }).click()
+  await page.getByRole('button', { name: 'Turn right' }).click()
+  await expect(panel).toContainText('turn: 30°')
+  await page.getByRole('button', { name: 'Turn left' }).click()
+  await expect(panel).toContainText('turn: 15°')
+  // The taps stay on the buttons: the piece is not picked up to move.
+  await expect(hint(page)).toHaveText(/Piece placed/)
+
+  // The 3D viewer gets the piece back as it was.
+  await page.getByRole('button', { name: 'Exit AR' }).click()
+  await page.getByRole('button', { name: 'View in AR' }).click()
+  await expect(panel).toContainText('turn: 0°')
+})
+
 test('warns when tapping before a surface is found', async ({ page }) => {
   await page.getByRole('button', { name: 'View in AR' }).click()
   await setXr(page, { tracking: true })

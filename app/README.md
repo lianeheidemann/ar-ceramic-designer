@@ -27,9 +27,8 @@ src/
 │   ├── viewer/       # Three.js scene, GLB loading, 3D viewer UI, A/B comparison
 │   ├── ar/           # WebXR session, AR overlay, diagnostics
 │   ├── models/       # default models, .glb import, real size, model list
-│   ├── material/     # finishes, A/B variants, material panel
-│   └── settings/     # JSON settings export/import
-└── shared/           # types, units, tabs, shared styles
+│   └── material/     # finishes, A/B variants, material panel
+└── shared/           # types, units, tabs, downloads, shared styles
 e2e/                  # Playwright tests, with a fake WebXR device
 ```
 
@@ -41,9 +40,6 @@ The `.glb` files in [`src/features/models/defaults/`](src/features/models/defaul
 
 ## Accepted files
 
-| Format  | Requirements                                                                                                                                                                              |
-| :------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.glb`  | glTF 2.0 binary, one file, meters, textures embedded (PNG, JPEG, WebP). Meshopt supported; Draco and KTX2 not. Over 300k triangles: simplified on load. Outside 1–60 cm: starts at 20 cm. |
-| `.json` | Settings exported by the app (`ar-ceramic-designer/config`, version 1).                                                                                                                   |
+The app works only with `.glb` (glTF 2.0 binary): one file, in meters, with embedded textures (PNG, JPEG or WebP). Meshopt compression is supported; Draco and KTX2 are not. Meshes over 300k triangles are simplified on load, and pieces outside 1–60 cm start at 20 cm.
 
 Not supported: `.gltf` with separate files, `.obj`, `.fbx`, `.stl`.

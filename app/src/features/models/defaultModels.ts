@@ -70,7 +70,8 @@ export async function loadDefaultModels(
   const loaded = await Promise.all(
     files.map(async ({ id, name, url }): Promise<DefaultModel | null> => {
       try {
-        const dimensionsMm = glbBoundsMm(await readGlbJson(url))
+        const { json, fileBytes } = await readGlbJson(url)
+        const dimensionsMm = glbBoundsMm(json)
         if (!dimensionsMm) throw new Error('No geometry')
         return {
           model: {
@@ -80,6 +81,7 @@ export async function loadDefaultModels(
             dimensionsMm,
             defaultMaterial: { ...FILE_MATERIAL },
             license: 'Default model',
+            fileBytes,
           },
           realHeightMm: fittedHeightMm(dimensionsMm),
         }

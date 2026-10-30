@@ -299,6 +299,7 @@ describe('startArSession', () => {
         firstRingMs: 0,
         reticleVisible: true,
         modelVisible: false,
+        turnDeg: 0,
         frames: 1,
         calls: 2,
         error: null,

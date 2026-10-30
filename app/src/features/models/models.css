@@ -101,3 +101,41 @@
   outline: 2px solid var(--text);
   outline-offset: 1px;
 }
+
+.model-import {
+  display: grid;
+  margin-top: 0.75rem;
+}
+
+.import-message {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+}
+
+.import-error {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Collapsed by default: file and mesh facts of the selected model. */
+.model-details summary {
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.model-details dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 1rem;
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+}
+
+.model-details dt {
+  color: var(--muted);
+}
+
+.model-details dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}

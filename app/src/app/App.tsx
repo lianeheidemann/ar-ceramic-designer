@@ -3,12 +3,13 @@ import { useArSupport } from '../features/ar/useArSupport'
 import { MaterialPanel } from '../features/material/MaterialPanel'
 import { useMaterials } from '../features/material/useMaterials'
 import type { VariantId } from '../features/material/variants'
+import { ModelDetails } from '../features/models/ModelDetails'
+import { ModelImport } from '../features/models/ModelImport'
 import { ModelList } from '../features/models/ModelList'
 import { RealSizeControl } from '../features/models/RealSizeControl'
 import { useModels } from '../features/models/useModels'
-import type { CeramicConfig } from '../features/settings/config'
-import { ConfigControls } from '../features/settings/ConfigControls'
 import { CompareView } from '../features/viewer/CompareView'
+import type { ModelInfo } from '../features/viewer/modelInfo'
 import { Viewer } from '../features/viewer/Viewer'
 import type { CeramicModel } from '../shared/types'
 import { Tabs } from '../shared/Tabs'
@@ -20,9 +21,11 @@ function App() {
   const [theme, toggleTheme] = useTheme()
   /** `null`: the first default model. */
   const [chosenId, setSelectedId] = useState<string | null>(null)
-  const [tab, setTab] = useState<'models' | 'material' | 'config'>('models')
+  const [tab, setTab] = useState<'models' | 'material'>('models')
   const [comparing, setComparing] = useState(false)
   const [activeVariant, setActiveVariant] = useState<VariantId>('A')
+  /** What each loaded model is made of, by id (from the viewer). */
+  const [infoById, setInfoById] = useState<Record<string, ModelInfo>>({})
   const compact = useMediaQuery('(max-width: 768px)')
   const arSupport = useArSupport()
   const arSupported = arSupport.kind === 'supported'
@@ -44,19 +47,13 @@ function App() {
     if (selectedId === id) setSelectedId(null)
   }
 
-  /** Shows the model with the imported settings' materials. */
-  function importConfig({ modelId, variants }: CeramicConfig) {
-    materials.setVariants(modelId, variants)
-    setSelectedId(modelId)
-    setComparing(variants.B !== undefined)
-    setActiveVariant('A')
-  }
-
   const sizeProps = selectedModel && {
     scale: models.scaleOf(selectedModel),
     heightMm: models.heightOf(selectedModel),
     onHeightChange: (heightMm: number) =>
       models.setHeight(selectedModel.id, heightMm),
+    onInfo: (modelId: string, info: ModelInfo) =>
+      setInfoById((all) => ({ ...all, [modelId]: info })),
   }
 
   return (
@@ -109,6 +106,7 @@ function App() {
                     removableIds={models.importedIds}
                     onRemove={removeImportedModel}
                   />
+                  <ModelImport onImport={importModel} />
                   {selectedModel && (
                     <RealSizeControl
                       key={selectedModel.id}
@@ -117,6 +115,13 @@ function App() {
                       onChange={(heightMm) =>
                         models.setHeight(selectedModel.id, heightMm)
                       }
+                    />
+                  )}
+                  {selectedModel && (
+                    <ModelDetails
+                      model={selectedModel}
+                      imported={models.importedIds.has(selectedModel.id)}
+                      info={infoById[selectedModel.id]}
                     />
                   )}
                   {arSupport.kind === 'unavailable' && (
@@ -142,22 +147,6 @@ function App() {
                   onActiveVariantChange={setActiveVariant}
                   onChange={materials.updateMaterial}
                   onReset={materials.resetMaterial}
-                />
-              ),
-            },
-            {
-              id: 'config',
-              label: 'Settings',
-              content: selectedModel && material && (
-                <ConfigControls
-                  model={selectedModel}
-                  variants={{
-                    A: variantMaterial('A') ?? material,
-                    B: comparing ? variantMaterial('B') : undefined,
-                  }}
-                  onImport={importConfig}
-                  getModel={models.getModel}
-                  onImportModel={importModel}
                 />
               ),
             },

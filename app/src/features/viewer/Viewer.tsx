@@ -3,10 +3,11 @@ import WebGL from 'three/addons/capabilities/WebGL.js'
 import { ArOverlay } from '../ar/ArOverlay'
 import { AR_DEBUG } from '../ar/testSwitches'
 import { useArSession } from '../ar/useArSession'
-import { downloadBlob, downloadName } from '../settings/download'
+import { downloadBlob, downloadName } from '../../shared/download'
 import type { CeramicModel, MaterialSettings } from '../../shared/types'
 import type { CameraSync } from './CameraSync'
 import { CeramicViewer, type ViewerStats } from './CeramicViewer'
+import type { ModelInfo } from './modelInfo'
 import { statsLines } from './viewerDebug'
 import { ViewerActions } from './ViewerActions'
 
@@ -24,6 +25,8 @@ interface ViewerProps {
   /** Height the piece is shown at; with `onHeightChange`, AR offers − / +. */
   heightMm?: number
   onHeightChange?: (heightMm: number) => void
+  /** What the loaded model is made of (triangles, textures). */
+  onInfo?: (modelId: string, info: ModelInfo) => void
 }
 
 /** Outcome of the latest finished load. */
@@ -41,8 +44,14 @@ export function Viewer({
   scale = 1,
   heightMm,
   onHeightChange,
+  onInfo,
 }: ViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  // The latest callback, without reloading the model when it changes.
+  const onInfoRef = useRef(onInfo)
+  useEffect(() => {
+    onInfoRef.current = onInfo
+  })
   const viewerRef = useRef<CeramicViewer | null>(null)
   const { overlayRef, ar, arError, status, surfaceSeen, debugInfo, startAr } =
     useArSession(viewerRef)
@@ -76,7 +85,11 @@ export function Viewer({
     if (!viewer) return
     let cancelled = false
     viewer.setModel(model).then(
-      () => !cancelled && setResult({ modelId: model.id }),
+      (info) => {
+        if (cancelled) return
+        setResult({ modelId: model.id })
+        if (info) onInfoRef.current?.(model.id, info)
+      },
       () =>
         !cancelled &&
         setResult({
@@ -194,6 +207,7 @@ export function Viewer({
         heightMm={heightMm}
         onHeightChange={onHeightChange}
         onTap={() => viewerRef.current?.placeAr()}
+        onRotate={(radians) => viewerRef.current?.rotateAr(radians)}
         onExit={() => viewerRef.current?.endAr()}
       />
     </div>

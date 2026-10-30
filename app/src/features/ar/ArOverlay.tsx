@@ -5,6 +5,9 @@ import type { ArState, ArStatus } from './arStatus'
 import { ArStatusIcon } from './ArStatusIcon'
 import { AR_DEBUG, AR_TEST_CUBE } from './testSwitches'
 
+/** How far one tap on ‹ or › turns the piece: 15°. */
+const TURN_STEP = Math.PI / 12
+
 interface ArOverlayProps {
   /** The WebXR DOM overlay root. */
   overlayRef: RefObject<HTMLDivElement | null>
@@ -18,6 +21,8 @@ interface ArOverlayProps {
   onHeightChange?: (heightMm: number) => void
   /** A tap on the camera image: places or picks up the piece. */
   onTap: () => void
+  /** Turns the piece around its vertical axis (positive: to the right). */
+  onRotate: (radians: number) => void
   onExit: () => void
 }
 
@@ -31,6 +36,7 @@ export function ArOverlay({
   heightMm,
   onHeightChange,
   onTap,
+  onRotate,
   onExit,
 }: ArOverlayProps) {
   const buttonsRef = useRef<HTMLDivElement>(null)
@@ -43,6 +49,11 @@ export function ArOverlay({
     buttons.addEventListener('beforexrselect', keepTap)
     return () => buttons.removeEventListener('beforexrselect', keepTap)
   }, [])
+
+  function rotate(event: MouseEvent, direction: -1 | 1) {
+    event.stopPropagation()
+    onRotate(direction * TURN_STEP)
+  }
 
   /** Changes the height by whole centimeters, within the field's limits. */
   function stepHeight(event: MouseEvent, cm: number) {
@@ -83,27 +94,45 @@ export function ArOverlay({
         </pre>
       )}
       <div className="ar-buttons" ref={buttonsRef}>
-        {heightMm !== undefined && onHeightChange && (
-          <div className="ar-size" role="group" aria-label="Piece height">
-            <button
-              type="button"
-              aria-label="Smaller"
-              disabled={heightMm <= MIN_HEIGHT_CM * 10}
-              onClick={(event) => stepHeight(event, -1)}
-            >
-              −
-            </button>
-            <span role="status">{formatCm(heightMm)} cm</span>
-            <button
-              type="button"
-              aria-label="Larger"
-              disabled={heightMm >= MAX_HEIGHT_CM * 10}
-              onClick={(event) => stepHeight(event, 1)}
-            >
-              +
-            </button>
-          </div>
-        )}
+        <div className="ar-controls">
+          <button
+            type="button"
+            className="ar-turn"
+            aria-label="Turn left"
+            onClick={(event) => rotate(event, -1)}
+          >
+            ‹
+          </button>
+          {heightMm !== undefined && onHeightChange && (
+            <div className="ar-size" role="group" aria-label="Piece height">
+              <button
+                type="button"
+                aria-label="Smaller"
+                disabled={heightMm <= MIN_HEIGHT_CM * 10}
+                onClick={(event) => stepHeight(event, -1)}
+              >
+                −
+              </button>
+              <span role="status">{formatCm(heightMm)} cm</span>
+              <button
+                type="button"
+                aria-label="Larger"
+                disabled={heightMm >= MAX_HEIGHT_CM * 10}
+                onClick={(event) => stepHeight(event, 1)}
+              >
+                +
+              </button>
+            </div>
+          )}
+          <button
+            type="button"
+            className="ar-turn"
+            aria-label="Turn right"
+            onClick={(event) => rotate(event, 1)}
+          >
+            ›
+          </button>
+        </div>
         <button
           type="button"
           className="ar-exit"

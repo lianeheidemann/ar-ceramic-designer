@@ -81,25 +81,34 @@ export function glbBoundsMm(json: GltfJson): DimensionsMm | undefined {
 /** Bytes asked for first: the JSON chunk of a GLB is usually far smaller. */
 const FIRST_BYTES = 64 * 1024
 
+/** A GLB's JSON chunk and the whole file's size, from its header. */
+export interface GlbHead {
+  json: GltfJson
+  fileBytes: number
+}
+
 /**
  * Reads only the header and JSON chunk of the GLB at `url`: it asks for the
  * first bytes with a Range request and, if the server sends the whole file
  * instead, stops the download once the JSON is in. Throws if it is not a
  * GLB the app can open.
  */
-export async function readGlbJson(url: string): Promise<GltfJson> {
+export async function readGlbJson(url: string): Promise<GlbHead> {
   let bytes = await readStart(url, FIRST_BYTES)
   if (bytes.byteLength < 20 || !isGlb(bytes.buffer)) {
     throw new Error('Not a .glb file')
   }
-  const end = 20 + new DataView(bytes.buffer).getUint32(12, true)
+  const header = new DataView(bytes.buffer)
+  const fileBytes = header.getUint32(8, true)
+  const end = 20 + header.getUint32(12, true)
   if (bytes.byteLength < end) bytes = await readStart(url, end)
   if (bytes.byteLength < end) throw new Error('Incomplete .glb file')
   const unsupported = unsupportedFeatures(bytes.buffer)
   if (unsupported.length) throw new Error(`Uses ${unsupported.join(' and ')}`)
-  return JSON.parse(
+  const json = JSON.parse(
     new TextDecoder().decode(bytes.subarray(20, end)),
   ) as GltfJson
+  return { json, fileBytes }
 }
 
 /** The first `length` bytes of `url` (fewer if the file is shorter). */
