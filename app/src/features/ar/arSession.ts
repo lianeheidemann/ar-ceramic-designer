@@ -60,6 +60,8 @@ export interface ArSessionHandle {
   end: () => void
   /** Handles a tap on the DOM overlay (ignored if the overlay is not in use). */
   tapOverlay: () => void
+  /** Turns the piece around its vertical axis (positive: to the right). */
+  rotate: (radians: number) => void
 }
 
 /**
@@ -126,6 +128,7 @@ export async function startArSession({
 
   const savedPosition = model.position.clone()
   const savedVisible = model.visible
+  const savedTurn = model.rotation.y
   let hitTestSource: XRHitTestSource | undefined
   let mode: PlacementMode = 'placing'
   /** Whether a surface was detected under the ring in the last frame. */
@@ -138,7 +141,7 @@ export async function startArSession({
    */
   let overlayActive = false
 
-  // Pieces are rotationally symmetric, so only the position matters.
+  // The surface gives the position; the turn comes from the rotate buttons.
   const handleTap = () => {
     if (mode === 'placed') {
       mode = 'moving'
@@ -202,6 +205,7 @@ export async function startArSession({
       cube.material.dispose()
     }
     model.position.copy(savedPosition)
+    model.rotation.y = savedTurn
     model.visible = savedVisible
     onEnd()
   }
@@ -301,6 +305,7 @@ export async function startArSession({
         found: surfaceFound,
         reticleVisible: reticle.visible,
         modelVisible: model.visible,
+        turnDeg: Math.round((model.rotation.y - savedTurn) * (180 / Math.PI)),
       })
     } catch (error) {
       reportError(error)
@@ -314,6 +319,9 @@ export async function startArSession({
     },
     tapOverlay: () => {
       if (overlayActive) handleTap()
+    },
+    rotate: (radians) => {
+      model.rotation.y += radians
     },
   }
 }

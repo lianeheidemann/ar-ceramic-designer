@@ -194,6 +194,7 @@ export function Viewer({
         heightMm={heightMm}
         onHeightChange={onHeightChange}
         onTap={() => viewerRef.current?.placeAr()}
+        onRotate={(radians) => viewerRef.current?.rotateAr(radians)}
         onExit={() => viewerRef.current?.endAr()}
       />
     </div>

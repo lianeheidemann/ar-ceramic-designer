@@ -138,7 +138,7 @@ Define typed metadata for each model: `id`, `name`, `url`, `dimensionsMm`, `scal
 
 ## ✅ 7. Implement augmented reality (WebXR)
 
-> **Implemented** in `app/src/features/ar/`: `support.ts`/`useArSupport.ts` (support check), `arSession.ts` (hit-test placement session), `useArSession.ts` (session state for the viewer), `ArOverlay.tsx` (hints, size − / +, **Exit AR**) and the **View in AR** button in `features/viewer/ViewerActions.tsx`. Support detection, the fallback message and error handling (e.g. camera permission denied) are covered by end-to-end tests with a simulated WebXR device. **Placement on a real surface was confirmed on the Galaxy S23 Ultra (Chrome, Android 16) on 2026-10-29** (item 8), after the layer fix below.
+> **Implemented** in `app/src/features/ar/`: `support.ts`/`useArSupport.ts` (support check), `arSession.ts` (hit-test placement session), `useArSession.ts` (session state for the viewer), `ArOverlay.tsx` (hints, turn ‹ › by 15°, size − / +, **Exit AR**) and the **View in AR** button in `features/viewer/ViewerActions.tsx`. Support detection, the fallback message and error handling (e.g. camera permission denied) are covered by end-to-end tests with a simulated WebXR device. **Placement on a real surface was confirmed on the Galaxy S23 Ultra (Chrome, Android 16) on 2026-10-29** (item 8), after the layer fix below.
 >
 > **Fixed issue (S23 Ultra, Chrome):** Three.js renders into a WebXR Layers projection layer whenever the browser offers `XRWebGLBinding.createProjectionLayer`. In Chrome's AR on the S23 Ultra nothing drawn into it showed over the camera (draw calls went through, the screen stayed empty), so the AR session always uses a classic `XRWebGLLayer` (`hideProjectionLayers()` in `app/src/features/ar/projectionLayers.ts`).
 >

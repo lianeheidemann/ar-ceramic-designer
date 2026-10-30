@@ -329,6 +329,11 @@ export class CeramicViewer {
     this.arSession?.tapOverlay()
   }
 
+  /** Turns the model in AR around its vertical axis. */
+  rotateAr(radians: number): void {
+    this.arSession?.rotate(radians)
+  }
+
   endAr(): void {
     this.arSession?.end()
   }
