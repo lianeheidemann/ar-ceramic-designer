@@ -1,5 +1,6 @@
 import type { CeramicModel } from '../../shared/types'
-import { FILE_MATERIAL, measureGlb, modelNameFromFile } from './importModel'
+import { glbBoundsMm, readGlbJson } from './glbBounds'
+import { FILE_MATERIAL, fittedHeightMm, modelNameFromFile } from './importModel'
 
 /** A .glb found in `defaults/`, before it is measured. */
 export interface DefaultModelFile {
@@ -59,8 +60,9 @@ export function defaultModelFiles(
 export const defaultFiles = defaultModelFiles(bundledFiles)
 
 /**
- * Fetches and measures the default models. A file that cannot be used is
- * left out with a console warning.
+ * Measures the default models from their JSON chunk only (a few KB each;
+ * the viewer downloads the whole file when it is shown). A file that cannot
+ * be used is left out with a console warning.
  */
 export async function loadDefaultModels(
   files: readonly DefaultModelFile[] = defaultFiles,
@@ -68,20 +70,18 @@ export async function loadDefaultModels(
   const loaded = await Promise.all(
     files.map(async ({ id, name, url }): Promise<DefaultModel | null> => {
       try {
-        const response = await fetch(url)
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
-        const measure = await measureGlb(await response.arrayBuffer(), name)
-        if (!measure.ok) throw new Error(measure.error)
+        const dimensionsMm = glbBoundsMm(await readGlbJson(url))
+        if (!dimensionsMm) throw new Error('No geometry')
         return {
           model: {
             id,
             name,
             source: { kind: 'glb', url },
-            dimensionsMm: measure.dimensionsMm,
+            dimensionsMm,
             defaultMaterial: { ...FILE_MATERIAL },
             license: 'Default model',
           },
-          realHeightMm: measure.realHeightMm,
+          realHeightMm: fittedHeightMm(dimensionsMm),
         }
       } catch (error) {
         console.warn(`Default model "${name}" left out:`, error)
