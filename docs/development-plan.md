@@ -30,14 +30,17 @@ Details per step: [step-by-step guide](step-by-step.md).
 - ✅ AR is tested on a compatible device (S23 Ultra), with a clear fallback where unavailable.
 - 🔄 README documents installation, running, screenshots, known limitations and asset licenses (AR media to add).
 
-## Suggested structure
+## Structure
 
 ```text
 public/models/
-src/components/
-src/viewers/
-src/materials/
-src/data/
+src/app/                 # shell, header, theme
+src/features/viewer/     # 3D viewer
+src/features/ar/         # WebXR session and overlay
+src/features/models/     # catalog, .glb import, real size
+src/features/material/   # finishes and A/B variants
+src/features/settings/   # JSON export/import
+src/shared/              # types, units, tabs
 docs/
 ```
 

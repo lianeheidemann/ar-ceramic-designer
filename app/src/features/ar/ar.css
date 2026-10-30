@@ -1,0 +1,155 @@
+/* Shown over the camera image during an AR session (WebXR DOM Overlay). */
+.ar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1rem;
+}
+
+.ar-overlay[hidden] {
+  display: none;
+}
+
+.ar-hint {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  /* Fixed width so the pill does not resize when the message changes. */
+  width: min(26rem, 100%);
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0.625rem 1.25rem 0.625rem 1rem;
+  color: #fff;
+  background: rgb(0 0 0 / 0.6);
+  border-radius: 1.5rem;
+  line-height: 1.35;
+}
+
+/* Diagnostics for testing on a phone (?debug=1). */
+.ar-debug {
+  position: absolute;
+  right: 1rem;
+  bottom: 5rem;
+  left: 1rem;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  color: #fff;
+  background: rgb(0 0 0 / 0.6);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  pointer-events: none;
+}
+
+/* Size buttons above "Exit AR"; taps here never place the piece. */
+.ar-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ar-size {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  color: #fff;
+  background: rgb(0 0 0 / 0.6);
+  border-radius: 999px;
+}
+
+.ar-size span {
+  min-width: 4.5rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.ar-size button {
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  color: #2b2622;
+  background: #fff;
+  border: none;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.ar-size button:disabled {
+  opacity: 0.5;
+}
+
+.ar-exit {
+  padding: 0 1.5rem;
+  color: #2b2622;
+  background: #fff;
+  border: none;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.ar-icon {
+  flex: none;
+  width: 24px;
+  height: 24px;
+}
+
+.ar-icon-scanning {
+  animation: ar-pulse 1.4s ease-in-out infinite;
+}
+
+.ar-icon-tap {
+  animation: ar-pulse 1s ease-in-out infinite;
+}
+
+.ar-icon-placed {
+  color: #7ee08f;
+}
+
+.ar-icon-warning {
+  color: #ffd166;
+}
+
+@keyframes ar-pulse {
+  50% {
+    opacity: 0.45;
+    transform: scale(0.88);
+  }
+}
+
+.ar-scan {
+  color: rgb(255 255 255 / 0.9);
+  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 0.5));
+}
+
+.ar-scan .ar-icon {
+  width: 96px;
+  height: 96px;
+  /* Sways like a phone being moved slowly over the floor. */
+  animation: ar-sway 2.4s ease-in-out infinite;
+}
+
+@keyframes ar-sway {
+  25% {
+    transform: translateX(-28px) rotate(-6deg);
+  }
+  75% {
+    transform: translateX(28px) rotate(6deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ar-icon-scanning,
+  .ar-icon-tap,
+  .ar-scan .ar-icon {
+    animation: none;
+  }
+}

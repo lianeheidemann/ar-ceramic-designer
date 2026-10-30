@@ -1,0 +1,152 @@
+.viewer {
+  position: absolute;
+  inset: 0;
+}
+
+.viewer canvas {
+  display: block;
+  /* Let OrbitControls handle touch gestures instead of the page. */
+  touch-action: none;
+}
+
+/* The canvas takes the keyboard (arrows, +/-, Home) when focused. */
+.viewer canvas:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -4px;
+}
+
+.viewer-status {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 1rem;
+  color: var(--muted);
+  text-align: center;
+  pointer-events: none;
+}
+
+.viewer-error {
+  align-content: center;
+  gap: 0.75rem;
+  color: var(--text);
+  /* Its buttons must be tappable. */
+  pointer-events: auto;
+}
+
+.viewer-error p {
+  max-width: 28rem;
+  margin: 0;
+}
+
+.viewer-button:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+/* Rendering figures for testing on a phone (?debug=1). */
+.viewer-debug {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  color: #fff;
+  background: rgb(0 0 0 / 0.6);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  pointer-events: none;
+}
+
+.viewer-actions {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.viewer-button {
+  padding: 0 1rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.viewer-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  padding: 0;
+}
+
+.viewer-icon svg {
+  width: 21px;
+  height: 21px;
+}
+
+.viewer-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.viewer-ar {
+  color: var(--surface);
+  background: var(--text);
+  border-color: var(--text);
+  font-weight: 600;
+}
+
+.viewer-ar:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.viewer-ar-error {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 4rem;
+  left: 0.75rem;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+.viewer-ar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  flex: none;
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    border-right-color: currentColor;
+    opacity: 0.6;
+    animation: none;
+  }
+}

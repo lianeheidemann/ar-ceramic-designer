@@ -1,0 +1,103 @@
+.model-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.model-option {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.model-option:hover {
+  background: var(--viewport-bg);
+}
+
+.model-option[aria-pressed='true'] {
+  border-color: var(--text);
+  background: var(--viewport-bg);
+  font-weight: 600;
+}
+
+.model-size {
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.model-list li {
+  position: relative;
+}
+
+/* Room for the "×" of imported models. */
+.model-option-removable {
+  padding-right: 2.75rem;
+}
+
+.model-remove {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  display: grid;
+  place-items: center;
+  /* Small mark, finger-sized target. */
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  color: var(--muted);
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.model-remove span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+}
+
+/* Highlight a circle inside the target, clear of the item's border. */
+.model-remove:hover span {
+  color: var(--text);
+  background: var(--border);
+}
+
+.model-remove:focus-visible {
+  outline: none;
+}
+
+.model-remove:focus-visible span {
+  outline: 2px solid var(--text);
+}
+
+.size-input {
+  width: 6rem;
+  padding: 0 0.75rem;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-align: right;
+}
+
+.size-input:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
+}
