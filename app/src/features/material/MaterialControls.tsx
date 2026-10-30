@@ -33,6 +33,11 @@ export function MaterialControls({
 
   return (
     <div className="material-controls">
+      <ColorPicker
+        value={material.color}
+        onChange={(color) => onChange({ ...material, color })}
+      />
+
       <div className="control-row">
         <span className="control-label">Finish</span>
         <span className="control-value">{activePreset?.name ?? 'Custom'}</span>
@@ -50,11 +55,6 @@ export function MaterialControls({
           </button>
         ))}
       </div>
-
-      <ColorPicker
-        value={material.color}
-        onChange={(color) => onChange({ ...material, color })}
-      />
 
       {sliders.map(({ key, label }) => (
         <div key={key} className="slider-field">
