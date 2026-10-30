@@ -1,6 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import {
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type Ref,
+} from 'react'
 import WebGL from 'three/addons/capabilities/WebGL.js'
 import { ArOverlay } from '../ar/ArOverlay'
+import type { ArState } from '../ar/arStatus'
 import { AR_DEBUG } from '../ar/testSwitches'
 import { useArSession } from '../ar/useArSession'
 import { downloadBlob, downloadName } from '../../shared/download'
@@ -10,6 +17,13 @@ import { CeramicViewer, type ViewerStats } from './CeramicViewer'
 import type { ModelInfo } from './modelInfo'
 import { statsLines } from './viewerDebug'
 import { ViewerActions } from './ViewerActions'
+
+/** What a parent's own buttons can ask a viewer to do. */
+export interface ViewerHandle {
+  saveImage: () => void
+  resetView: () => void
+  startAr: () => void
+}
 
 interface ViewerProps {
   model: CeramicModel
@@ -27,6 +41,11 @@ interface ViewerProps {
   onHeightChange?: (heightMm: number) => void
   /** What the loaded model is made of (triangles, textures). */
   onInfo?: (modelId: string, info: ModelInfo) => void
+  /** Hides the viewer's own buttons (a parent shows shared ones). */
+  hideActions?: boolean
+  /** Reports the AR state, e.g. to disable a parent's buttons. */
+  onArStateChange?: (ar: ArState) => void
+  ref?: Ref<ViewerHandle>
 }
 
 /** Outcome of the latest finished load. */
@@ -45,6 +64,9 @@ export function Viewer({
   heightMm,
   onHeightChange,
   onInfo,
+  hideActions = false,
+  onArStateChange,
+  ref,
 }: ViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   // The latest callback, without reloading the model when it changes.
@@ -120,6 +142,16 @@ export function Viewer({
     return () => window.clearInterval(timer)
   }, [ar, instance])
 
+  useEffect(() => {
+    onArStateChange?.(ar)
+  }, [ar, onArStateChange])
+
+  useImperativeHandle(ref, () => ({
+    saveImage,
+    resetView: () => viewerRef.current?.resetView(),
+    startAr,
+  }))
+
   function saveImage() {
     const viewer = viewerRef.current
     if (!viewer) return
@@ -181,7 +213,7 @@ export function Viewer({
         <p className="viewer-status" role="status">
           Loading…
         </p>
-      ) : (
+      ) : hideActions ? null : (
         <ViewerActions
           ar={ar}
           arSupported={arSupported}

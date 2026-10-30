@@ -25,7 +25,7 @@ Web app to view ceramic pieces in 3D, customize their finish, compare variants a
 ## Features
 
 - 3D viewer with orbit, zoom and reset (mouse, touch and keyboard).
-- Finishes (matte, glossy, glazed), color, roughness and metalness, with A/B comparison.
+- Finishes (matte, glossy, glazed), color, roughness and metalness, with A/B comparison side by side.
 - Augmented reality (WebXR): place the piece on a detected surface, move it, turn it (‹ ›) and adjust its height (− +).
 - Import `.glb` models; set any piece's real size; see file size, triangles and textures under **Details**.
 - Save a PNG of the 3D view.

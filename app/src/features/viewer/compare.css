@@ -6,6 +6,7 @@
 .compare-split {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  height: 100%;
 }
 
 .compare-pane {
@@ -57,13 +58,4 @@
   height: 14px;
   border: 1px solid var(--border);
   border-radius: 50%;
-}
-
-.variant-switch {
-  position: absolute;
-  top: 0.75rem;
-  left: 50%;
-  display: flex;
-  gap: 0.5rem;
-  transform: translateX(-50%);
 }

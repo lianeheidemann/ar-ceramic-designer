@@ -13,7 +13,6 @@ import type { ModelInfo } from '../features/viewer/modelInfo'
 import { Viewer } from '../features/viewer/Viewer'
 import type { CeramicModel } from '../shared/types'
 import { Tabs } from '../shared/Tabs'
-import { useMediaQuery } from '../shared/useMediaQuery'
 import { AppHeader } from './AppHeader'
 import { useTheme } from './useTheme'
 
@@ -26,7 +25,6 @@ function App() {
   const [activeVariant, setActiveVariant] = useState<VariantId>('A')
   /** What each loaded model is made of, by id (from the viewer). */
   const [infoById, setInfoById] = useState<Record<string, ModelInfo>>({})
-  const compact = useMediaQuery('(max-width: 768px)')
   const arSupport = useArSupport()
   const arSupported = arSupport.kind === 'supported'
   const models = useModels()
@@ -70,7 +68,6 @@ function App() {
             }}
             active={activeVariant}
             onActiveChange={setActiveVariant}
-            compact={compact}
             arSupported={arSupported}
             {...sizeProps}
           />
