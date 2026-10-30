@@ -6,6 +6,7 @@ import {
   sameMaterial,
 } from './presets'
 import type { MaterialSettings } from '../../shared/types'
+import { ColorPicker } from './ColorPicker'
 
 interface MaterialControlsProps {
   material: MaterialSettings
@@ -50,18 +51,10 @@ export function MaterialControls({
         ))}
       </div>
 
-      <label className="control-row" htmlFor={`${id}-color`}>
-        <span className="control-label">Color</span>
-        <input
-          id={`${id}-color`}
-          type="color"
-          className="color-input"
-          value={material.color}
-          onChange={(event) =>
-            onChange({ ...material, color: event.target.value })
-          }
-        />
-      </label>
+      <ColorPicker
+        value={material.color}
+        onChange={(color) => onChange({ ...material, color })}
+      />
 
       {sliders.map(({ key, label }) => (
         <div key={key} className="slider-field">

@@ -1,4 +1,4 @@
-import { CheckIcon, CubeIcon } from '../../shared/icons'
+import { CubeIcon } from '../../shared/icons'
 import type { CeramicModel, DimensionsMm } from '../../shared/types'
 
 interface ModelListProps {
@@ -28,14 +28,13 @@ export function ModelList({
     <ul className="model-list">
       {models.map((model) => {
         const removable = Boolean(onRemove && removableIds?.has(model.id))
-        const selected = model.id === selectedId
         const thumbnail = model.thumbnailUrl ?? thumbnails?.[model.id]
         return (
           <li key={model.id}>
             <button
               type="button"
               className={`model-option${removable ? ' model-option-removable' : ''}`}
-              aria-pressed={selected}
+              aria-pressed={model.id === selectedId}
               onClick={() => onSelect(model.id)}
             >
               <span className="model-thumb" aria-hidden="true">
@@ -46,9 +45,6 @@ export function ModelList({
                 <span className="model-size">
                   {formatDimensions(model.dimensionsMm)}
                 </span>
-              </span>
-              <span className="model-mark" aria-hidden="true">
-                {selected && <CheckIcon />}
               </span>
             </button>
             {/* A sibling, not a child: buttons cannot be nested. */}
