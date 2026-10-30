@@ -3,11 +3,13 @@ import { useArSupport } from '../features/ar/useArSupport'
 import { MaterialPanel } from '../features/material/MaterialPanel'
 import { useMaterials } from '../features/material/useMaterials'
 import type { VariantId } from '../features/material/variants'
+import { ModelDetails } from '../features/models/ModelDetails'
 import { ModelImport } from '../features/models/ModelImport'
 import { ModelList } from '../features/models/ModelList'
 import { RealSizeControl } from '../features/models/RealSizeControl'
 import { useModels } from '../features/models/useModels'
 import { CompareView } from '../features/viewer/CompareView'
+import type { ModelInfo } from '../features/viewer/modelInfo'
 import { Viewer } from '../features/viewer/Viewer'
 import type { CeramicModel } from '../shared/types'
 import { Tabs } from '../shared/Tabs'
@@ -22,6 +24,8 @@ function App() {
   const [tab, setTab] = useState<'models' | 'material'>('models')
   const [comparing, setComparing] = useState(false)
   const [activeVariant, setActiveVariant] = useState<VariantId>('A')
+  /** What each loaded model is made of, by id (from the viewer). */
+  const [infoById, setInfoById] = useState<Record<string, ModelInfo>>({})
   const compact = useMediaQuery('(max-width: 768px)')
   const arSupport = useArSupport()
   const arSupported = arSupport.kind === 'supported'
@@ -48,6 +52,8 @@ function App() {
     heightMm: models.heightOf(selectedModel),
     onHeightChange: (heightMm: number) =>
       models.setHeight(selectedModel.id, heightMm),
+    onInfo: (modelId: string, info: ModelInfo) =>
+      setInfoById((all) => ({ ...all, [modelId]: info })),
   }
 
   return (
@@ -109,6 +115,13 @@ function App() {
                       onChange={(heightMm) =>
                         models.setHeight(selectedModel.id, heightMm)
                       }
+                    />
+                  )}
+                  {selectedModel && (
+                    <ModelDetails
+                      model={selectedModel}
+                      imported={models.importedIds.has(selectedModel.id)}
+                      info={infoById[selectedModel.id]}
                     />
                   )}
                   {arSupport.kind === 'unavailable' && (

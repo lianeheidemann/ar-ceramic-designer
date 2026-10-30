@@ -46,4 +46,6 @@ export interface CeramicModel {
   defaultMaterial: MaterialSettings
   /** Source and license of the asset. */
   license: string
+  /** Size of the .glb file in bytes (models loaded from a file). */
+  fileBytes?: number
 }

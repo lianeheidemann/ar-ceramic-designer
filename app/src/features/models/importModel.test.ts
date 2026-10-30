@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   dimensionsFromBox,
   fittedHeightMm,
+  formatBytes,
   formatLength,
   formatTriangles,
   isGlb,
@@ -70,6 +71,12 @@ describe('message formats', () => {
     expect(formatLength(0.98)).toBe('98 cm')
     expect(formatLength(1.25)).toBe('1.3 m')
     expect(formatLength(0.004)).toBe('4 mm')
+  })
+
+  it('writes file sizes in KB or MB', () => {
+    expect(formatBytes(1492)).toBe('1 KB')
+    expect(formatBytes(476_868)).toBe('466 KB')
+    expect(formatBytes(5_052_140)).toBe('4.8 MB')
   })
 
   it('writes triangle counts in words', () => {

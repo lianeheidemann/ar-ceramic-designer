@@ -3,6 +3,7 @@ import { findPreset } from '../material/presets'
 import { variantIds, type VariantId } from '../material/variants'
 import type { CeramicModel, MaterialSettings } from '../../shared/types'
 import { CameraSync } from './CameraSync'
+import type { ModelInfo } from './modelInfo'
 import { Viewer } from './Viewer'
 
 interface CompareViewProps {
@@ -19,6 +20,7 @@ interface CompareViewProps {
   /** Height the piece is shown at, adjustable in AR. */
   heightMm?: number
   onHeightChange?: (heightMm: number) => void
+  onInfo?: (modelId: string, info: ModelInfo) => void
 }
 
 function VariantSummary({
@@ -51,6 +53,7 @@ export function CompareView({
   scale,
   heightMm,
   onHeightChange,
+  onInfo,
 }: CompareViewProps) {
   const [cameraSync] = useState(() => new CameraSync())
 
@@ -65,6 +68,7 @@ export function CompareView({
           scale={scale}
           heightMm={heightMm}
           onHeightChange={onHeightChange}
+          onInfo={onInfo}
         />
         <div className="variant-switch" role="group" aria-label="Variant">
           {variantIds.map((variant) => (

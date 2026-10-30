@@ -198,6 +198,25 @@ test('resizes catalog pieces too', async ({ page }) => {
   await expect(vase).toContainText('⌀ 120 × 200 mm')
 })
 
+test('shows file and mesh details, collapsed', async ({ page }) => {
+  const details = page.locator('.model-details')
+  await expect(details).not.toHaveAttribute('open')
+  await details.getByText('Details').click()
+  await expect(details).toContainText('SourceGenerated in code')
+  await expect(details).toContainText('TexturesNone')
+
+  await importFile(page, MESHOPT_BOX)
+  await loaded(page)
+  await expect(details).toContainText('Imported (until the page reloads)')
+  await expect(details).toContainText('File1 KB')
+  await expect(details).toContainText('Mesh12 triangles')
+
+  await importFile(page, TEACUP)
+  await loaded(page)
+  await expect(details).toContainText('File466 KB')
+  await expect(details).toContainText(/Textures\d+ · up to 128 px/)
+})
+
 test('explains a .glb that uses Draco compression', async ({ page }) => {
   const json = JSON.stringify({
     asset: { version: '2.0' },

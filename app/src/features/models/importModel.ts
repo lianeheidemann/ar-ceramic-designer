@@ -149,6 +149,7 @@ export async function importGlb(file: File): Promise<ImportResult> {
     dimensionsMm: measure.dimensionsMm,
     defaultMaterial: { ...FILE_MATERIAL },
     license: 'File imported by the user',
+    fileBytes: file.size,
   }
   return {
     ok: true,
@@ -177,4 +178,15 @@ export function formatTriangles(count: number): string {
   }
   if (count >= 1000) return `${Math.round(count / 1000)}k triangles`
   return `${count} triangles`
+}
+
+/** "5.1 MB", "681 KB". */
+export function formatBytes(bytes: number): string {
+  if (bytes >= 1024 * 1024) {
+    const mb = (bytes / (1024 * 1024)).toLocaleString('en-US', {
+      maximumFractionDigits: 1,
+    })
+    return `${mb} MB`
+  }
+  return `${Math.max(1, Math.round(bytes / 1024))} KB`
 }
