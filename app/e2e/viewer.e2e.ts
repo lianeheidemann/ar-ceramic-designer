@@ -7,28 +7,28 @@ import { fileURLToPath } from 'node:url'
  * models published in public/.
  */
 const TEACUP = fileURLToPath(
-  new URL('./fixtures/xicara-porcelana.glb', import.meta.url),
+  new URL('./fixtures/porcelain-teacup.glb', import.meta.url),
 )
 
 /** A 10 cm box compressed with Meshopt, like gltfpack and Tripo output. */
 const MESHOPT_BOX = fileURLToPath(
-  new URL('./fixtures/caixa-meshopt.glb', import.meta.url),
+  new URL('./fixtures/box-meshopt.glb', import.meta.url),
 )
 
 /** A 1 m box: AI generators such as Tripo scale pieces to about 1 m. */
 const ONE_METER_BOX = fileURLToPath(
-  new URL('./fixtures/caixa-1m.glb', import.meta.url),
+  new URL('./fixtures/box-1m.glb', import.meta.url),
 )
 
-/** The message the Importar button shows after reading a file. */
+/** The message the Import button shows after reading a file. */
 const importMessage = (page: Page) =>
   page.locator('.config-message[role=status]')
 
 /** Shows one tab of the controls panel. */
-const openTab = (page: Page, name: 'Modelos' | 'Material' | 'Configuração') =>
+const openTab = (page: Page, name: 'Models' | 'Material' | 'Settings') =>
   page.getByRole('tab', { name }).click()
 
-/** Picks `file` with the Importar button's file input. */
+/** Picks `file` with the Import button's file input. */
 const importFile = (page: Page, file: Parameters<Page['setInputFiles']>[1]) =>
   page.locator('input[type=file]').setInputFiles(file)
 
@@ -44,7 +44,7 @@ async function stat(page: Page, label: string): Promise<number> {
 
 /** Waits until the current model is shown. */
 const loaded = (page: Page) =>
-  expect(page.getByRole('button', { name: 'Reiniciar vista' })).toBeVisible()
+  expect(page.getByRole('button', { name: 'Reset view' })).toBeVisible()
 
 /** Calls the WEBGL_lose_context extension on the viewer's canvas. */
 function loseContext(page: Page, action: 'loseContext' | 'restoreContext') {
@@ -73,64 +73,64 @@ test.beforeEach(async ({ page }) => {
 
 test('stops drawing while nothing changes', async ({ page }) => {
   // Let the first frames settle.
-  await expect.poll(() => stat(page, 'quadros/s')).toBe(0)
-  const frames = await stat(page, 'desenhados')
+  await expect.poll(() => stat(page, 'fps')).toBe(0)
+  const frames = await stat(page, 'drawn')
   await page.waitForTimeout(1000)
-  expect(await stat(page, 'desenhados')).toBe(frames)
+  expect(await stat(page, 'drawn')).toBe(frames)
 
   // A material change draws again.
   await openTab(page, 'Material')
-  await page.getByRole('button', { name: 'Brilhante' }).click()
-  await expect.poll(() => stat(page, 'desenhados')).toBeGreaterThan(frames)
+  await page.getByRole('button', { name: 'Glossy' }).click()
+  await expect.poll(() => stat(page, 'drawn')).toBeGreaterThan(frames)
 })
 
 test('keeps GPU memory flat when switching models', async ({ page }) => {
-  const geometries = await stat(page, 'geometrias')
-  const textures = await stat(page, 'texturas')
+  const geometries = await stat(page, 'geometries')
+  const textures = await stat(page, 'textures')
   // An imported GLB with textures; they must be freed too.
   await importFile(page, TEACUP)
   await loaded(page)
   for (let i = 0; i < 4; i++) {
-    for (const name of [/Tigela/, /^xicara-porcelana/, /Prato/, /Vaso/]) {
+    for (const name of [/Bowl/, /^porcelain-teacup/, /Plate/, /Vase/]) {
       await page.getByRole('button', { name }).click()
       await loaded(page)
     }
   }
-  await expect.poll(() => stat(page, 'geometrias')).toBe(geometries)
-  expect(await stat(page, 'texturas')).toBe(textures)
+  await expect.poll(() => stat(page, 'geometries')).toBe(geometries)
+  expect(await stat(page, 'textures')).toBe(textures)
 })
 
 test('imports a .glb model and shows it with its textures', async ({
   page,
 }) => {
-  const textures = await stat(page, 'texturas')
+  const textures = await stat(page, 'textures')
   await importFile(page, TEACUP)
   await expect(importMessage(page)).toContainText(
-    'Modelo "xicara-porcelana" importado.',
+    'Model "porcelain-teacup" imported.',
   )
-  const option = page.getByRole('button', { name: /^xicara-porcelana/ })
+  const option = page.getByRole('button', { name: /^porcelain-teacup/ })
   await expect(option).toContainText('⌀ 149 × 70 mm')
   await expect(option).toHaveAttribute('aria-pressed', 'true')
   await loaded(page)
-  await expect.poll(() => stat(page, 'geometrias')).toBe(2)
-  expect(await stat(page, 'texturas')).toBeGreaterThan(textures)
+  await expect.poll(() => stat(page, 'geometries')).toBe(2)
+  expect(await stat(page, 'textures')).toBeGreaterThan(textures)
   await expect(page.getByRole('alert')).toBeHidden()
 })
 
 test('removes an imported model with its × button', async ({ page }) => {
   // Catalog models cannot be removed.
-  await expect(page.getByRole('button', { name: /^Remover/ })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /^Remove/ })).toHaveCount(0)
 
   await importFile(page, TEACUP)
   await loaded(page)
-  const remove = page.getByRole('button', { name: 'Remover xicara-porcelana' })
+  const remove = page.getByRole('button', { name: 'Remove porcelain-teacup' })
   await expect(remove).toBeVisible()
   await remove.click()
 
   await expect(
-    page.getByRole('button', { name: /^xicara-porcelana/ }),
+    page.getByRole('button', { name: /^porcelain-teacup/ }),
   ).toHaveCount(0)
-  await expect(page.getByRole('button', { name: /Vaso/ })).toHaveAttribute(
+  await expect(page.getByRole('button', { name: /Vase/ })).toHaveAttribute(
     'aria-pressed',
     'true',
   )
@@ -140,7 +140,7 @@ test('removes an imported model with its × button', async ({ page }) => {
   // It can be imported again.
   await importFile(page, TEACUP)
   await expect(
-    page.getByRole('button', { name: /^xicara-porcelana/ }),
+    page.getByRole('button', { name: /^porcelain-teacup/ }),
   ).toHaveAttribute('aria-pressed', 'true')
 })
 
@@ -149,46 +149,57 @@ test('imports a Meshopt-compressed .glb (gltfpack, Tripo)', async ({
 }) => {
   await importFile(page, MESHOPT_BOX)
   await expect(importMessage(page)).toContainText(
-    'Modelo "caixa-meshopt" importado.',
+    'Model "box-meshopt" imported.',
   )
   await expect(
-    page.getByRole('button', { name: /^caixa-meshopt/ }),
+    page.getByRole('button', { name: /^box-meshopt/ }),
   ).toContainText('⌀ 100 × 100 mm')
   await loaded(page)
   await expect(page.getByRole('alert')).toBeHidden()
-  await expect.poll(() => stat(page, 'triângulos')).toBe(12)
+  await expect.poll(() => stat(page, 'triangles')).toBe(12)
 })
 
-test('sets the real height of an imported piece', async ({ page }) => {
-  // Only imported models have a real-size field.
-  await expect(page.getByLabel('Altura (cm)')).toHaveCount(0)
-
+test('starts an oversized import at 20 cm and sets its real height', async ({
+  page,
+}) => {
   await importFile(page, ONE_METER_BOX)
   await expect(importMessage(page)).toContainText(
-    'No arquivo a peça mede 1 m; ajuste a altura real na aba Modelos.',
+    'In the file the piece measures 1 m; it is shown at 20 cm.',
   )
-  const option = page.getByRole('button', { name: /^caixa-1m/ })
-  await expect(option).toContainText('⌀ 1000 × 1000 mm')
+  const option = page.getByRole('button', { name: /^box-1m/ })
+  await expect(option).toContainText('⌀ 200 × 200 mm')
   await loaded(page)
 
-  const height = page.getByLabel('Altura (cm)')
-  await expect(height).toHaveValue('100')
+  const height = page.getByLabel('Height (cm)')
+  await expect(height).toHaveValue('20')
   await height.fill('7')
   await expect(option).toContainText('⌀ 70 × 70 mm')
-  await expect(page.getByText('Peça: ⌀ 70 × 70 mm')).toBeVisible()
+  await expect(page.getByText('Piece: ⌀ 70 × 70 mm')).toBeVisible()
 
   // The size stays with the model while others are shown.
-  await page.getByRole('button', { name: /Vaso/ }).click()
-  await expect(page.getByLabel('Altura (cm)')).toHaveCount(0)
+  await page.getByRole('button', { name: /Vase/ }).click()
+  await expect(page.getByLabel('Height (cm)')).toHaveValue('20')
   await option.click()
-  await expect(page.getByLabel('Altura (cm)')).toHaveValue('7')
+  await expect(page.getByLabel('Height (cm)')).toHaveValue('7')
 
-  await page.getByRole('button', { name: 'Usar o tamanho do arquivo' }).click()
+  await page.getByRole('button', { name: 'Original size' }).click()
   await expect(option).toContainText('⌀ 1000 × 1000 mm')
+})
+
+test('resizes catalog pieces too', async ({ page }) => {
+  const vase = page.getByRole('button', { name: /Vase/ })
+  await expect(vase).toContainText('⌀ 120 × 200 mm')
+  await expect(page.getByRole('button', { name: 'Original size' })).toHaveCount(
+    0,
+  )
+  await page.getByLabel('Height (cm)').fill('30')
+  await expect(vase).toContainText('⌀ 180 × 300 mm')
+  await page.getByRole('button', { name: 'Original size' }).click()
+  await expect(vase).toContainText('⌀ 120 × 200 mm')
 })
 
 test('explains a .glb that uses Draco compression', async ({ page }) => {
-  await openTab(page, 'Configuração')
+  await openTab(page, 'Settings')
   const json = JSON.stringify({
     asset: { version: '2.0' },
     extensionsUsed: ['KHR_draco_mesh_compression'],
@@ -206,27 +217,27 @@ test('explains a .glb that uses Draco compression', async ({ page }) => {
     buffer: Buffer.concat([header, Buffer.from(json)]),
   })
   await expect(page.getByRole('alert')).toContainText(
-    'usa compressão Draco, que o app ainda não abre',
+    'uses Draco compression, which the app cannot open yet',
   )
 })
 
 test('rejects a broken .glb and keeps the list', async ({ page }) => {
   const models = await page.locator('.model-option').count()
-  await openTab(page, 'Configuração')
+  await openTab(page, 'Settings')
   await importFile(page, {
-    name: 'quebrado.glb',
+    name: 'broken.glb',
     mimeType: 'model/gltf-binary',
     buffer: Buffer.from('glTF\x02\x00\x00\x00 not really a model'),
   })
   await expect(page.getByRole('alert')).toContainText(
-    'Não foi possível ler o modelo "quebrado.glb".',
+    'Could not read the model "broken.glb".',
   )
   expect(await page.locator('.model-option').count()).toBe(models)
 })
 
 test('still imports .json configurations', async ({ page }) => {
   await importFile(page, {
-    name: 'prato.json',
+    name: 'plate.json',
     mimeType: 'application/json',
     buffer: Buffer.from(
       JSON.stringify({
@@ -240,57 +251,57 @@ test('still imports .json configurations', async ({ page }) => {
     ),
   })
   await expect(importMessage(page)).toContainText(
-    'Configuração "prato.json" aplicada.',
+    'Settings "plate.json" applied.',
   )
-  await expect(page.getByRole('button', { name: /Prato/ })).toHaveAttribute(
+  await expect(page.getByRole('button', { name: /Plate/ })).toHaveAttribute(
     'aria-pressed',
     'true',
   )
 })
 
 test('turns, zooms and resets the view with the keyboard', async ({ page }) => {
-  const canvas = page.getByLabel(/Peça em 3D/)
+  const canvas = page.getByLabel(/3D piece/)
   await canvas.focus()
   await expect(canvas).toBeFocused()
   await page.keyboard.press('ArrowRight')
   await page.keyboard.press('ArrowRight')
-  await expect.poll(() => stat(page, 'câmera')).toBe(30)
+  await expect.poll(() => stat(page, 'camera')).toBe(30)
   await page.keyboard.press('ArrowLeft')
-  await expect.poll(() => stat(page, 'câmera')).toBe(15)
+  await expect.poll(() => stat(page, 'camera')).toBe(15)
   await page.keyboard.press('Home')
-  await expect.poll(() => stat(page, 'câmera')).toBe(0)
+  await expect.poll(() => stat(page, 'camera')).toBe(0)
 })
 
 test('turns off the camera glide for reduced motion', async ({ page }) => {
-  await expect(panel(page)).toContainText('amortecimento: sim')
+  await expect(panel(page)).toContainText('damping: yes')
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.reload()
   await loaded(page)
-  await expect(panel(page)).toContainText('amortecimento: não')
+  await expect(panel(page)).toContainText('damping: no')
 })
 
 test('recovers when the GPU context is lost', async ({ page }) => {
   await loseContext(page, 'loseContext')
   const alert = page.getByRole('alert')
-  await expect(alert).toContainText('interrompido pelo sistema')
+  await expect(alert).toContainText('The system stopped the 3D viewer')
 
   await loseContext(page, 'restoreContext')
   await expect(alert).toBeHidden()
-  const frames = await stat(page, 'desenhados')
-  await page.getByRole('button', { name: 'Reiniciar vista' }).click()
-  await expect.poll(() => stat(page, 'desenhados')).toBeGreaterThan(frames)
+  const frames = await stat(page, 'drawn')
+  await page.getByRole('button', { name: 'Reset view' }).click()
+  await expect.poll(() => stat(page, 'drawn')).toBeGreaterThan(frames)
 })
 
 test('rebuilds the viewer on request after a context loss', async ({
   page,
 }) => {
   await openTab(page, 'Material')
-  await page.getByRole('button', { name: 'Brilhante' }).click()
+  await page.getByRole('button', { name: 'Glossy' }).click()
   await loseContext(page, 'loseContext')
-  await page.getByRole('button', { name: 'Recarregar visualizador' }).click()
+  await page.getByRole('button', { name: 'Reload viewer' }).click()
   await loaded(page)
   await expect(page.getByRole('alert')).toBeHidden()
   // The custom material survives the rebuild.
-  await expect(page.getByText('Acabamento')).toBeVisible()
-  await expect.poll(() => stat(page, 'desenhados')).toBeGreaterThan(0)
+  await expect(page.getByText('Finish')).toBeVisible()
+  await expect.poll(() => stat(page, 'drawn')).toBeGreaterThan(0)
 })

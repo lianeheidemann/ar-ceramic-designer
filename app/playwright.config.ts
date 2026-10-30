@@ -24,5 +24,8 @@ export default defineConfig({
     command: `npm run dev -- --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}/ar-ceramic-designer/`,
     reuseExistingServer: !process.env.CI,
+    // The tests use the generated vase, bowl and plate, whatever .glb files
+    // are in src/features/models/defaults/.
+    env: { VITE_MODELS: 'generated' },
   },
 })

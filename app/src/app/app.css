@@ -1,0 +1,161 @@
+:root {
+  --bg: #f6f3ef;
+  --surface: #ffffff;
+  --text: #2b2622;
+  --muted: #6d645c;
+  --border: #e2dbd3;
+  --viewport-bg: #ebe5de;
+  --panel-width: 320px;
+
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+  color-scheme: light;
+  -webkit-font-smoothing: antialiased;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  min-height: 44px;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 1fr var(--panel-width);
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    'header header'
+    'viewport controls';
+  height: 100dvh;
+  color: var(--text);
+  background: var(--bg);
+  color-scheme: light;
+}
+
+.app[data-theme='dark'] {
+  --bg: #1c1a18;
+  --surface: #262320;
+  --text: #f1ece6;
+  --muted: #a99f95;
+  --border: #3a3531;
+  --viewport-bg: #2f2b28;
+  color-scheme: dark;
+}
+
+.app-header {
+  grid-area: header;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.app-logo {
+  display: block;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  object-fit: contain;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.theme-toggle {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-left: auto;
+  padding: 0;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  background: var(--viewport-bg);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+.theme-toggle svg {
+  width: 21px;
+  height: 21px;
+}
+
+.viewport {
+  grid-area: viewport;
+  position: relative;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  background: var(--viewport-bg);
+  overflow: hidden;
+}
+
+.viewport-placeholder {
+  color: var(--muted);
+}
+
+.controls {
+  grid-area: controls;
+  /* The tab list takes the top edge. */
+  padding: 0 1rem 1rem;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.controls h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas:
+      'header'
+      'viewport'
+      'controls';
+  }
+
+  .controls {
+    max-height: 40dvh;
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+}

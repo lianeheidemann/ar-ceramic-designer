@@ -1,43 +1,49 @@
-# app
+# AR Ceramic Designer — app
 
-Aplicação web em React + Three.js, com build pelo Vite e deploy no GitHub Pages.
+React, TypeScript and Three.js, built with Vite and deployed to GitHub Pages from `main`.
 
-## Estrutura
-
-```
-app/
-├── index.html
-├── vite.config.ts           # base do GitHub Pages
-├── public/                  # ícones, modelos (.glb) e texturas
-├── e2e/                     # testes Playwright (visualizador e AR com WebXR simulado)
-└── src/
-    ├── main.tsx             # ponto de entrada
-    ├── App.tsx              # componente raiz e estado da aplicação
-    ├── components/          # interface React (visualizador, controles, comparação)
-    ├── viewers/             # cena Three.js, câmera e enquadramento
-    ├── ar/                  # sessão WebXR (immersive-ar + hit-test)
-    ├── geometry/            # geração das peças por perfil de torno
-    ├── materials/           # acabamentos e variantes A/B
-    ├── data/                # catálogo de modelos
-    ├── hooks/               # suporte a RA e media queries
-    ├── types/               # tipos compartilhados
-    └── utils/               # mm ↔ m, configuração JSON, importação .glb e downloads
-```
-
-Os testes (`*.test.ts`) ficam ao lado do código que testam.
-
-## Comandos
+## Getting started
 
 ```bash
 npm install
-npm run dev       # desenvolvimento
-npm run build     # typecheck + build
-npm test          # Vitest
-npm run test:e2e  # Playwright (antes: npx playwright install chromium)
-npm run lint      # Oxlint
-npm run format    # Prettier
+npm run dev           # development server
+npm run build         # type check and production build
+npm test              # unit tests (Vitest)
+npm run test:e2e      # end-to-end tests (Playwright; first: npx playwright install chromium)
+npm run lint          # Oxlint
+npm run format        # Prettier
 ```
 
-A realidade aumentada exige HTTPS.
+AR needs HTTPS; the dev server on `localhost` works for desktop testing only.
 
+## Structure
 
+```
+src/
+├── main.tsx          # entry
+├── index.css         # imports each feature's stylesheet, in cascade order
+├── app/              # shell: layout, header, theme, panel tabs
+├── features/
+│   ├── viewer/       # Three.js scene, GLB loading, 3D viewer UI, A/B comparison
+│   ├── ar/           # WebXR session, AR overlay, diagnostics
+│   ├── models/       # default models, .glb import, real size, model list
+│   ├── material/     # finishes, A/B variants, material panel
+│   └── settings/     # JSON settings export/import
+└── shared/           # types, units, tabs, shared styles
+e2e/                  # Playwright tests, with a fake WebXR device
+```
+
+Each feature keeps its components, hooks, logic, styles and unit tests together. Features may import each other; `shared/` imports none.
+
+## Default models
+
+The `.glb` files in [`src/features/models/defaults/`](src/features/models/defaults/README.md) are the models the app opens with, named after their files. If the folder is empty, the app falls back to a vase, bowl and plate generated in code. End-to-end tests always use the generated models (`VITE_MODELS=generated`).
+
+## Accepted files
+
+| Format  | Requirements                                                                                                                                                                              |
+| :------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.glb`  | glTF 2.0 binary, one file, meters, textures embedded (PNG, JPEG, WebP). Meshopt supported; Draco and KTX2 not. Over 300k triangles: simplified on load. Outside 1–60 cm: starts at 20 cm. |
+| `.json` | Settings exported by the app (`ar-ceramic-designer/config`, version 1).                                                                                                                   |
+
+Not supported: `.gltf` with separate files, `.obj`, `.fbx`, `.stl`.
