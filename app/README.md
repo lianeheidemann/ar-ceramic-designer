@@ -47,11 +47,3 @@ The `.glb` files in [`src/features/models/defaults/`](src/features/models/defaul
 | `.json` | Settings exported by the app (`ar-ceramic-designer/config`, version 1).                                                                                                                   |
 
 Not supported: `.gltf` with separate files, `.obj`, `.fbx`, `.stl`.
-
-## Test switches
-
-| URL parameter       | Effect                                                          |
-| :------------------ | :-------------------------------------------------------------- |
-| `?debug=1`          | Performance and AR session diagnostics.                         |
-| `?cube=1`           | Test cube in AR, 50 cm in front of the start position.          |
-| `?layer=projection` | WebXR Layers projection layer (reproduces the S23 Ultra issue). |
