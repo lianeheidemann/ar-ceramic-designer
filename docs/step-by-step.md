@@ -1,30 +1,36 @@
-# Step-by-Step Guide
+# AR Ceramic Designer — Development Plan
 
-**Status (2026-10-30):** steps 0–9 done in `app/`; AR placement confirmed on the Galaxy S23 Ultra (Chrome, Android 16). Step 10 almost done: performance numbers and AR media left.
+## Goal
+Build a lightweight web app to view, customize and place 3D ceramic objects in augmented reality. Initial target: Samsung Galaxy S23 Ultra (Android 16).
 
-| #   | Step                                              | Status | Where                                                                           |
-| :-- | :------------------------------------------------ | :----- | :------------------------------------------------------------------------------ |
-| 0   | Decisions (meters inside, frontend only)          | ✅     | —                                                                               |
-| 1   | Vite + React + Three.js project                   | ✅     | `app/`                                                                          |
-| 2   | Code structure                                    | ✅     | [`app/README.md`](../app/README.md)                                             |
-| 3   | Sample models (lathe profiles, MIT)               | ✅     | `src/data/catalog.ts`, `src/geometry/`                                          |
-| 4   | 3D viewer                                         | ✅     | `src/viewers/CeramicViewer.ts`                                                  |
-| 5   | Finishes and reset                                | ✅     | `src/materials/`                                                                |
-| 6   | A/B comparison                                    | ✅     | `src/components/CompareView.tsx`                                                |
-| 7   | AR (WebXR hit-test)                               | ✅     | `src/ar/`                                                                       |
-| 8   | JSON export/import, PNG, `.glb` import, real size | ✅     | `src/utils/`, `src/viewers/gltfLoader.ts`, `src/components/RealSizeControl.tsx` |
-| 9   | Performance and accessibility                     | ✅     | `CeramicViewer.ts`, `Viewer.tsx`                                                |
-| 10  | Testing and delivery                              | 🔄     | below                                                                           |
-| 11  | Capacitor packaging (Android/iOS)                 | —      | optional                                                                        |
-| 12  | Geometric checks, more presets                    | —      | optional                                                                        |
+## Stack
+- **TypeScript + React + Vite** — interface and app foundation
+- **Three.js** — 3D rendering, GLB/glTF loading and controls
+- **WebXR** — AR on supported Android browsers; verify compatibility on device
+- **Blender** — prepare and optimize sample 3D models
+- **Optional later:** Python + Open3D for geometric checks; Capacitor for Android packaging
 
-## Notes
+## MVP roadmap
+1. ✅ **3D viewer:** load sample models; orbit, zoom, reset and responsive UI.
+2. ✅ **Customization:** change ceramic colors, roughness and finishes; restore defaults.
+3. ✅ **AR mode:** place a correctly scaled object on a detected surface; handle unsupported browsers gracefully. *Confirmed on the S23 Ultra on 2026-10-29.*
+4. ✅ **Comparison and export:** compare two variants; save configurations as JSON and screenshots when supported.
+5. 🔄 **Validation:** test on S23 Ultra, optimize model sizes, measure loading time/FPS and document limitations. *AR tested on the phone; on-demand rendering, debug figures (`?debug=1`) and known limitations done; performance numbers still to measure.*
 
-- **AR layer fix:** Three.js renders into a WebXR Layers projection layer when the browser offers one. On the S23 Ultra nothing drawn there showed over the camera, so the session always uses a classic `XRWebGLLayer` (`hideProjectionLayers()` in `src/ar/arSession.ts`).
-- **Test switches:** `?debug=1` (diagnostics), `?cube=1` (test cube), `?layer=projection` (reproduces the layer bug). `npm run test:e2e` runs the AR flow with a fake WebXR device.
-- **Settings JSON:** schema `ar-ceramic-designer/config` v1 with model id, dimensions and materials A/B; validated on import.
-- **`.glb` import:** detected by its first bytes; parsed once to check and measure it, then kept as an object URL for the session. Meshopt is decoded; Draco and KTX2 are named in the error. Pieces stand on their base at the origin; oversized pieces start at 20 cm; **Real size** (any model) and − / + in AR set the height; meshes over 300k triangles are simplified with meshoptimizer (borders locked, cached per file). Finish controls multiply the file's own values.
-- **Performance:** on-demand rendering, pixel ratio capped at 2, WebGL context-loss recovery, GPU memory checked flat over repeated model switches (e2e).
+Details per step: [step-by-step guide](step-by-step.md).
+
+## Acceptance criteria
+- ✅ At least two optimized sample ceramic models (vase, bowl and plate generated in code, ~10k triangles each). Users can also import their own `.glb`; a CC0 porcelain teacup (681 KB) is offered as an example.
+- 🔄 Smooth interactive viewing on desktop and Galaxy S23 Ultra (desktop ✅; numbers on the phone to measure).
+- ✅ Material edits persist in exported JSON.
+- ✅ AR is tested on a compatible device (S23 Ultra), with a clear fallback where unavailable.
+- 🔄 README documents installation, running, screenshots, known limitations and asset licenses (AR media to add).
+
+## Out of scope for MVP
+User accounts, backend, AI generation, industrial manufacturing validation and native ARCore integration.
+
+## Possible future improvements
+Explore geometric checks (watertightness, dimensions and mesh comparison), additional material presets and more export options.
 
 ## 10. Testing and delivery
 
