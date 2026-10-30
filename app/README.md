@@ -1,76 +1,57 @@
-# app
+# AR Ceramic Designer — app
 
-React + Three.js web app, built with Vite and deployed to GitHub Pages.
+React, TypeScript and Three.js, built with Vite and deployed to GitHub Pages from `main`.
 
-## Structure
-
-```
-app/
-├── index.html
-├── vite.config.ts      # GitHub Pages base path
-├── public/             # icons, models (.glb), textures
-├── e2e/                # Playwright tests (viewer, and AR with a fake WebXR device)
-└── src/
-    ├── main.tsx        # entry; index.css imports the styles below in order
-    ├── app/            # App shell: layout, header, theme, panel tabs
-    ├── features/
-    │   ├── viewer/     # Three.js scene, GLB loading, simplification, 3D viewer UI
-    │   ├── ar/         # WebXR session (immersive-ar + hit-test), AR overlay, diagnostics
-    │   ├── models/     # catalog, lathe geometry, .glb import, real size
-    │   ├── material/   # finishes, A/B variants, material panel
-    │   └── settings/   # JSON settings export/import, downloads
-    └── shared/         # types, units, tabs, media queries, shared styles
-```
-
-Each feature keeps its components, hooks, logic, styles and unit tests (`*.test.ts`) together. Features may import each other; `shared/` imports no feature. `index.css` only `@import`s the stylesheets, in cascade order.
-
-## Modules
-
-| Folder               | Main files                                                                                                                                                                                                                                                                                        |
-| :------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `app/`               | `App.tsx` (layout, tabs, selection), `AppHeader.tsx`, `useTheme.ts`                                                                                                                                                                                                                               |
-| `features/viewer/`   | `CeramicViewer.ts` (scene, camera, on-demand rendering), `modelMaterials.ts`, `sceneObjects.ts`, `framing.ts`, `gltfLoader.ts`, `simplify.ts`, `CameraSync.ts`; UI: `Viewer.tsx`, `ViewerActions.tsx`, `CompareView.tsx`, `viewerDebug.ts`                                                        |
-| `features/ar/`       | `arSession.ts` (hit-test placement), `projectionLayers.ts` (S23 layer fix), `arDebug.ts`, `testSwitches.ts`, `arStatus.ts`, `support.ts`; UI: `useArSession.ts`, `useArSupport.ts`, `ArOverlay.tsx` (hints, − / +, Exit AR), `ArStatusIcon.tsx`                                                   |
-| `features/models/`   | `defaults/` (the default `.glb` files), `defaultModels.ts` (finds and measures them), `catalog.ts` + `lathe.ts` (generated vase, bowl, plate when `defaults/` is empty), `importModel.ts`, `useModels.ts` (default and imported models, real heights); UI: `ModelList.tsx`, `RealSizeControl.tsx` |
-| `features/material/` | `presets.ts`, `variants.ts`, `useMaterials.ts` (edited materials per variant); UI: `MaterialPanel.tsx`, `MaterialControls.tsx`                                                                                                                                                                    |
-| `features/settings/` | `config.ts` (JSON schema v1), `download.ts`; UI: `ConfigControls.tsx` (Export / Import)                                                                                                                                                                                                           |
-| `shared/`            | `types.ts`, `units.ts`, `useMediaQuery.ts`, `Tabs.tsx`, `controls.css`, `tabs.css`                                                                                                                                                                                                                |
-
-## Commands
+## Getting started
 
 ```bash
 npm install
-npm run dev           # dev server
-npm run build         # typecheck + build
-npm test              # Vitest
-npm run test:e2e      # Playwright (first: npx playwright install chromium)
+npm run dev           # development server
+npm run build         # type check and production build
+npm test              # unit tests (Vitest)
+npm run test:e2e      # end-to-end tests (Playwright; first: npx playwright install chromium)
 npm run lint          # Oxlint
 npm run format        # Prettier
 ```
 
-AR needs HTTPS.
+AR needs HTTPS; the dev server on `localhost` works for desktop testing only.
 
-## Accepted files
+## Structure
 
-**Import** (Settings tab) tells the two formats apart by their first bytes.
+```
+src/
+├── main.tsx          # entry
+├── index.css         # imports each feature's stylesheet, in cascade order
+├── app/              # shell: layout, header, theme, panel tabs
+├── features/
+│   ├── viewer/       # Three.js scene, GLB loading, 3D viewer UI, A/B comparison
+│   ├── ar/           # WebXR session, AR overlay, diagnostics
+│   ├── models/       # default models, .glb import, real size, model list
+│   ├── material/     # finishes, A/B variants, material panel
+│   └── settings/     # JSON settings export/import
+└── shared/           # types, units, tabs, shared styles
+e2e/                  # Playwright tests, with a fake WebXR device
+```
 
-| Format                   | Must have                                                                                                                                                                             | Notes                                                                                                                                                                                                                                                                                       |
-| :----------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `.glb` (binary glTF 2.0) | One file with the `glTF` header; geometry in meters; textures embedded as PNG, JPEG or WebP                                                                                           | Meshopt is decoded; Draco and KTX2 are rejected with a message (`features/viewer/gltfLoader.ts`). Over 300k triangles: simplified on load (`features/viewer/simplify.ts`). Outside 1–60 cm: starts with a largest side of 20 cm (`features/models/importModel.ts`). Kept only until reload. |
-| `.json` (settings)       | `schema: "ar-ceramic-designer/config"`, `version: 1`, a known `modelId`, `variants.A` (and optional `B`) with `color` `#rrggbb` and `roughness`, `metalness`, `clearcoat` from 0 to 1 | Made by **Export (.json)**; validated in `features/settings/config.ts`. Settings for an imported model need that `.glb` imported first.                                                                                                                                                     |
-
-Not accepted: `.gltf` with separate files, `.obj`, `.fbx`, `.stl`.
+Each feature keeps its components, hooks, logic, styles and unit tests together. Features may import each other; `shared/` imports none.
 
 ## Default models
 
-The `.glb` files in [`src/features/models/defaults/`](src/features/models/defaults/README.md) are the models the app opens with; their name comes from the file name and their size from the file (outside 1–60 cm they start at 20 cm). With the folder empty, the app shows the generated vase, bowl and plate. The end-to-end tests always run on the generated ones (`VITE_MODELS=generated`, set in `playwright.config.ts`).
+The `.glb` files in [`src/features/models/defaults/`](src/features/models/defaults/README.md) are the models the app opens with, named after their files. If the folder is empty, the app falls back to a vase, bowl and plate generated in code. End-to-end tests always use the generated models (`VITE_MODELS=generated`).
+
+## Accepted files
+
+| Format  | Requirements                                                                                                                                                                              |
+| :------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.glb`  | glTF 2.0 binary, one file, meters, textures embedded (PNG, JPEG, WebP). Meshopt supported; Draco and KTX2 not. Over 300k triangles: simplified on load. Outside 1–60 cm: starts at 20 cm. |
+| `.json` | Settings exported by the app (`ar-ceramic-designer/config`, version 1).                                                                                                                   |
+
+Not supported: `.gltf` with separate files, `.obj`, `.fbx`, `.stl`.
 
 ## Test switches
 
-Add to the URL:
-
-| Switch              | Effect                                                                         |
-| :------------------ | :----------------------------------------------------------------------------- |
-| `?debug=1`          | Panel with fps, draw calls, GPU memory (3D viewer) and AR session diagnostics. |
-| `?cube=1`           | Test cube in AR, 50 cm in front of the start position.                         |
-| `?layer=projection` | Uses a WebXR Layers projection layer, to reproduce the S23 Ultra issue.        |
+| URL parameter       | Effect                                                          |
+| :------------------ | :-------------------------------------------------------------- |
+| `?debug=1`          | Performance and AR session diagnostics.                         |
+| `?cube=1`           | Test cube in AR, 50 cm in front of the start position.          |
+| `?layer=projection` | WebXR Layers projection layer (reproduces the S23 Ultra issue). |

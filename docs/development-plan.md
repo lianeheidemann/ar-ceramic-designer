@@ -44,7 +44,7 @@ src/shared/              # types, units, tabs
 docs/
 ```
 
-Each feature keeps its components, hooks, logic, styles and tests together; file-by-file map in [`app/README.md`](../app/README.md#modules).
+Each feature keeps its components, hooks, logic, styles and tests together; see [`app/README.md`](../app/README.md#structure).
 
 ## Out of scope for MVP
 
