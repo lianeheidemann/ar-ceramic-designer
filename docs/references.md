@@ -6,6 +6,7 @@
 - [WebXR Hit Test](https://immersive-web.github.io/hit-test/) — surface detection for AR placement.
 - [WebXR Device API](https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API) — MDN reference for the WebXR API.
 - [WebXR vs ARCore](https://developers.google.com/ar/develop/webxr/arcore-comparison?hl=pt-br) — feature comparison between WebXR and native ARCore.
+- [ARCore Depth API](https://developers.google.com/ar/develop/depth?hl=pt-br) — depth maps for occlusion and more realistic placement in AR.
 - [ARCore supported devices](https://developers.google.com/ar/devices?hl=pt-br#google_play) — devices certified for ARCore (Google Play).
 - [Capacitor](https://capacitorjs.com/docs) — for future native packaging.
 
