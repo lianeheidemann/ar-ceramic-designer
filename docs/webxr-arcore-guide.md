@@ -1,6 +1,11 @@
 # WebXR e ARCore — Guia de funcionamento e compatibilidade
 
+> **Ilustrações:** oito diagramas vetoriais originais acompanham os conceitos. Recursos conceituais não são necessariamente implementados no aplicativo.
+
 ## 1. WebXR, ARCore e Three.js: quem faz o quê?
+
+![WebXR, ARCore e Three.js: responsabilidades](images/webxr/01-arquitetura-webxr.svg)
+
 
 - **WebXR:** conjunto de APIs web que permite ao navegador iniciar sessões de realidade aumentada (AR) ou virtual (VR), acompanhar a posição do usuário e obter informações espaciais quando suportadas.
 - **ARCore:** tecnologia do Google que combina imagens da câmera, sensores e estimativas geométricas para rastrear o celular e entender partes do ambiente. No Chrome para Android compatível, fornece a base de rastreamento utilizada pelo WebXR AR.
@@ -12,6 +17,9 @@
 **Diferença importante:** ter WebXR disponível não significa que *todos* os recursos de um aplicativo Android feito diretamente com ARCore estejam disponíveis no navegador.
 
 ## 2. Compatibilidade: o que acontece ao abrir o aplicativo?
+
+![Comportamento de dispositivos compatíveis e não compatíveis com AR](images/webxr/02-compatibilidade.svg)
+
 
 Para **AR imersiva no Android**, normalmente são necessários: (1) celular certificado para ARCore, (2) Google Play Services para RA instalado/ativado, (3) navegador compatível — principalmente Chrome no Android —, (4) conexão HTTPS (ou contexto local seguro para desenvolvimento) e (5) permissão para a sessão/câmera quando solicitada.
 
@@ -43,6 +51,9 @@ No projeto, a sessão solicita `immersive-ar` com **`hit-test` obrigatório** e 
 
 ## 4. Como o celular detecta uma superfície?
 
+![SLAM: câmera, giroscópio e acelerômetro](images/webxr/03-slam-sensores.svg)
+
+
 A ideia central é acompanhar pontos visuais do ambiente enquanto o dispositivo se movimenta. A câmera, sozinha, não fornece automaticamente uma malha 3D perfeita da sala.
 
 1. **Câmera:** observa detalhes reconhecíveis, como bordas, texturas, cantos e contrastes (*feature points*).
@@ -65,6 +76,9 @@ SLAM significa **localização e mapeamento simultâneos**: o sistema tenta resp
 
 ### SLAM usa machine learning, convoluções e padding?
 
+![SLAM geométrico versus CNN e padding opcionais](images/webxr/04-slam-machine-learning.svg)
+
+
 **Não necessariamente.** SLAM é uma **família de métodos**, não uma arquitetura específica de rede neural:
 
 - Existem métodos clássicos de visão computacional e otimização geométrica que **não precisam de redes neurais**.
@@ -76,6 +90,9 @@ SLAM significa **localização e mapeamento simultâneos**: o sistema tenta resp
 **Fontes:** [fundamentos do ARCore](https://developers.google.com/ar/develop/fundamentals) e [Depth API](https://developers.google.com/ar/develop/depth).
 
 ## 5. Plane detection, hit test, reticle e posicionamento
+
+![Detecção de plano, hit test, reticle e colocação da cerâmica](images/webxr/05-hit-test-reticle.svg)
+
 
 Estes termos representam **etapas diferentes**, embora trabalhem juntos:
 
@@ -103,6 +120,9 @@ Estes termos representam **etapas diferentes**, embora trabalhem juntos:
 
 ## 6. O que é a Depth API?
 
+![Depth API e oclusão de objetos físicos](images/webxr/06-depth-oclusao.svg)
+
+
 A **Depth API** fornece estimativas de **distância entre a câmera e partes da cena**. Uma *depth map* (mapa de profundidade) armazena valores de distância para regiões/pixels da imagem.
 
 Exemplos de uso:
@@ -120,6 +140,9 @@ Exemplos de uso:
 **Fontes:** [ARCore Depth API](https://developers.google.com/ar/develop/depth) e [WebXR Depth Sensing/MDN](https://developer.mozilla.org/en-US/docs/Web/API/XRDepthInformation).
 
 ## 7. O que é uma âncora (*anchor*)?
+
+![Diferença entre pose de hit test e âncora espacial](images/webxr/07-ancoras.svg)
+
 
 Uma **âncora espacial** conecta uma referência virtual a uma posição rastreada no mundo. Conforme o sistema corrige seu mapa, a referência pode ser atualizada para reduzir a sensação de que o objeto está deslizando.
 
@@ -154,6 +177,9 @@ A tabela abaixo reproduz os **tipos de recurso e o status informado pelo Google 
 **Fonte da tabela:** [Google — WebXR compared to ARCore](https://developers.google.com/ar/develop/webxr/arcore-comparison). Verifique novamente a página oficial antes de planejar um recurso novo.
 
 ## 9. Limitações práticas da detecção
+
+![Principais limitações do rastreamento de superfícies](images/webxr/08-limitacoes.svg)
+
 
 | Situação | Possível efeito |
 | --- | --- |
