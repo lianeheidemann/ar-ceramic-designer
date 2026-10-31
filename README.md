@@ -56,4 +56,4 @@ Single binary `.glb` (glTF 2.0) with embedded textures; Meshopt compression is s
 
 ## Documentation
 
-[Developer guide](app/README.md) · [Step-by-step guide](docs/step-by-step.md) · [Development plan](docs/development-plan.md) · [References](docs/references.md)
+[Docs guide](docs/README.md) · [Developer guide](app/README.md) · [Step-by-step guide](docs/step-by-step.md) · [Development plan](docs/development-plan.md) · [References](docs/references.md)
