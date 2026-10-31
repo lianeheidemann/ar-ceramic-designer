@@ -6,6 +6,6 @@
 - A new stylesheet gets an `@import` line in `app/src/index.css`, at the place it belongs in the cascade.
 - Default models are the `.glb` files in `app/src/features/models/defaults/` (generated vase, bowl and plate when empty); e2e tests always use the generated ones.
 - The app works only with `.glb` files; there is no JSON import or export.
-- Everything is in English: UI text, comments, file and folder names, docs.
+- English everywhere (UI text, comments, file and folder names, READMEs), except `docs/`, which may also have content in Portuguese.
 - Before pushing: `npm run lint && npm run format:check && npm test && npm run build` and `npm run test:e2e` in `app/`.
 - Work on `develop`; `main` deploys to GitHub Pages.
