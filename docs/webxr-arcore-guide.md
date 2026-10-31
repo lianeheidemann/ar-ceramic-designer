@@ -1,9 +1,5 @@
 # WebXR e ARCore — Guia de funcionamento e compatibilidade
 
-> **Objetivo:** explicar, de forma simples e técnica, como funciona a realidade aumentada na Web, como o celular encontra superfícies e quais recursos estão ou não disponíveis no **AR Ceramic Designer**.
->
-> **Escopo:** documentação conceitual da versão `develop` (30/10/2026). Este guia **não propõe alterações no código**. Recursos oferecidos pela plataforma não são necessariamente recursos já implementados no projeto.
-
 ## 1. WebXR, ARCore e Three.js: quem faz o quê?
 
 - **WebXR:** conjunto de APIs web que permite ao navegador iniciar sessões de realidade aumentada (AR) ou virtual (VR), acompanhar a posição do usuário e obter informações espaciais quando suportadas.
